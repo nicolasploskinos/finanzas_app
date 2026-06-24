@@ -52,7 +52,8 @@ def eliminar(tid):
 
 if __name__ == "__main__":
     import socket
+    port = int(os.environ.get("PORT", 5001))
     ip = socket.gethostbyname(socket.gethostname())
-    print(f"\n  Local:  http://localhost:5001/finanzas")
-    print(f"  Celular (WiFi): http://{ip}:5001/finanzas\n")
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    print(f"\n  Local:  http://localhost:{port}/finanzas")
+    print(f"  Celular (WiFi): http://{ip}:{port}/finanzas\n")
+    app.run(host="0.0.0.0", port=port, debug=False)
