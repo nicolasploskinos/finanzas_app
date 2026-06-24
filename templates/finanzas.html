@@ -45,21 +45,7 @@
     header h1 { font-size: 18px; font-weight: 700; }
     header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-    /* ── Tabs ── */
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-    }
-    .tab {
-      flex: 1; padding: 12px 0; text-align: center;
-      font-size: 13px; font-weight: 600; color: var(--muted);
-      cursor: pointer; border-bottom: 2px solid transparent;
-      transition: all .2s;
-    }
-    .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
-
-    /* ── Tarjetas balance ── */
+/* ── Tarjetas balance ── */
     .cards {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -214,10 +200,6 @@
   <p id="fecha-hoy"></p>
 </header>
 
-<div class="tabs">
-  <div class="tab active" onclick="setTab('resumen')">Resumen</div>
-  <div class="tab" onclick="setTab('movimientos')">Movimientos</div>
-</div>
 
 <div id="tab-resumen">
   <div class="cards">
@@ -257,9 +239,6 @@
   <div id="lista"></div>
 </div>
 
-<div id="tab-movimientos" style="display:none; padding: 12px;">
-  <p style="color:var(--muted); font-size:13px;">Usá el botón + para agregar movimientos.</p>
-</div>
 
 <button class="fab" onclick="abrirModal()">+</button>
 
@@ -416,13 +395,7 @@
     return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3).toLowerCase()}. ${f.getFullYear()}`;
   }
 
-  function setTab(tab) {
-    document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", (i===0 && tab==="resumen") || (i===1 && tab==="movimientos")));
-    document.getElementById("tab-resumen").style.display     = tab === "resumen" ? "" : "none";
-    document.getElementById("tab-movimientos").style.display = tab === "movimientos" ? "" : "none";
-  }
-
-  function setTipo(t) {
+function setTipo(t) {
     tipoActual = t;
     document.getElementById("btn-gasto").className   = "tipo-btn " + (t==="Gasto"   ? "gasto-active"   : "inactive");
     document.getElementById("btn-ingreso").className = "tipo-btn " + (t==="Ingreso" ? "ingreso-active" : "inactive");
