@@ -1,0 +1,6 @@
+finanzas_data.json
+.env
+__pycache__/
+*.pyc
+.env
+railway.exe

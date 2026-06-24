@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Finanzas">
+  <meta name="theme-color" content="#1e1e2e">
+  <link rel="manifest" href="/finanzas/manifest.json">
+  <title>Finanzas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #1e1e2e;
+      --surface: #2a2a3e;
+      --surface2: #313148;
+      --green: #4ade80;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #3f3f5a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1; padding: 12px 0; text-align: center;
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all .2s;
+    }
+    .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+    /* ── Tarjetas balance ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 12px 10px;
+    }
+    .card-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .card-value { font-size: 16px; font-weight: 700; margin-top: 4px; }
+    .card-value.green { color: var(--green); }
+    .card-value.red   { color: var(--red); }
+    .card-value.blue  { color: var(--blue); }
+
+    /* ── Filtros ── */
+    .filtros {
+      padding: 0 12px 8px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filtros::-webkit-scrollbar { display: none; }
+    .filtros select {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      flex-shrink: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    /* ── Lista transacciones ── */
+    #lista { padding: 0 12px 100px; }
+    .mes-header {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; padding: 12px 0 6px;
+    }
+    .tx {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tx-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .tx-icon.gasto   { background: rgba(248,113,113,.15); }
+    .tx-icon.ingreso { background: rgba(74,222,128,.15); }
+    .tx-info { flex: 1; min-width: 0; }
+    .tx-cat  { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-desc { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-fecha { font-size: 11px; color: var(--muted); }
+    .tx-right { text-align: right; flex-shrink: 0; }
+    .tx-monto { font-size: 15px; font-weight: 700; }
+    .tx-monto.gasto   { color: var(--red); }
+    .tx-monto.ingreso { color: var(--green); }
+    .tx-del {
+      background: none; border: none; color: var(--muted);
+      font-size: 18px; cursor: pointer; padding: 4px; line-height: 1;
+    }
+    .tx-del:active { color: var(--red); }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed; bottom: 24px; right: 20px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--blue); border: none; color: white;
+      font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(96,165,250,.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; transition: transform .15s;
+    }
+    .fab:active { transform: scale(.92); }
+
+    /* ── Modal ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.6); z-index: 300;
+      align-items: flex-end; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      padding: 20px 20px 40px;
+      width: 100%; max-width: 480px;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .modal-handle {
+      width: 40px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 0 auto 20px;
+    }
+    .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+
+    /* Tipo toggle */
+    .tipo-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tipo-btn {
+      flex: 1; padding: 10px; border-radius: 10px; border: none;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all .2s;
+    }
+    .tipo-btn.gasto-active   { background: var(--red);   color: white; }
+    .tipo-btn.ingreso-active { background: var(--green); color: #1e1e2e; }
+    .tipo-btn.inactive       { background: var(--surface2); color: var(--muted); }
+
+    /* Campos */
+    .campo { margin-bottom: 14px; }
+    .campo label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    .campo input, .campo select {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-size: 15px; padding: 12px 14px;
+      outline: none; -webkit-appearance: none; appearance: none;
+    }
+    .campo input:focus, .campo select:focus { border-color: var(--blue); }
+    .campo input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+    .btn-guardar {
+      width: 100%; background: var(--blue); color: white;
+      border: none; border-radius: 12px; padding: 15px;
+      font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px;
+    }
+    .btn-guardar:active { opacity: .85; }
+
+    .empty { text-align: center; color: var(--muted); padding: 48px 0; font-size: 14px; }
+
+    /* toast */
+    .toast {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      background: var(--surface2); color: var(--text);
+      padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>💰 Finanzas</h1>
+  <p id="fecha-hoy"></p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="setTab('resumen')">Resumen</div>
+  <div class="tab" onclick="setTab('movimientos')">Movimientos</div>
+</div>
+
+<div id="tab-resumen">
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Ingresos</div>
+      <div class="card-value green" id="bal-ingresos">$0</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Gastos</div>
+      <div class="card-value red" id="bal-gastos">$0</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Balance</div>
+      <div class="card-value blue" id="bal-neto">$0</div>
+    </div>
+  </div>
+
+  <div class="filtros">
+    <select id="f-mes" onchange="render()">
+      <option value="">Todos los meses</option>
+      <option>Enero</option><option>Febrero</option><option>Marzo</option>
+      <option>Abril</option><option>Mayo</option><option>Junio</option>
+      <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+      <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+    </select>
+    <select id="f-anio" onchange="render()"></select>
+    <select id="f-tipo" onchange="render()">
+      <option value="">Todo</option>
+      <option>Gasto</option>
+      <option>Ingreso</option>
+    </select>
+    <select id="f-cat" onchange="render()">
+      <option value="">Todas las categorías</option>
+    </select>
+  </div>
+
+  <div id="lista"></div>
+</div>
+
+<div id="tab-movimientos" style="display:none; padding: 12px;">
+  <p style="color:var(--muted); font-size:13px;">Usá el botón + para agregar movimientos.</p>
+</div>
+
+<button class="fab" onclick="abrirModal()">+</button>
+
+<div class="overlay" id="overlay" onclick="cerrarSiFondo(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Nueva transacción</h2>
+
+    <div class="tipo-toggle">
+      <button class="tipo-btn gasto-active" id="btn-gasto" onclick="setTipo('Gasto')">Gasto</button>
+      <button class="tipo-btn inactive"     id="btn-ingreso" onclick="setTipo('Ingreso')">Ingreso</button>
+    </div>
+
+    <div class="campo">
+      <label>MONTO ($)</label>
+      <input type="number" id="inp-monto" inputmode="decimal" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="campo">
+      <label>FECHA</label>
+      <input type="date" id="inp-fecha">
+    </div>
+    <div class="campo">
+      <label>CATEGORÍA</label>
+      <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo...">
+    </div>
+    <div class="campo">
+      <label>DESCRIPCIÓN</label>
+      <input type="text" id="inp-desc" placeholder="Descripción opcional">
+    </div>
+
+    <button class="btn-guardar" onclick="guardar()">Guardar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  let datos = [];
+  let tipoActual = "Gasto";
+
+  // Fecha de hoy
+  const hoy = new Date();
+  document.getElementById("fecha-hoy").textContent =
+    `${hoy.getDate()} de ${MESES[hoy.getMonth()].toLowerCase()} de ${hoy.getFullYear()}`;
+  document.getElementById("inp-fecha").value = hoy.toISOString().split("T")[0];
+
+  // Años en filtro
+  const fAnio = document.getElementById("f-anio");
+  const anioAct = hoy.getFullYear();
+  const optTodos = document.createElement("option");
+  optTodos.value = ""; optTodos.textContent = "Todos los años";
+  fAnio.appendChild(optTodos);
+  for (let y = anioAct + 1; y >= 2020; y--) {
+    const o = document.createElement("option");
+    o.value = y; o.textContent = y;
+    if (y === anioAct) o.selected = true;
+    fAnio.appendChild(o);
+  }
+
+  async function cargar() {
+    try {
+      const r = await fetch("/api/finanzas");
+      datos = await r.json();
+    } catch { datos = []; }
+    render();
+  }
+
+  function filtrados() {
+    const mes  = document.getElementById("f-mes").value;
+    const anio = document.getElementById("f-anio").value;
+    const tipo = document.getElementById("f-tipo").value;
+    const cat  = document.getElementById("f-cat").value;
+
+    return datos.filter(t => {
+      const f = new Date(t.fecha + "T00:00:00");
+      if (mes  && MESES[f.getMonth()] !== mes)  return false;
+      if (anio && f.getFullYear() !== +anio)     return false;
+      if (tipo && t.tipo !== tipo)               return false;
+      if (cat  && t.categoria !== cat)           return false;
+      return true;
+    }).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }
+
+  function actualizarCatFiltro() {
+    const cats = [...new Set(datos.map(t => t.categoria).filter(Boolean))].sort();
+    const sel = document.getElementById("f-cat");
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todas las categorías</option>';
+    cats.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      if (c === val) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  function render() {
+    actualizarCatFiltro();
+    const lista = filtrados();
+
+    // Balances
+    const ing = lista.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
+    const gas = lista.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
+    const net = ing - gas;
+
+    document.getElementById("bal-ingresos").textContent = fmt(ing);
+    document.getElementById("bal-gastos").textContent   = fmt(gas);
+    const elNet = document.getElementById("bal-neto");
+    elNet.textContent = (net >= 0 ? "+" : "") + fmt(net);
+    elNet.className = "card-value " + (net >= 0 ? "green" : "red");
+
+    // Lista agrupada por mes
+    const el = document.getElementById("lista");
+    if (!lista.length) {
+      el.innerHTML = '<div class="empty">Sin movimientos</div>';
+      return;
+    }
+
+    const grupos = {};
+    lista.forEach(t => {
+      const f = new Date(t.fecha + "T00:00:00");
+      const k = `${MESES[f.getMonth()]} ${f.getFullYear()}`;
+      if (!grupos[k]) grupos[k] = [];
+      grupos[k].push(t);
+    });
+
+    el.innerHTML = Object.entries(grupos).map(([mes, txs]) => `
+      <div class="mes-header">${mes}</div>
+      ${txs.map(t => `
+        <div class="tx">
+          <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "💚" : "🔴"}</div>
+          <div class="tx-info">
+            <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+            ${t.descripcion ? `<div class="tx-desc">${t.descripcion}</div>` : ""}
+            <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmt(t.monto)}</div>
+          </div>
+          <button class="tx-del" onclick="eliminar(${t.id})">×</button>
+        </div>`).join("")}
+    `).join("");
+  }
+
+  function fmt(n) {
+    return "$" + n.toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  function formatFecha(iso) {
+    const f = new Date(iso + "T00:00:00");
+    return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3).toLowerCase()}. ${f.getFullYear()}`;
+  }
+
+  function setTab(tab) {
+    document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", (i===0 && tab==="resumen") || (i===1 && tab==="movimientos")));
+    document.getElementById("tab-resumen").style.display     = tab === "resumen" ? "" : "none";
+    document.getElementById("tab-movimientos").style.display = tab === "movimientos" ? "" : "none";
+  }
+
+  function setTipo(t) {
+    tipoActual = t;
+    document.getElementById("btn-gasto").className   = "tipo-btn " + (t==="Gasto"   ? "gasto-active"   : "inactive");
+    document.getElementById("btn-ingreso").className = "tipo-btn " + (t==="Ingreso" ? "ingreso-active" : "inactive");
+  }
+
+  function abrirModal() {
+    document.getElementById("overlay").classList.add("open");
+    document.getElementById("inp-monto").focus();
+  }
+  function cerrarModal() { document.getElementById("overlay").classList.remove("open"); }
+  function cerrarSiFondo(e) { if (e.target === document.getElementById("overlay")) cerrarModal(); }
+
+  async function guardar() {
+    const monto = parseFloat(document.getElementById("inp-monto").value);
+    const fecha = document.getElementById("inp-fecha").value;
+    const cat   = document.getElementById("inp-cat").value.trim();
+    const desc  = document.getElementById("inp-desc").value.trim();
+
+    if (!monto || monto <= 0) { toast("Ingresá un monto válido"); return; }
+    if (!fecha)               { toast("Elegí una fecha"); return; }
+
+    const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc };
+
+    try {
+      const r = await fetch("/api/finanzas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tx)
+      });
+      const nuevo = await r.json();
+      datos.push(nuevo);
+      cerrarModal();
+      // reset form
+      document.getElementById("inp-monto").value = "";
+      document.getElementById("inp-cat").value   = "";
+      document.getElementById("inp-desc").value  = "";
+      document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
+      render();
+      toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
+    } catch { toast("Error al guardar"); }
+  }
+
+  async function eliminar(id) {
+    if (!confirm("¿Eliminar esta transacción?")) return;
+    await fetch(`/api/finanzas/${id}`, { method: "DELETE" });
+    datos = datos.filter(t => t.id !== id);
+    render();
+  }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 2500);
+  }
+
+  // Service worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/finanzas/sw.js");
+  }
+
+  cargar();
+</script>
+</body>
+</html>
