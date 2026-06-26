@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import threading
+import requests
 from datetime import datetime, date
 from collections import defaultdict
 from tkcalendar import DateEntry
@@ -115,12 +117,15 @@ class FinanzasApp:
         self.filtro_cat = tk.StringVar(value="Todas")
         self.filtro_moneda = tk.StringVar(value="Todas")
         self.moneda_form = tk.StringVar(value="ARS")
+        self.moneda_consol = "ARS"
+        self.cotiz = {"USD": None, "EUR": None}
 
         self._configurar_estilos()
         self._construir_ui()
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
         self._actualizar_balances()
+        threading.Thread(target=self._cargar_cotizaciones, daemon=True).start()
 
     def _configurar_estilos(self):
         style = ttk.Style()
@@ -204,6 +209,7 @@ class FinanzasApp:
         right.pack(side="left", fill="both", expand=True)
 
         self._construir_tarjetas_balance(right)
+        self._construir_consolidado(right)
         self._construir_filtros(right)
         self._construir_tabla(right)
 
@@ -619,6 +625,96 @@ class FinanzasApp:
             net = ing - gas
             color = COLORES["accent_green"] if net >= 0 else COLORES["accent_red"]
             card.config(text=f"{'+'if net>=0 else '-'}{fmt_mon(abs(net), m)}", fg=color)
+
+        self._actualizar_consolidado()
+
+    def _construir_consolidado(self, parent):
+        frame = tk.Frame(parent, bg=COLORES["surface"])
+        frame.pack(fill="x", pady=(0, 8), ipady=8)
+
+        top = tk.Frame(frame, bg=COLORES["surface"])
+        top.pack(fill="x", padx=12, pady=(8, 6))
+
+        tk.Label(top, text="🔄  Total consolidado en:", bg=COLORES["surface"],
+                 fg=COLORES["text_muted"], font=("Segoe UI", 9, "bold")).pack(side="left")
+
+        self.btn_consol = {}
+        btn_frame = tk.Frame(top, bg=COLORES["surface"])
+        btn_frame.pack(side="right")
+        for m, txt in [("ARS", "$ ARS"), ("USD", "USD"), ("EUR", "€ EUR")]:
+            b = tk.Button(btn_frame, text=txt,
+                          bg=COLORES["accent_blue"] if m == "ARS" else COLORES["surface2"],
+                          fg="white" if m == "ARS" else COLORES["text_muted"],
+                          font=("Segoe UI", 9, "bold"), bd=0, relief="flat",
+                          padx=10, pady=4, cursor="hand2",
+                          command=lambda x=m: self._set_consolidado(x))
+            b.pack(side="left", padx=2)
+            self.btn_consol[m] = b
+
+        cards = tk.Frame(frame, bg=COLORES["surface"])
+        cards.pack(fill="x", padx=12)
+        self.cons_ing = self._tarjeta_mini(cards, "Ingresos totales", "—", COLORES["accent_green"])
+        self.cons_gas = self._tarjeta_mini(cards, "Gastos totales",   "—", COLORES["accent_red"])
+        self.cons_net = self._tarjeta_mini(cards, "Balance total",    "—", COLORES["accent_blue"])
+
+        self.cons_nota = tk.Label(frame, text="Cargando cotizaciones...",
+                                  bg=COLORES["surface"], fg=COLORES["text_muted"],
+                                  font=("Segoe UI", 8))
+        self.cons_nota.pack(anchor="e", padx=14, pady=(2, 4))
+
+    def _set_consolidado(self, moneda):
+        self.moneda_consol = moneda
+        for m, btn in self.btn_consol.items():
+            btn.config(bg=COLORES["accent_blue"] if m == moneda else COLORES["surface2"],
+                       fg="white" if m == moneda else COLORES["text_muted"])
+        self._actualizar_consolidado()
+
+    def _cargar_cotizaciones(self):
+        try:
+            r = requests.get("https://api.bluelytics.com.ar/v2/latest", timeout=6)
+            data = r.json()
+            self.cotiz["USD"] = round(data["oficial"]["value_sell"], 2)
+            self.cotiz["EUR"] = round(data["oficial_euro"]["value_sell"], 2)
+            self.root.after(0, self._actualizar_consolidado)
+            self.root.after(0, lambda: self.cons_nota.config(
+                text=f"Tipo de cambio oficial BNA  |  USD ${self.cotiz['USD']:,.2f}  |  EUR ${self.cotiz['EUR']:,.2f}"))
+        except Exception:
+            self.root.after(0, lambda: self.cons_nota.config(text="Sin conexión para cotizaciones"))
+
+    def _to_ars(self, monto, moneda):
+        if moneda == "ARS": return monto
+        if moneda == "USD": return monto * self.cotiz["USD"] if self.cotiz["USD"] else None
+        if moneda == "EUR": return monto * self.cotiz["EUR"] if self.cotiz["EUR"] else None
+        return monto
+
+    def _from_ars(self, ars, moneda):
+        if moneda == "ARS": return ars
+        if moneda == "USD": return ars / self.cotiz["USD"] if self.cotiz["USD"] else None
+        if moneda == "EUR": return ars / self.cotiz["EUR"] if self.cotiz["EUR"] else None
+        return ars
+
+    def _actualizar_consolidado(self):
+        filtrados = self._datos_filtrados_sin_moneda()
+        m = self.moneda_consol
+
+        if m != "ARS" and (not self.cotiz["USD"] or not self.cotiz["EUR"]):
+            for lbl in [self.cons_ing, self.cons_gas, self.cons_net]:
+                lbl.config(text="Sin cotización", fg=COLORES["text_muted"])
+            return
+
+        ing_ars = sum(self._to_ars(t["monto"], t.get("moneda") or "ARS") or 0
+                      for t in filtrados if t["tipo"] == "Ingreso")
+        gas_ars = sum(self._to_ars(t["monto"], t.get("moneda") or "ARS") or 0
+                      for t in filtrados if t["tipo"] == "Gasto")
+
+        ing = self._from_ars(ing_ars, m)
+        gas = self._from_ars(gas_ars, m)
+        net = ing - gas
+
+        self.cons_ing.config(text=f"+{fmt_mon(ing, m)}", fg=COLORES["accent_green"])
+        self.cons_gas.config(text=f"-{fmt_mon(gas, m)}", fg=COLORES["accent_red"])
+        color = COLORES["accent_green"] if net >= 0 else COLORES["accent_red"]
+        self.cons_net.config(text=f"{'+'if net>=0 else '-'}{fmt_mon(abs(net), m)}", fg=color)
 
     def _cerrar_sesion(self):
         if messagebox.askyesno("Cerrar sesión", "¿Querés cerrar sesión?"):
