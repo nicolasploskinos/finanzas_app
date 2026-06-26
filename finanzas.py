@@ -83,10 +83,17 @@ def insertar_transaccion(t):
         "fecha":       t["fecha"],
         "categoria":   t.get("categoria", ""),
         "descripcion": t.get("descripcion", ""),
+        "moneda":      t.get("moneda", "ARS"),
         "user_id":     _usuario_actual["id"],
     }
     res = _db.table("transacciones").insert(payload).execute()
     return res.data[0]
+
+SIM_MONEDA = {"ARS": "$", "USD": "USD ", "EUR": "€"}
+
+def fmt_mon(monto, moneda="ARS"):
+    sym = SIM_MONEDA.get(moneda, "$")
+    return f"{sym}{monto:,.2f}"
 
 
 def eliminar_transaccion(tid):
@@ -106,6 +113,8 @@ class FinanzasApp:
         self.filtro_anio = tk.StringVar(value=str(date.today().year))
         self.filtro_tipo = tk.StringVar(value="Todos")
         self.filtro_cat = tk.StringVar(value="Todas")
+        self.filtro_moneda = tk.StringVar(value="Todas")
+        self.moneda_form = tk.StringVar(value="ARS")
 
         self._configurar_estilos()
         self._construir_ui()
@@ -228,8 +237,23 @@ class FinanzasApp:
                                      command=lambda: self._set_tipo("Ingreso"))
         self.btn_ingreso.pack(side="left", fill="x", expand=True, padx=(3, 0))
 
+        # Moneda
+        label("Moneda")
+        mon_frame = tk.Frame(form, bg=COLORES["surface"])
+        mon_frame.pack(fill="x")
+        self.btn_mon = {}
+        for m, txt in [("ARS", "$ ARS"), ("USD", "USD"), ("EUR", "€ EUR")]:
+            b = tk.Button(mon_frame, text=txt,
+                          bg=COLORES["accent_blue"] if m == "ARS" else COLORES["surface2"],
+                          fg="white" if m == "ARS" else COLORES["text_muted"],
+                          font=("Segoe UI", 9, "bold"), bd=0, relief="flat",
+                          padx=8, pady=5, cursor="hand2",
+                          command=lambda x=m: self._set_moneda(x))
+            b.pack(side="left", fill="x", expand=True, padx=1)
+            self.btn_mon[m] = b
+
         # Monto
-        label("Monto ($)")
+        label("Monto")
         self.monto_var = tk.StringVar()
         monto_entry = tk.Entry(form, textvariable=self.monto_var, bg=COLORES["surface2"],
                                fg=COLORES["text"], font=("Segoe UI", 11), bd=0,
@@ -306,24 +330,43 @@ class FinanzasApp:
             self.btn_ingreso.config(bg=COLORES["accent_green"], fg="#1e1e2e")
             self.btn_gasto.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
 
-    def _construir_tarjetas_balance(self, parent):
-        frame = tk.Frame(parent, bg=COLORES["bg"])
-        frame.pack(fill="x", pady=(0, 10))
+    def _set_moneda(self, moneda):
+        self.moneda_form.set(moneda)
+        for m, btn in self.btn_mon.items():
+            btn.config(bg=COLORES["accent_blue"] if m == moneda else COLORES["surface2"],
+                       fg="white" if m == moneda else COLORES["text_muted"])
 
-        self.card_ingresos = self._tarjeta(frame, "Ingresos", "$0.00", COLORES["accent_green"])
-        self.card_gastos = self._tarjeta(frame, "Gastos", "$0.00", COLORES["accent_red"])
-        self.card_balance = self._tarjeta(frame, "Balance", "$0.00", COLORES["accent_blue"])
+    def _construir_tarjetas_balance(self, parent):
+        frame_top = tk.Frame(parent, bg=COLORES["bg"])
+        frame_top.pack(fill="x", pady=(0, 6))
+        self.card_ingresos = self._tarjeta(frame_top, "Ingresos", "$0.00", COLORES["accent_green"])
+        self.card_gastos   = self._tarjeta(frame_top, "Gastos",   "$0.00", COLORES["accent_red"])
+        self.card_balance  = self._tarjeta(frame_top, "Balance",  "$0.00", COLORES["accent_blue"])
+
+        frame_bot = tk.Frame(parent, bg=COLORES["bg"])
+        frame_bot.pack(fill="x", pady=(0, 8))
+        self.card_ars = self._tarjeta_mini(frame_bot, "ARS neto", "$0.00", COLORES["accent_green"])
+        self.card_usd = self._tarjeta_mini(frame_bot, "USD neto", "USD 0.00", COLORES["accent_blue"])
+        self.card_eur = self._tarjeta_mini(frame_bot, "EUR neto", "€0.00", COLORES["accent_blue"])
 
     def _tarjeta(self, parent, titulo, valor, color):
         card = tk.Frame(parent, bg=COLORES["surface"], bd=0, relief="flat")
         card.pack(side="left", fill="both", expand=True, padx=4, ipady=12, ipadx=10)
-
         tk.Label(card, text=titulo.upper(), bg=COLORES["surface"],
                  fg=COLORES["text_muted"], font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=12, pady=(10, 2))
-
         val_label = tk.Label(card, text=valor, bg=COLORES["surface"],
                              fg=color, font=("Segoe UI", 22, "bold"))
         val_label.pack(anchor="w", padx=12, pady=(0, 10))
+        return val_label
+
+    def _tarjeta_mini(self, parent, titulo, valor, color):
+        card = tk.Frame(parent, bg=COLORES["surface"], bd=0, relief="flat")
+        card.pack(side="left", fill="both", expand=True, padx=4, ipady=4, ipadx=8)
+        tk.Label(card, text=titulo.upper(), bg=COLORES["surface"],
+                 fg=COLORES["text_muted"], font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=10, pady=(6, 1))
+        val_label = tk.Label(card, text=valor, bg=COLORES["surface"],
+                             fg=color, font=("Segoe UI", 13, "bold"))
+        val_label.pack(anchor="w", padx=10, pady=(0, 6))
         return val_label
 
     def _construir_filtros(self, parent):
@@ -361,6 +404,15 @@ class FinanzasApp:
         tipo_combo.pack(side="left", padx=(0, 10))
         tipo_combo.bind("<<ComboboxSelected>>", lambda e: self._aplicar_filtros())
 
+        # Moneda
+        tk.Label(frame, text="Moneda:", bg=COLORES["surface"],
+                 fg=COLORES["text_muted"], font=("Segoe UI", 9)).pack(side="left", padx=(0, 4))
+        mon_combo = ttk.Combobox(frame, textvariable=self.filtro_moneda,
+                                  values=["Todas", "ARS", "USD", "EUR"], state="readonly",
+                                  width=7, font=("Segoe UI", 9))
+        mon_combo.pack(side="left", padx=(0, 10))
+        mon_combo.bind("<<ComboboxSelected>>", lambda e: self._aplicar_filtros())
+
         # Categoría
         tk.Label(frame, text="Categoría:", bg=COLORES["surface"],
                  fg=COLORES["text_muted"], font=("Segoe UI", 9)).pack(side="left", padx=(0, 4))
@@ -395,21 +447,23 @@ class FinanzasApp:
                   command=self._eliminar_seleccionado).pack(side="right")
 
         # Tabla
-        cols = ("Fecha", "Tipo", "Categoría", "Descripción", "Monto")
+        cols = ("Fecha", "Tipo", "Moneda", "Categoría", "Descripción", "Monto")
         self.tree = ttk.Treeview(frame, columns=cols, show="headings",
                                   selectmode="browse")
 
-        self.tree.heading("Fecha", text="Fecha")
-        self.tree.heading("Tipo", text="Tipo")
-        self.tree.heading("Categoría", text="Categoría")
+        self.tree.heading("Fecha",       text="Fecha")
+        self.tree.heading("Tipo",        text="Tipo")
+        self.tree.heading("Moneda",      text="Moneda")
+        self.tree.heading("Categoría",   text="Categoría")
         self.tree.heading("Descripción", text="Descripción")
-        self.tree.heading("Monto", text="Monto")
+        self.tree.heading("Monto",       text="Monto")
 
-        self.tree.column("Fecha", width=100, anchor="center")
-        self.tree.column("Tipo", width=80, anchor="center")
-        self.tree.column("Categoría", width=130, anchor="center")
-        self.tree.column("Descripción", width=250)
-        self.tree.column("Monto", width=110, anchor="e")
+        self.tree.column("Fecha",       width=90,  anchor="center")
+        self.tree.column("Tipo",        width=75,  anchor="center")
+        self.tree.column("Moneda",      width=60,  anchor="center")
+        self.tree.column("Categoría",   width=120, anchor="center")
+        self.tree.column("Descripción", width=220)
+        self.tree.column("Monto",       width=120, anchor="e")
 
         # Scrollbar
         sb = ttk.Scrollbar(frame, orient="vertical", command=self.tree.yview)
@@ -447,6 +501,7 @@ class FinanzasApp:
             "fecha": fecha.isoformat(),
             "categoria": cat,
             "descripcion": desc,
+            "moneda": self.moneda_form.get(),
         }
 
         guardado = insertar_transaccion(transaccion)
@@ -460,9 +515,10 @@ class FinanzasApp:
         self._actualizar_tabla()
         self._actualizar_balances()
 
+        mon = self.moneda_form.get()
         signo = "+" if tipo == "Ingreso" else "-"
         self.info_label.config(
-            text=f"✓ {tipo} de {signo}${monto:.2f} agregado.",
+            text=f"✓ {tipo} de {signo}{fmt_mon(monto, mon)} agregado.",
             fg=COLORES["accent_green"] if tipo == "Ingreso" else COLORES["accent_red"]
         )
         self.root.after(3000, lambda: self.info_label.config(text=""))
@@ -473,6 +529,7 @@ class FinanzasApp:
         tipo_sel = self.filtro_tipo.get()
         cat_sel = self.filtro_cat.get()
 
+        mon_sel = self.filtro_moneda.get()
         resultado = []
         for t in self.datos:
             f = date.fromisoformat(t["fecha"])
@@ -482,11 +539,28 @@ class FinanzasApp:
                 continue
             if tipo_sel != "Todos" and t["tipo"] != tipo_sel:
                 continue
+            if mon_sel != "Todas" and (t.get("moneda") or "ARS") != mon_sel:
+                continue
             if cat_sel != "Todas" and normalizar(t.get("categoria", "")) != normalizar(cat_sel):
                 continue
             resultado.append(t)
 
         resultado.sort(key=lambda x: x["fecha"], reverse=True)
+        return resultado
+
+    def _datos_filtrados_sin_moneda(self):
+        mes_sel  = self.filtro_mes.get()
+        anio_sel = self.filtro_anio.get()
+        tipo_sel = self.filtro_tipo.get()
+        cat_sel  = self.filtro_cat.get()
+        resultado = []
+        for t in self.datos:
+            f = date.fromisoformat(t["fecha"])
+            if mes_sel != "Todos" and MESES[f.month - 1] != mes_sel: continue
+            if anio_sel and str(f.year) != anio_sel: continue
+            if tipo_sel != "Todos" and t["tipo"] != tipo_sel: continue
+            if cat_sel != "Todas" and normalizar(t.get("categoria", "")) != normalizar(cat_sel): continue
+            resultado.append(t)
         return resultado
 
     def _actualizar_categorias_filtro(self):
@@ -512,26 +586,39 @@ class FinanzasApp:
             f = date.fromisoformat(t["fecha"])
             fecha_fmt = f.strftime("%d/%m/%Y")
             signo = "+" if t["tipo"] == "Ingreso" else "-"
-            monto_fmt = f"{signo}${t['monto']:,.2f}"
+            mon = t.get("moneda") or "ARS"
+            monto_fmt = f"{signo}{fmt_mon(t['monto'], mon)}"
             tag = "ingreso" if t["tipo"] == "Ingreso" else "gasto"
             self.tree.insert("", "end",
-                             values=(fecha_fmt, t["tipo"], t["categoria"],
+                             values=(fecha_fmt, t["tipo"], mon, t["categoria"],
                                      t["descripcion"], monto_fmt),
                              tags=(tag,),
                              iid=str(t["id"]))
 
     def _actualizar_balances(self):
         filtrados = self._datos_filtrados()
-        total_ingresos = sum(t["monto"] for t in filtrados if t["tipo"] == "Ingreso")
-        total_gastos = sum(t["monto"] for t in filtrados if t["tipo"] == "Gasto")
-        balance = total_ingresos - total_gastos
+        mon_sel = self.filtro_moneda.get()
 
-        self.card_ingresos.config(text=f"+${total_ingresos:,.2f}")
-        self.card_gastos.config(text=f"-${total_gastos:,.2f}")
+        # Tarjetas principales (respetan todos los filtros)
+        total_ing = sum(t["monto"] for t in filtrados if t["tipo"] == "Ingreso")
+        total_gas = sum(t["monto"] for t in filtrados if t["tipo"] == "Gasto")
+        balance   = total_ing - total_gas
+        sym = SIM_MONEDA.get(mon_sel, "$") if mon_sel != "Todas" else "$"
 
-        color_balance = COLORES["accent_green"] if balance >= 0 else COLORES["accent_red"]
-        signo = "+" if balance >= 0 else ""
-        self.card_balance.config(text=f"{signo}${balance:,.2f}", fg=color_balance)
+        self.card_ingresos.config(text=f"+{sym}{total_ing:,.2f}")
+        self.card_gastos.config(text=f"-{sym}{total_gas:,.2f}")
+        color_bal = COLORES["accent_green"] if balance >= 0 else COLORES["accent_red"]
+        self.card_balance.config(text=f"{'+'if balance>=0 else ''}{sym}{balance:,.2f}", fg=color_bal)
+
+        # Tarjetas mini por moneda (sin filtro de moneda, sí respetan el resto)
+        todos = self._datos_filtrados_sin_moneda()
+        for m, card in [("ARS", self.card_ars), ("USD", self.card_usd), ("EUR", self.card_eur)]:
+            txs = [t for t in todos if (t.get("moneda") or "ARS") == m]
+            ing = sum(t["monto"] for t in txs if t["tipo"] == "Ingreso")
+            gas = sum(t["monto"] for t in txs if t["tipo"] == "Gasto")
+            net = ing - gas
+            color = COLORES["accent_green"] if net >= 0 else COLORES["accent_red"]
+            card.config(text=f"{'+'if net>=0 else '-'}{fmt_mon(abs(net), m)}", fg=color)
 
     def _cerrar_sesion(self):
         if messagebox.askyesno("Cerrar sesión", "¿Querés cerrar sesión?"):
@@ -547,6 +634,7 @@ class FinanzasApp:
         self.filtro_mes.set("Todos")
         self.filtro_anio.set(str(date.today().year))
         self.filtro_tipo.set("Todos")
+        self.filtro_moneda.set("Todas")
         self.filtro_cat.set("Todas")
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
