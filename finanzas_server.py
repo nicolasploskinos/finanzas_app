@@ -1,9 +1,7 @@
 import os
 import uuid
-import smtplib
 import threading
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
 from flask_cors import CORS
 from supabase import create_client
@@ -21,30 +19,29 @@ app.permanent_session_lifetime = timedelta(days=30)
 
 db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
-BASE_URL   = os.environ.get("BASE_URL", "http://localhost:5001")
-GMAIL_USER = os.environ.get("GMAIL_USER", "")
-GMAIL_PASS = os.environ.get("GMAIL_APP_PASSWORD", "")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:5001")
+resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
 def enviar_email_verificacion(destinatario, username, link):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Verificá tu cuenta de Finanzas"
-    msg["From"]    = f"Control de Finanzas <{GMAIL_USER}>"
-    msg["To"]      = destinatario
-    html = f"""
-    <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#1e1e2e;color:#e2e8f0;border-radius:16px">
-        <h2 style="color:#60a5fa;margin-bottom:8px">&#128176; Control de Finanzas</h2>
-        <p>Hola <strong>{username}</strong>, gracias por registrarte.</p>
-        <p style="margin-top:12px">Hacé click en el botón para verificar tu cuenta:</p>
-        <a href="{link}" style="display:inline-block;margin:24px 0;background:#60a5fa;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px">
-            Verificar mi cuenta
-        </a>
-        <p style="color:#94a3b8;font-size:13px">Si no creaste esta cuenta podés ignorar este email.</p>
-    </div>
-    """
-    msg.attach(MIMEText(html, "html"))
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(GMAIL_USER, GMAIL_PASS)
-        smtp.sendmail(GMAIL_USER, destinatario, msg.as_string())
+    try:
+        resend.Emails.send({
+            "from":    "Control de Finanzas <onboarding@resend.dev>",
+            "to":      [destinatario],
+            "subject": "Verificá tu cuenta de Finanzas",
+            "html":    f"""
+            <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#1e1e2e;color:#e2e8f0;border-radius:16px">
+                <h2 style="color:#60a5fa;margin-bottom:8px">&#128176; Control de Finanzas</h2>
+                <p>Hola <strong>{username}</strong>, gracias por registrarte.</p>
+                <p style="margin-top:12px">Hacé click en el botón para verificar tu cuenta:</p>
+                <a href="{link}" style="display:inline-block;margin:24px 0;background:#60a5fa;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px">
+                    Verificar mi cuenta
+                </a>
+                <p style="color:#94a3b8;font-size:13px">Si no creaste esta cuenta podés ignorar este email.</p>
+            </div>
+            """
+        })
+    except Exception as e:
+        print(f"Error enviando email: {e}")
 
 def login_required(f):
     @wraps(f)
