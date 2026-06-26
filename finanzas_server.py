@@ -1,6 +1,7 @@
 import os
 import uuid
 import smtplib
+import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
@@ -138,10 +139,11 @@ def register():
     db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()
 
     link = f"{BASE_URL}/finanzas/verificar/{token}"
-    try:
-        enviar_email_verificacion(email, username, link)
-    except Exception as e:
-        print(f"Error enviando email: {e}")
+    threading.Thread(
+        target=enviar_email_verificacion,
+        args=(email, username, link),
+        daemon=True
+    ).start()
 
     return jsonify({"ok": True, "pendiente": True}), 201
 
