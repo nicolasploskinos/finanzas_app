@@ -755,17 +755,10 @@ class LoginApp:
             tk.Label(marco, text=label, bg=COLORES["surface"], fg=COLORES["text_muted"],
                      font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(8, 2))
 
-        campo("EMAIL")
-        self.email_var = tk.StringVar()
-        tk.Entry(marco, textvariable=self.email_var, bg=COLORES["surface2"], fg=COLORES["text"],
-                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
-
-        self.user_label = tk.Label(marco, text="NOMBRE DE USUARIO", bg=COLORES["surface"],
-                                   fg=COLORES["text_muted"], font=("Segoe UI", 9, "bold"))
+        campo("USUARIO")
         self.user_var = tk.StringVar()
-        self.user_entry = tk.Entry(marco, textvariable=self.user_var, bg=COLORES["surface2"],
-                                   fg=COLORES["text"], font=("Segoe UI", 11), bd=0, relief="flat",
-                                   insertbackground=COLORES["text"])
+        tk.Entry(marco, textvariable=self.user_var, bg=COLORES["surface2"], fg=COLORES["text"],
+                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
 
         campo("CONTRASEÑA")
         self.pass_var = tk.StringVar()
@@ -790,47 +783,38 @@ class LoginApp:
         if modo == "login":
             self.btn_login.config(bg=COLORES["accent_blue"], fg="white")
             self.btn_reg.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
-            self.user_label.pack_forget()
-            self.user_entry.pack_forget()
             self.btn_submit.config(text="Ingresar")
         else:
             self.btn_reg.config(bg=COLORES["accent_blue"], fg="white")
             self.btn_login.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
-            self.user_label.pack(anchor="w", pady=(8, 2))
-            self.user_entry.pack(fill="x", ipady=7)
             self.btn_submit.config(text="Crear cuenta")
         self.error_label.config(text="")
 
     def _submit(self):
-        email = self.email_var.get().strip().lower()
+        username = self.user_var.get().strip()
         password = self.pass_var.get()
         self.error_label.config(text="")
 
-        if not email or not password:
+        if not username or not password:
             self.error_label.config(text="Completá todos los campos")
             return
 
         try:
             if self.modo.get() == "login":
-                res = _db.table("usuarios").select("*").eq("email", email).execute()
+                res = _db.table("usuarios").select("*").eq("username", username).execute()
                 if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
-                    self.error_label.config(text="Email o contraseña incorrectos")
+                    self.error_label.config(text="Usuario o contraseña incorrectos")
                     return
                 user = res.data[0]
             else:
-                username = self.user_var.get().strip()
-                if not username:
-                    self.error_label.config(text="Completá todos los campos")
-                    return
-                if _db.table("usuarios").select("id").eq("email", email).execute().data:
-                    self.error_label.config(text="Ese email ya está registrado")
-                    return
                 if _db.table("usuarios").select("id").eq("username", username).execute().data:
                     self.error_label.config(text="Ese nombre de usuario ya está en uso")
                     return
                 res = _db.table("usuarios").insert({
-                    "email": email, "username": username,
-                    "password_hash": generate_password_hash(password)
+                    "email": f"{username}@finanzas.local",
+                    "username": username,
+                    "password_hash": generate_password_hash(password),
+                    "verificado": True,
                 }).execute()
                 user = res.data[0]
                 _db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()

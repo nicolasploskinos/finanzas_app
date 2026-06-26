@@ -55,13 +55,13 @@ def sw():
 
 @app.route("/api/finanzas/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    email    = (data.get("email")    or "").strip().lower()
+    data     = request.get_json()
+    username = (data.get("username") or "").strip()
     password =  data.get("password") or ""
 
-    res = db.table("usuarios").select("*").eq("email", email).execute()
+    res = db.table("usuarios").select("*").eq("username", username).execute()
     if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
-        return jsonify({"ok": False, "error": "Email o contraseña incorrectos"}), 401
+        return jsonify({"ok": False, "error": "Usuario o contraseña incorrectos"}), 401
 
     user = res.data[0]
     session.permanent = True
@@ -71,20 +71,17 @@ def login():
 
 @app.route("/api/finanzas/register", methods=["POST"])
 def register():
-    data = request.get_json()
-    email    = (data.get("email")    or "").strip().lower()
+    data     = request.get_json()
     username = (data.get("username") or "").strip()
     password =  data.get("password") or ""
 
-    if not email or not username or not password:
+    if not username or not password:
         return jsonify({"ok": False, "error": "Completá todos los campos"}), 400
-
-    if db.table("usuarios").select("id").eq("email", email).execute().data:
-        return jsonify({"ok": False, "error": "Ese email ya está registrado"}), 400
 
     if db.table("usuarios").select("id").eq("username", username).execute().data:
         return jsonify({"ok": False, "error": "Ese nombre de usuario ya está en uso"}), 400
 
+    email = f"{username}@finanzas.local"
     res = db.table("usuarios").insert({
         "email":         email,
         "username":      username,

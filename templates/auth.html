@@ -73,8 +73,8 @@
   <!-- Login -->
   <div id="form-login">
     <div class="campo">
-      <label>EMAIL</label>
-      <input type="email" id="l-email" placeholder="tu@email.com" autocomplete="email">
+      <label>USUARIO</label>
+      <input type="text" id="l-user" placeholder="ej: nico123" autocomplete="username">
     </div>
     <div class="campo">
       <label>CONTRASEÑA</label>
@@ -86,11 +86,7 @@
   <!-- Register -->
   <div id="form-register" style="display:none">
     <div class="campo">
-      <label>EMAIL</label>
-      <input type="email" id="r-email" placeholder="tu@email.com" autocomplete="email">
-    </div>
-    <div class="campo">
-      <label>NOMBRE DE USUARIO</label>
+      <label>USUARIO</label>
       <input type="text" id="r-user" placeholder="ej: nico123" autocomplete="username">
     </div>
     <div class="campo">
@@ -119,13 +115,13 @@
   }
 
   async function login() {
-    const email = document.getElementById("l-email").value.trim();
-    const pass  = document.getElementById("l-pass").value;
-    if (!email || !pass) { mostrarError("Completá todos los campos"); return; }
+    const username = document.getElementById("l-user").value.trim();
+    const pass     = document.getElementById("l-pass").value;
+    if (!username || !pass) { mostrarError("Completá todos los campos"); return; }
 
     const r = await fetch("/api/finanzas/login", {
       method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ email, password: pass })
+      body: JSON.stringify({ username, password: pass })
     });
     const data = await r.json();
     if (data.ok) window.location.href = "/finanzas";
@@ -133,14 +129,13 @@
   }
 
   async function register() {
-    const email    = document.getElementById("r-email").value.trim();
     const username = document.getElementById("r-user").value.trim();
     const pass     = document.getElementById("r-pass").value;
-    if (!email || !username || !pass) { mostrarError("Completá todos los campos"); return; }
+    if (!username || !pass) { mostrarError("Completá todos los campos"); return; }
 
     const r = await fetch("/api/finanzas/register", {
       method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ email, username, password: pass })
+      body: JSON.stringify({ username, password: pass })
     });
     const data = await r.json();
     if (data.ok) window.location.href = "/finanzas";
