@@ -343,17 +343,7 @@ class FinanzasApp:
                        fg="white" if m == moneda else COLORES["text_muted"])
 
     def _construir_tarjetas_balance(self, parent):
-        frame_top = tk.Frame(parent, bg=COLORES["bg"])
-        frame_top.pack(fill="x", pady=(0, 6))
-        self.card_ingresos = self._tarjeta(frame_top, "Ingresos", "$0.00", COLORES["accent_green"])
-        self.card_gastos   = self._tarjeta(frame_top, "Gastos",   "$0.00", COLORES["accent_red"])
-        self.card_balance  = self._tarjeta(frame_top, "Balance",  "$0.00", COLORES["accent_blue"])
-
-        frame_bot = tk.Frame(parent, bg=COLORES["bg"])
-        frame_bot.pack(fill="x", pady=(0, 8))
-        self.card_ars = self._tarjeta_mini(frame_bot, "ARS neto", "$0.00", COLORES["accent_green"])
-        self.card_usd = self._tarjeta_mini(frame_bot, "USD neto", "USD 0.00", COLORES["accent_blue"])
-        self.card_eur = self._tarjeta_mini(frame_bot, "EUR neto", "€0.00", COLORES["accent_blue"])
+        pass  # reemplazado por consolidado
 
     def _tarjeta(self, parent, titulo, valor, color):
         card = tk.Frame(parent, bg=COLORES["surface"], bd=0, relief="flat")
@@ -602,30 +592,6 @@ class FinanzasApp:
                              iid=str(t["id"]))
 
     def _actualizar_balances(self):
-        filtrados = self._datos_filtrados()
-        mon_sel = self.filtro_moneda.get()
-
-        # Tarjetas principales (respetan todos los filtros)
-        total_ing = sum(t["monto"] for t in filtrados if t["tipo"] == "Ingreso")
-        total_gas = sum(t["monto"] for t in filtrados if t["tipo"] == "Gasto")
-        balance   = total_ing - total_gas
-        sym = SIM_MONEDA.get(mon_sel, "$") if mon_sel != "Todas" else "$"
-
-        self.card_ingresos.config(text=f"+{sym}{total_ing:,.2f}")
-        self.card_gastos.config(text=f"-{sym}{total_gas:,.2f}")
-        color_bal = COLORES["accent_green"] if balance >= 0 else COLORES["accent_red"]
-        self.card_balance.config(text=f"{'+'if balance>=0 else ''}{sym}{balance:,.2f}", fg=color_bal)
-
-        # Tarjetas mini por moneda (sin filtro de moneda, sí respetan el resto)
-        todos = self._datos_filtrados_sin_moneda()
-        for m, card in [("ARS", self.card_ars), ("USD", self.card_usd), ("EUR", self.card_eur)]:
-            txs = [t for t in todos if (t.get("moneda") or "ARS") == m]
-            ing = sum(t["monto"] for t in txs if t["tipo"] == "Ingreso")
-            gas = sum(t["monto"] for t in txs if t["tipo"] == "Gasto")
-            net = ing - gas
-            color = COLORES["accent_green"] if net >= 0 else COLORES["accent_red"]
-            card.config(text=f"{'+'if net>=0 else '-'}{fmt_mon(abs(net), m)}", fg=color)
-
         self._actualizar_consolidado()
 
     def _construir_consolidado(self, parent):
