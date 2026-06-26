@@ -201,50 +201,6 @@
 
 <div id="tab-resumen">
 
-  <!-- Balance por moneda -->
-  <div class="bal-moneda" id="cards-multi">
-    <div class="bal-moneda-row" style="background:none;padding:4px 12px 2px">
-      <span></span>
-      <span class="bal-mon-head">Ingresos</span>
-      <span class="bal-mon-head">Gastos</span>
-      <span class="bal-mon-head">Balance</span>
-    </div>
-    <div class="bal-moneda-row">
-      <span class="bal-mon-label">ARS</span>
-      <span class="bal-mon-val green" id="bm-ing-ARS">$0</span>
-      <span class="bal-mon-val red"   id="bm-gas-ARS">$0</span>
-      <span class="bal-mon-val blue"  id="bm-net-ARS">$0</span>
-    </div>
-    <div class="bal-moneda-row">
-      <span class="bal-mon-label">USD</span>
-      <span class="bal-mon-val green" id="bm-ing-USD">$0</span>
-      <span class="bal-mon-val red"   id="bm-gas-USD">$0</span>
-      <span class="bal-mon-val blue"  id="bm-net-USD">$0</span>
-    </div>
-    <div class="bal-moneda-row">
-      <span class="bal-mon-label">EUR</span>
-      <span class="bal-mon-val green" id="bm-ing-EUR">€0</span>
-      <span class="bal-mon-val red"   id="bm-gas-EUR">€0</span>
-      <span class="bal-mon-val blue"  id="bm-net-EUR">€0</span>
-    </div>
-  </div>
-
-  <!-- Balance single moneda (cuando hay filtro) -->
-  <div class="cards" id="cards-single" style="display:none">
-    <div class="card">
-      <div class="card-label">Ingresos</div>
-      <div class="card-value green" id="bal-ingresos">$0</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Gastos</div>
-      <div class="card-value red" id="bal-gastos">$0</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Balance</div>
-      <div class="card-value blue" id="bal-neto">$0</div>
-    </div>
-  </div>
-
   <!-- Total consolidado -->
   <div class="cons-section">
     <div class="cons-header">
@@ -553,39 +509,6 @@
     const lista       = filtrados();
     const monedaFiltro = document.getElementById("f-moneda").value;
 
-    if (monedaFiltro) {
-      // Vista single: ingresos/gastos/balance para la moneda seleccionada
-      document.getElementById("cards-multi").style.display  = "none";
-      document.getElementById("cards-single").style.display = "";
-
-      const ing = lista.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
-      const gas = lista.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
-      const net = ing - gas;
-
-      document.getElementById("bal-ingresos").textContent = fmtMon(ing, monedaFiltro);
-      document.getElementById("bal-gastos").textContent   = fmtMon(gas, monedaFiltro);
-      const netEl = document.getElementById("bal-neto");
-      netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(net, monedaFiltro);
-      netEl.className = "card-value " + (net >= 0 ? "green" : "red");
-
-    } else {
-      // Vista multi: fila por moneda
-      document.getElementById("cards-multi").style.display  = "";
-      document.getElementById("cards-single").style.display = "none";
-
-      ["ARS", "USD", "EUR"].forEach(m => {
-        const txs = lista.filter(t => (t.moneda || "ARS") === m);
-        const ing = txs.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
-        const gas = txs.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
-        const net = ing - gas;
-
-        document.getElementById(`bm-ing-${m}`).textContent = fmtMon(ing, m);
-        document.getElementById(`bm-gas-${m}`).textContent = fmtMon(gas, m);
-        const netEl = document.getElementById(`bm-net-${m}`);
-        netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(net, m);
-        netEl.className = "bal-mon-val " + (net >= 0 ? "green" : "red");
-      });
-    }
 
     actualizarConsolidado();
 
