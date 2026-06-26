@@ -178,7 +178,7 @@ class FinanzasApp:
         btn_logout.pack(side="right", padx=12)
 
         tk.Label(header, text=f"Hola, {_usuario_actual['username']}", bg=COLORES["surface"],
-                 fg=COLORES["text_muted"], font=("Segoe UI", 10)).pack(side="right", padx=(20, 4))
+                 fg=COLORES["text"], font=("Segoe UI", 13, "bold")).pack(side="right", padx=(20, 4))
 
         # Main layout
         main = tk.Frame(self.root, bg=COLORES["bg"])
