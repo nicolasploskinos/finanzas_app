@@ -7,7 +7,14 @@ from tkcalendar import DateEntry
 from dotenv import load_dotenv
 from supabase import create_client
 
+import unicodedata
+
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
+def normalizar(s):
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    return s.lower()
 
 _db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
@@ -435,7 +442,7 @@ class FinanzasApp:
                 continue
             if tipo_sel != "Todos" and t["tipo"] != tipo_sel:
                 continue
-            if cat_sel != "Todas" and t.get("categoria", "").lower() != cat_sel.lower():
+            if cat_sel != "Todas" and normalizar(t.get("categoria", "")) != normalizar(cat_sel):
                 continue
             resultado.append(t)
 
@@ -446,10 +453,10 @@ class FinanzasApp:
         seen, cats = set(), []
         for t in self.datos:
             c = t.get("categoria", "")
-            if c and c.lower() not in seen:
-                seen.add(c.lower())
+            if c and normalizar(c) not in seen:
+                seen.add(normalizar(c))
                 cats.append(c)
-        cats = sorted(cats, key=str.lower)
+        cats = sorted(cats, key=normalizar)
         self.cat_filtro_combo.config(values=["Todas"] + cats)
         if self.filtro_cat.get() not in ["Todas"] + cats:
             self.filtro_cat.set("Todas")

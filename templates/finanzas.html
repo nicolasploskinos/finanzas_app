@@ -279,6 +279,10 @@
   const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+  function normalizar(s) {
+    return (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  }
+
   let datos = [];
   let tipoActual = "Gasto";
 
@@ -320,15 +324,15 @@
       if (mes  && MESES[f.getMonth()] !== mes)  return false;
       if (anio && f.getFullYear() !== +anio)     return false;
       if (tipo && t.tipo !== tipo)               return false;
-      if (cat  && (t.categoria || "").toLowerCase() !== cat.toLowerCase()) return false;
+      if (cat  && normalizar(t.categoria) !== normalizar(cat)) return false;
       return true;
     }).sort((a, b) => b.fecha.localeCompare(a.fecha));
   }
 
   function actualizarCatFiltro() {
     const seen = new Map();
-    datos.forEach(t => { if (t.categoria && !seen.has(t.categoria.toLowerCase())) seen.set(t.categoria.toLowerCase(), t.categoria); });
-    const cats = [...seen.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    datos.forEach(t => { if (t.categoria && !seen.has(normalizar(t.categoria))) seen.set(normalizar(t.categoria), t.categoria); });
+    const cats = [...seen.values()].sort((a, b) => normalizar(a).localeCompare(normalizar(b)));
     const sel = document.getElementById("f-cat");
     const val = sel.value;
     sel.innerHTML = '<option value="">Todas las categorías</option>';
