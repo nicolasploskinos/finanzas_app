@@ -16,7 +16,41 @@ def normalizar(s):
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return s.lower()
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 _db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+
+_usuario_actual = {"id": None, "username": None}
+
+SESSION_FILE = os.path.join(os.path.dirname(__file__), ".sesion_local.json")
+
+def guardar_sesion_local():
+    import json
+    with open(SESSION_FILE, "w") as f:
+        json.dump(_usuario_actual, f)
+
+def cargar_sesion_local():
+    import json
+    if not os.path.exists(SESSION_FILE):
+        return False
+    try:
+        with open(SESSION_FILE) as f:
+            data = json.load(f)
+        if not data.get("id"):
+            return False
+        # Verificar que el usuario todavía existe
+        res = _db.table("usuarios").select("id, username").eq("id", data["id"]).execute()
+        if not res.data:
+            return False
+        _usuario_actual["id"] = data["id"]
+        _usuario_actual["username"] = data["username"]
+        return True
+    except Exception:
+        return False
+
+def borrar_sesion_local():
+    if os.path.exists(SESSION_FILE):
+        os.remove(SESSION_FILE)
 
 MESES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -38,24 +72,25 @@ COLORES = {
 
 
 def cargar_datos():
-    res = _db.table("transacciones").select("*").order("fecha", desc=True).execute()
+    res = _db.table("transacciones").select("*").eq("user_id", _usuario_actual["id"]).order("fecha", desc=True).execute()
     return res.data
 
 
 def insertar_transaccion(t):
     payload = {
-        "tipo": t["tipo"],
-        "monto": float(t["monto"]),
-        "fecha": t["fecha"],
-        "categoria": t.get("categoria", ""),
+        "tipo":        t["tipo"],
+        "monto":       float(t["monto"]),
+        "fecha":       t["fecha"],
+        "categoria":   t.get("categoria", ""),
         "descripcion": t.get("descripcion", ""),
+        "user_id":     _usuario_actual["id"],
     }
     res = _db.table("transacciones").insert(payload).execute()
     return res.data[0]
 
 
 def eliminar_transaccion(tid):
-    _db.table("transacciones").delete().eq("id", tid).execute()
+    _db.table("transacciones").delete().eq("id", tid).eq("user_id", _usuario_actual["id"]).execute()
 
 
 class FinanzasApp:
@@ -135,10 +170,15 @@ class FinanzasApp:
         tk.Label(header, text="💰 Control de Finanzas", bg=COLORES["surface"],
                  fg=COLORES["text"], font=("Segoe UI", 16, "bold")).pack(side="left", padx=20, pady=15)
 
-        hoy = date.today()
-        today_str = f"{hoy.day} de {MESES[hoy.month - 1].lower()} de {hoy.year}"
-        tk.Label(header, text=today_str, bg=COLORES["surface"],
-                 fg=COLORES["text_muted"], font=("Segoe UI", 10)).pack(side="right", padx=20)
+        # Botón cerrar sesión (derecha)
+        btn_logout = tk.Button(header, text="Cerrar sesión", bg=COLORES["surface2"],
+                               fg=COLORES["text_muted"], font=("Segoe UI", 9), bd=0,
+                               relief="flat", padx=10, pady=5, cursor="hand2",
+                               command=self._cerrar_sesion)
+        btn_logout.pack(side="right", padx=12)
+
+        tk.Label(header, text=f"Hola, {_usuario_actual['username']}", bg=COLORES["surface"],
+                 fg=COLORES["text_muted"], font=("Segoe UI", 10)).pack(side="right", padx=(20, 4))
 
         # Main layout
         main = tk.Frame(self.root, bg=COLORES["bg"])
@@ -493,6 +533,11 @@ class FinanzasApp:
         signo = "+" if balance >= 0 else ""
         self.card_balance.config(text=f"{signo}${balance:,.2f}", fg=color_balance)
 
+    def _cerrar_sesion(self):
+        if messagebox.askyesno("Cerrar sesión", "¿Querés cerrar sesión?"):
+            borrar_sesion_local()
+            self.root.destroy()
+
     def _aplicar_filtros(self):
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
@@ -522,7 +567,144 @@ class FinanzasApp:
         self._actualizar_balances()
 
 
+class LoginApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Finanzas — Ingresar")
+        self.root.geometry("380x480")
+        self.root.configure(bg=COLORES["bg"])
+        self.root.resizable(False, False)
+        self.autenticado = False
+        self._construir_ui()
+
+    def _construir_ui(self):
+        marco = tk.Frame(self.root, bg=COLORES["surface"], padx=30, pady=30)
+        marco.place(relx=0.5, rely=0.5, anchor="center", width=340)
+
+        tk.Label(marco, text="💰", bg=COLORES["surface"], font=("Segoe UI", 36)).pack()
+        tk.Label(marco, text="Control de Finanzas", bg=COLORES["surface"],
+                 fg=COLORES["text"], font=("Segoe UI", 15, "bold")).pack(pady=(4, 2))
+        tk.Label(marco, text="Ingresá o creá tu cuenta", bg=COLORES["surface"],
+                 fg=COLORES["text_muted"], font=("Segoe UI", 10)).pack(pady=(0, 16))
+
+        # Tabs
+        tab_frame = tk.Frame(marco, bg=COLORES["surface2"])
+        tab_frame.pack(fill="x", pady=(0, 16))
+        self.modo = tk.StringVar(value="login")
+        self.btn_login = tk.Button(tab_frame, text="Ingresar", bg=COLORES["accent_blue"],
+                                   fg="white", bd=0, relief="flat", font=("Segoe UI", 10, "bold"),
+                                   pady=7, cursor="hand2", command=lambda: self._set_modo("login"))
+        self.btn_login.pack(side="left", fill="x", expand=True)
+        self.btn_reg = tk.Button(tab_frame, text="Registrarse", bg=COLORES["surface2"],
+                                 fg=COLORES["text_muted"], bd=0, relief="flat",
+                                 font=("Segoe UI", 10, "bold"), pady=7, cursor="hand2",
+                                 command=lambda: self._set_modo("register"))
+        self.btn_reg.pack(side="left", fill="x", expand=True)
+
+        def campo(label):
+            tk.Label(marco, text=label, bg=COLORES["surface"], fg=COLORES["text_muted"],
+                     font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(8, 2))
+
+        campo("EMAIL")
+        self.email_var = tk.StringVar()
+        tk.Entry(marco, textvariable=self.email_var, bg=COLORES["surface2"], fg=COLORES["text"],
+                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
+
+        self.user_label = tk.Label(marco, text="NOMBRE DE USUARIO", bg=COLORES["surface"],
+                                   fg=COLORES["text_muted"], font=("Segoe UI", 9, "bold"))
+        self.user_var = tk.StringVar()
+        self.user_entry = tk.Entry(marco, textvariable=self.user_var, bg=COLORES["surface2"],
+                                   fg=COLORES["text"], font=("Segoe UI", 11), bd=0, relief="flat",
+                                   insertbackground=COLORES["text"])
+
+        campo("CONTRASEÑA")
+        self.pass_var = tk.StringVar()
+        tk.Entry(marco, textvariable=self.pass_var, show="•", bg=COLORES["surface2"],
+                 fg=COLORES["text"], font=("Segoe UI", 11), bd=0, relief="flat",
+                 insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
+
+        self.error_label = tk.Label(marco, text="", bg=COLORES["surface"],
+                                    fg=COLORES["accent_red"], font=("Segoe UI", 9), wraplength=280)
+        self.error_label.pack(pady=(8, 0))
+
+        self.btn_submit = tk.Button(marco, text="Ingresar", bg=COLORES["accent_blue"],
+                                    fg="white", bd=0, relief="flat", font=("Segoe UI", 11, "bold"),
+                                    pady=10, cursor="hand2", command=self._submit)
+        self.btn_submit.pack(fill="x", pady=(12, 0))
+
+        self.root.bind("<Return>", lambda e: self._submit())
+        self._set_modo("login")
+
+    def _set_modo(self, modo):
+        self.modo.set(modo)
+        if modo == "login":
+            self.btn_login.config(bg=COLORES["accent_blue"], fg="white")
+            self.btn_reg.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
+            self.user_label.pack_forget()
+            self.user_entry.pack_forget()
+            self.btn_submit.config(text="Ingresar")
+        else:
+            self.btn_reg.config(bg=COLORES["accent_blue"], fg="white")
+            self.btn_login.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
+            self.user_label.pack(anchor="w", pady=(8, 2))
+            self.user_entry.pack(fill="x", ipady=7)
+            self.btn_submit.config(text="Crear cuenta")
+        self.error_label.config(text="")
+
+    def _submit(self):
+        email = self.email_var.get().strip().lower()
+        password = self.pass_var.get()
+        self.error_label.config(text="")
+
+        if not email or not password:
+            self.error_label.config(text="Completá todos los campos")
+            return
+
+        try:
+            if self.modo.get() == "login":
+                res = _db.table("usuarios").select("*").eq("email", email).execute()
+                if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
+                    self.error_label.config(text="Email o contraseña incorrectos")
+                    return
+                user = res.data[0]
+            else:
+                username = self.user_var.get().strip()
+                if not username:
+                    self.error_label.config(text="Completá todos los campos")
+                    return
+                if _db.table("usuarios").select("id").eq("email", email).execute().data:
+                    self.error_label.config(text="Ese email ya está registrado")
+                    return
+                if _db.table("usuarios").select("id").eq("username", username).execute().data:
+                    self.error_label.config(text="Ese nombre de usuario ya está en uso")
+                    return
+                res = _db.table("usuarios").insert({
+                    "email": email, "username": username,
+                    "password_hash": generate_password_hash(password)
+                }).execute()
+                user = res.data[0]
+                _db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()
+
+            _usuario_actual["id"] = user["id"]
+            _usuario_actual["username"] = user["username"]
+            guardar_sesion_local()
+            self.autenticado = True
+            self.root.destroy()
+
+        except Exception as e:
+            self.error_label.config(text=f"Error: {e}")
+
+
 if __name__ == "__main__":
+    # Intentar cargar sesión guardada
+    if not cargar_sesion_local():
+        login_root = tk.Tk()
+        login_app = LoginApp(login_root)
+        login_root.mainloop()
+        if not login_app.autenticado:
+            exit()
+
+    # App principal
     root = tk.Tk()
     app = FinanzasApp(root)
     root.mainloop()

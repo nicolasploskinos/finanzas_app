@@ -4,6 +4,7 @@ from flask_cors import CORS
 from supabase import create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,6 +12,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.environ["SECRET_KEY"]
+app.permanent_session_lifetime = timedelta(days=30)
 
 db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
@@ -61,6 +63,7 @@ def login():
         return jsonify({"ok": False, "error": "Email o contraseña incorrectos"}), 401
 
     user = res.data[0]
+    session.permanent = True
     session["user_id"]  = user["id"]
     session["username"] = user["username"]
     return jsonify({"ok": True})
@@ -88,6 +91,7 @@ def register():
     }).execute()
 
     user = res.data[0]
+    session.permanent = True
     session["user_id"]  = user["id"]
     session["username"] = user["username"]
 
