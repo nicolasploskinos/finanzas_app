@@ -167,6 +167,19 @@
     .btn-guardar { width: 100%; background: var(--blue); color: white; border: none; border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; }
     .btn-guardar:active { opacity: .85; }
 
+    /* Consolidado */
+    .cons-section { margin: 0 12px 8px; background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+    .cons-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cons-title { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .cons-toggle { display: flex; gap: 4px; }
+    .cons-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: 700; cursor: pointer; background: var(--surface2); color: var(--muted); }
+    .cons-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+    .cons-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .cons-card { background: var(--surface2); border-radius: 8px; padding: 8px 10px; }
+    .cons-card-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .cons-card-value { font-size: 14px; font-weight: 700; margin-top: 3px; }
+    .cons-nota { font-size: 10px; color: var(--muted); text-align: right; margin-top: 6px; }
+
     .empty { text-align: center; color: var(--muted); padding: 48px 0; font-size: 14px; }
 
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; }
@@ -230,6 +243,33 @@
       <div class="card-label">Balance</div>
       <div class="card-value blue" id="bal-neto">$0</div>
     </div>
+  </div>
+
+  <!-- Total consolidado -->
+  <div class="cons-section">
+    <div class="cons-header">
+      <span class="cons-title">🔄 Total consolidado en:</span>
+      <div class="cons-toggle">
+        <button class="cons-btn active" id="cbtn-ARS" onclick="setConsolidado('ARS')">$ ARS</button>
+        <button class="cons-btn"        id="cbtn-USD" onclick="setConsolidado('USD')">USD</button>
+        <button class="cons-btn"        id="cbtn-EUR" onclick="setConsolidado('EUR')">€ EUR</button>
+      </div>
+    </div>
+    <div class="cons-cards">
+      <div class="cons-card">
+        <div class="cons-card-label">Ingresos</div>
+        <div class="cons-card-value green" id="cons-ing">—</div>
+      </div>
+      <div class="cons-card">
+        <div class="cons-card-label">Gastos</div>
+        <div class="cons-card-value red" id="cons-gas">—</div>
+      </div>
+      <div class="cons-card">
+        <div class="cons-card-label">Balance</div>
+        <div class="cons-card-value" id="cons-net">—</div>
+      </div>
+    </div>
+    <div class="cons-nota" id="cons-nota">Al tipo de cambio oficial BNA</div>
   </div>
 
   <!-- Cotizaciones + Conversor -->
@@ -345,8 +385,9 @@
   }
 
   let datos = [];
-  let tipoActual   = "Gasto";
-  let monedaActual = "ARS";
+  let tipoActual    = "Gasto";
+  let monedaActual  = "ARS";
+  let monedaConsol  = "ARS";
   let cotiz = { USD: null, EUR: null };
 
   // Fecha de hoy
@@ -383,9 +424,65 @@
       const usdStr = cotiz.USD ? '$' + cotiz.USD.toLocaleString('es-AR') : '—';
       const eurStr = cotiz.EUR ? '$' + cotiz.EUR.toLocaleString('es-AR') : '—';
       document.getElementById("cot-rates").textContent = `USD ${usdStr} | EUR ${eurStr}`;
+      actualizarConsolidado();
     } catch {
       document.getElementById("cot-rates").textContent = "sin conexión";
     }
+  }
+
+  function setConsolidado(m) {
+    monedaConsol = m;
+    ["ARS","USD","EUR"].forEach(k =>
+      document.getElementById("cbtn-" + k).classList.toggle("active", k === m)
+    );
+    actualizarConsolidado();
+  }
+
+  function toARS(monto, moneda) {
+    if (moneda === "ARS") return monto;
+    if (moneda === "USD") return cotiz.USD ? monto * cotiz.USD : null;
+    if (moneda === "EUR") return cotiz.EUR ? monto * cotiz.EUR : null;
+    return monto;
+  }
+
+  function fromARS(ars, moneda) {
+    if (moneda === "ARS") return ars;
+    if (moneda === "USD") return cotiz.USD ? ars / cotiz.USD : null;
+    if (moneda === "EUR") return cotiz.EUR ? ars / cotiz.EUR : null;
+    return ars;
+  }
+
+  function actualizarConsolidado() {
+    const lista = filtrados();
+    const sinCot = !cotiz.USD || !cotiz.EUR;
+
+    let ingARS = 0, gasARS = 0;
+    lista.forEach(t => {
+      const ars = toARS(t.monto, t.moneda || "ARS");
+      if (ars === null) return;
+      if (t.tipo === "Ingreso") ingARS += ars;
+      else gasARS += ars;
+    });
+
+    if (sinCot && monedaConsol !== "ARS") {
+      ["cons-ing","cons-gas","cons-net"].forEach(id =>
+        document.getElementById(id).textContent = "Sin cotización"
+      );
+      document.getElementById("cons-nota").textContent = "Cargando cotización...";
+      return;
+    }
+
+    const ing = fromARS(ingARS, monedaConsol);
+    const gas = fromARS(gasARS, monedaConsol);
+    const net = ing - gas;
+
+    document.getElementById("cons-ing").textContent = fmtMon(ing, monedaConsol);
+    document.getElementById("cons-gas").textContent = fmtMon(gas, monedaConsol);
+    const netEl = document.getElementById("cons-net");
+    netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(Math.abs(net), monedaConsol);
+    netEl.className = "cons-card-value " + (net >= 0 ? "green" : "red");
+    document.getElementById("cons-nota").textContent =
+      monedaConsol === "ARS" ? "Suma directa en ARS" : "Al tipo de cambio oficial BNA";
   }
 
   function toggleCot() {
@@ -489,6 +586,8 @@
         netEl.className = "bal-mon-val " + (net >= 0 ? "green" : "red");
       });
     }
+
+    actualizarConsolidado();
 
     // Lista de transacciones
     const el = document.getElementById("lista");
