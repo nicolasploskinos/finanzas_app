@@ -1,4 +1,5 @@
 import os
+import requests as req
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
 from flask_cors import CORS
 from supabase import create_client
@@ -85,10 +86,10 @@ def register():
         return jsonify({"ok": False, "error": "Ese nombre de usuario ya está en uso"}), 400
 
     res = db.table("usuarios").insert({
-        "email":        email,
-        "username":     username,
+        "email":         email,
+        "username":      username,
         "password_hash": generate_password_hash(password),
-        "verificado":   True,
+        "verificado":    True,
     }).execute()
 
     user = res.data[0]
@@ -98,6 +99,20 @@ def register():
     session["user_id"]  = user["id"]
     session["username"] = user["username"]
     return jsonify({"ok": True}), 201
+
+# ── Cotizaciones API ──────────────────────────────────────────────────────────
+
+@app.route("/api/finanzas/cotizaciones")
+def cotizaciones():
+    try:
+        r = req.get("https://api.bluelytics.com.ar/v2/latest", timeout=5)
+        data = r.json()
+        return jsonify({
+            "USD": round(data["oficial"]["value_sell"], 2),
+            "EUR": round(data["oficial_euro"]["value_sell"], 2),
+        })
+    except Exception as e:
+        return jsonify({"USD": None, "EUR": None}), 200
 
 # ── Transacciones API ─────────────────────────────────────────────────────────
 
@@ -117,6 +132,7 @@ def agregar():
         "fecha":       t["fecha"],
         "categoria":   t.get("categoria", ""),
         "descripcion": t.get("descripcion", ""),
+        "moneda":      t.get("moneda", "ARS"),
         "user_id":     session["user_id"],
     }
     res = db.table("transacciones").insert(payload).execute()

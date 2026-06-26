@@ -13,100 +13,105 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg: #1e1e2e;
-      --surface: #2a2a3e;
-      --surface2: #313148;
-      --green: #4ade80;
-      --red: #f87171;
-      --blue: #60a5fa;
-      --yellow: #fbbf24;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --border: #3f3f5a;
+      --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
+      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
+      --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      max-width: 480px;
-      margin: 0 auto;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; max-width: 480px; margin: 0 auto;
     }
 
-    /* ── Header ── */
+    /* Header */
     header {
-      background: var(--surface);
-      padding: 16px 20px 12px;
-      position: sticky;
-      top: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: var(--surface); padding: 16px 20px 12px;
+      position: sticky; top: 0;
+      display: flex; justify-content: space-between; align-items: center;
       z-index: 100;
     }
     header h1 { font-size: 18px; font-weight: 700; }
     header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-/* ── Tarjetas balance ── */
+    /* Balance por moneda */
+    .bal-moneda { padding: 12px 12px 4px; }
+    .bal-moneda-row {
+      background: var(--surface); border-radius: 10px; padding: 10px 12px;
+      margin-bottom: 6px;
+      display: grid; grid-template-columns: 36px 1fr 1fr 1fr;
+      gap: 4px; align-items: center;
+    }
+    .bal-mon-label { font-size: 11px; font-weight: 800; color: var(--muted); }
+    .bal-mon-val   { font-size: 13px; font-weight: 700; text-align: right; }
+    .bal-mon-head  { font-size: 10px; color: var(--muted); text-align: right; }
+
+    /* Cards (single moneda) */
     .cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      padding: 12px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; padding: 12px;
     }
-    .card {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 12px 10px;
-    }
+    .card { background: var(--surface); border-radius: 12px; padding: 12px 10px; }
     .card-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
     .card-value { font-size: 16px; font-weight: 700; margin-top: 4px; }
     .card-value.green { color: var(--green); }
     .card-value.red   { color: var(--red); }
     .card-value.blue  { color: var(--blue); }
 
-    /* ── Filtros ── */
+    /* Cotizaciones */
+    .cot-card {
+      margin: 0 12px 8px; background: var(--surface);
+      border-radius: 12px; padding: 12px 14px;
+    }
+    .cot-header {
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: none;
+    }
+    .cot-title  { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .cot-rates  { font-size: 12px; color: var(--blue); }
+    .cot-body   { margin-top: 12px; display: none; }
+    .cot-body.open { display: block; }
+    .conv-row {
+      display: flex; gap: 6px; align-items: center; margin-bottom: 10px;
+    }
+    .conv-row input, .conv-row select {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 8px 10px;
+      font-size: 14px; outline: none; -webkit-appearance: none;
+    }
+    .conv-row input { flex: 1; min-width: 0; }
+    .conv-arrow { color: var(--muted); font-size: 16px; flex-shrink: 0; }
+    .conv-result {
+      text-align: center; font-size: 18px; font-weight: 700;
+      color: var(--green); padding: 6px 0 2px;
+    }
+    .conv-nota { text-align: center; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* Filtros */
     .filtros {
-      padding: 0 12px 8px;
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
+      padding: 0 12px 8px; display: flex; gap: 8px;
+      overflow-x: auto; scrollbar-width: none;
     }
     .filtros::-webkit-scrollbar { display: none; }
     .filtros select {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 10px;
-      font-size: 13px;
-      flex-shrink: 0;
-      appearance: none;
-      -webkit-appearance: none;
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 7px 10px; font-size: 13px; flex-shrink: 0;
+      appearance: none; -webkit-appearance: none;
     }
 
-    /* ── Lista transacciones ── */
+    /* Lista */
     #lista { padding: 0 12px 100px; }
     .mes-header {
       font-size: 11px; font-weight: 700; color: var(--muted);
       text-transform: uppercase; padding: 12px 0 6px;
     }
     .tx {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      background: var(--surface); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 12px;
     }
-    .tx-icon {
-      width: 36px; height: 36px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-    }
+    .tx-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .tx-icon.gasto   { background: rgba(248,113,113,.15); }
     .tx-icon.ingreso { background: rgba(74,222,128,.15); }
     .tx-info { flex: 1; min-width: 0; }
@@ -117,13 +122,15 @@
     .tx-monto { font-size: 15px; font-weight: 700; }
     .tx-monto.gasto   { color: var(--red); }
     .tx-monto.ingreso { color: var(--green); }
-    .tx-del {
-      background: none; border: none; color: var(--muted);
-      font-size: 18px; cursor: pointer; padding: 4px; line-height: 1;
+    .badge-mon {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      background: var(--surface2); border-radius: 4px;
+      padding: 1px 5px; margin-top: 3px; display: inline-block;
     }
+    .tx-del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; line-height: 1; }
     .tx-del:active { color: var(--red); }
 
-    /* ── FAB ── */
+    /* FAB */
     .fab {
       position: fixed; bottom: 24px; right: 20px;
       width: 56px; height: 56px; border-radius: 50%;
@@ -134,65 +141,35 @@
     }
     .fab:active { transform: scale(.92); }
 
-    /* ── Modal ── */
-    .overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.6); z-index: 300;
-      align-items: flex-end; justify-content: center;
-    }
+    /* Modal */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300; align-items: flex-end; justify-content: center; }
     .overlay.open { display: flex; }
-    .modal {
-      background: var(--surface);
-      border-radius: 24px 24px 0 0;
-      padding: 20px 20px 40px;
-      width: 100%; max-width: 480px;
-      max-height: 92vh; overflow-y: auto;
-    }
-    .modal-handle {
-      width: 40px; height: 4px; background: var(--border);
-      border-radius: 2px; margin: 0 auto 20px;
-    }
+    .modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 20px 40px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; }
+    .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
     .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
 
-    /* Tipo toggle */
-    .tipo-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tipo-btn {
-      flex: 1; padding: 10px; border-radius: 10px; border: none;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      transition: all .2s;
-    }
+    .tipo-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tipo-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
     .tipo-btn.gasto-active   { background: var(--red);   color: white; }
     .tipo-btn.ingreso-active { background: var(--green); color: #1e1e2e; }
     .tipo-btn.inactive       { background: var(--surface2); color: var(--muted); }
 
-    /* Campos */
+    .moneda-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+    .moneda-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; background: var(--surface2); color: var(--muted); }
+    .moneda-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
     .campo { margin-bottom: 14px; }
     .campo label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
-    .campo input, .campo select {
-      width: 100%; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-size: 15px; padding: 12px 14px;
-      outline: none; -webkit-appearance: none; appearance: none;
-    }
+    .campo input, .campo select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; padding: 12px 14px; outline: none; -webkit-appearance: none; appearance: none; }
     .campo input:focus, .campo select:focus { border-color: var(--blue); }
     .campo input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
-    .btn-guardar {
-      width: 100%; background: var(--blue); color: white;
-      border: none; border-radius: 12px; padding: 15px;
-      font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px;
-    }
+    .btn-guardar { width: 100%; background: var(--blue); color: white; border: none; border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; }
     .btn-guardar:active { opacity: .85; }
 
     .empty { text-align: center; color: var(--muted); padding: 48px 0; font-size: 14px; }
 
-    /* toast */
-    .toast {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-      background: var(--surface2); color: var(--text);
-      padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600;
-      z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none;
-    }
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; }
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -209,9 +186,38 @@
   </div>
 </header>
 
-
 <div id="tab-resumen">
-  <div class="cards">
+
+  <!-- Balance por moneda -->
+  <div class="bal-moneda" id="cards-multi">
+    <div class="bal-moneda-row" style="background:none;padding:4px 12px 2px">
+      <span></span>
+      <span class="bal-mon-head">Ingresos</span>
+      <span class="bal-mon-head">Gastos</span>
+      <span class="bal-mon-head">Balance</span>
+    </div>
+    <div class="bal-moneda-row">
+      <span class="bal-mon-label">ARS</span>
+      <span class="bal-mon-val green" id="bm-ing-ARS">$0</span>
+      <span class="bal-mon-val red"   id="bm-gas-ARS">$0</span>
+      <span class="bal-mon-val blue"  id="bm-net-ARS">$0</span>
+    </div>
+    <div class="bal-moneda-row">
+      <span class="bal-mon-label">USD</span>
+      <span class="bal-mon-val green" id="bm-ing-USD">$0</span>
+      <span class="bal-mon-val red"   id="bm-gas-USD">$0</span>
+      <span class="bal-mon-val blue"  id="bm-net-USD">$0</span>
+    </div>
+    <div class="bal-moneda-row">
+      <span class="bal-mon-label">EUR</span>
+      <span class="bal-mon-val green" id="bm-ing-EUR">€0</span>
+      <span class="bal-mon-val red"   id="bm-gas-EUR">€0</span>
+      <span class="bal-mon-val blue"  id="bm-net-EUR">€0</span>
+    </div>
+  </div>
+
+  <!-- Balance single moneda (cuando hay filtro) -->
+  <div class="cards" id="cards-single" style="display:none">
     <div class="card">
       <div class="card-label">Ingresos</div>
       <div class="card-value green" id="bal-ingresos">$0</div>
@@ -226,6 +232,34 @@
     </div>
   </div>
 
+  <!-- Cotizaciones + Conversor -->
+  <div class="cot-card">
+    <div class="cot-header" onclick="toggleCot()">
+      <span class="cot-title">💱 Cotizaciones oficiales</span>
+      <span class="cot-rates" id="cot-rates">cargando...</span>
+    </div>
+    <div class="cot-body" id="cot-body">
+      <div style="height:12px"></div>
+      <div class="conv-row">
+        <input type="text" id="conv-monto" placeholder="Monto" inputmode="decimal" oninput="convertir()">
+        <select id="conv-from" onchange="convertir()">
+          <option value="ARS">ARS $</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR €</option>
+        </select>
+        <span class="conv-arrow">→</span>
+        <select id="conv-to" onchange="convertir()">
+          <option value="ARS">ARS $</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR €</option>
+        </select>
+      </div>
+      <div class="conv-result" id="conv-result">—</div>
+      <div class="conv-nota" id="conv-nota"></div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
   <div class="filtros">
     <select id="f-mes" onchange="render()">
       <option value="">Todos los meses</option>
@@ -240,6 +274,12 @@
       <option>Gasto</option>
       <option>Ingreso</option>
     </select>
+    <select id="f-moneda" onchange="render()">
+      <option value="">Todas</option>
+      <option value="ARS">ARS</option>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+    </select>
     <select id="f-cat" onchange="render()">
       <option value="">Todas las categorías</option>
     </select>
@@ -247,7 +287,6 @@
 
   <div id="lista"></div>
 </div>
-
 
 <button class="fab" onclick="abrirModal()">+</button>
 
@@ -257,12 +296,18 @@
     <h2>Nueva transacción</h2>
 
     <div class="tipo-toggle">
-      <button class="tipo-btn gasto-active" id="btn-gasto" onclick="setTipo('Gasto')">Gasto</button>
+      <button class="tipo-btn gasto-active" id="btn-gasto"   onclick="setTipo('Gasto')">Gasto</button>
       <button class="tipo-btn inactive"     id="btn-ingreso" onclick="setTipo('Ingreso')">Ingreso</button>
     </div>
 
+    <div class="moneda-toggle">
+      <button class="moneda-btn active" id="btn-mon-ARS" onclick="setMonedaForm('ARS')">$ ARS</button>
+      <button class="moneda-btn"        id="btn-mon-USD" onclick="setMonedaForm('USD')">USD</button>
+      <button class="moneda-btn"        id="btn-mon-EUR" onclick="setMonedaForm('EUR')">€ EUR</button>
+    </div>
+
     <div class="campo">
-      <label>MONTO ($)</label>
+      <label id="lbl-monto">MONTO (ARS)</label>
       <input type="text" id="inp-monto" inputmode="decimal" placeholder="0,00">
     </div>
     <div class="campo">
@@ -288,12 +333,21 @@
   const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+  const SIM = { ARS: '$', USD: 'USD ', EUR: '€' };
+
   function normalizar(s) {
     return (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   }
 
+  function fmtMon(n, moneda) {
+    const sym = SIM[moneda || 'ARS'] || '$';
+    return sym + Math.abs(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
   let datos = [];
-  let tipoActual = "Gasto";
+  let tipoActual   = "Gasto";
+  let monedaActual = "ARS";
+  let cotiz = { USD: null, EUR: null };
 
   // Fecha de hoy
   const hoy = new Date();
@@ -322,25 +376,69 @@
     render();
   }
 
+  async function cargarCotizaciones() {
+    try {
+      const r = await fetch("/api/finanzas/cotizaciones");
+      cotiz = await r.json();
+      const usdStr = cotiz.USD ? '$' + cotiz.USD.toLocaleString('es-AR') : '—';
+      const eurStr = cotiz.EUR ? '$' + cotiz.EUR.toLocaleString('es-AR') : '—';
+      document.getElementById("cot-rates").textContent = `USD ${usdStr} | EUR ${eurStr}`;
+    } catch {
+      document.getElementById("cot-rates").textContent = "sin conexión";
+    }
+  }
+
+  function toggleCot() {
+    document.getElementById("cot-body").classList.toggle("open");
+  }
+
+  function convertir() {
+    const raw = document.getElementById("conv-monto").value.replace(",", ".");
+    const monto = parseFloat(raw);
+    const from  = document.getElementById("conv-from").value;
+    const to    = document.getElementById("conv-to").value;
+
+    if (!monto || isNaN(monto)) { document.getElementById("conv-result").textContent = "—"; return; }
+    if (!cotiz.USD || !cotiz.EUR) { document.getElementById("conv-result").textContent = "Sin cotización"; return; }
+
+    let enARS;
+    if      (from === 'ARS') enARS = monto;
+    else if (from === 'USD') enARS = monto * cotiz.USD;
+    else if (from === 'EUR') enARS = monto * cotiz.EUR;
+
+    let resultado;
+    if      (to === 'ARS') resultado = enARS;
+    else if (to === 'USD') resultado = enARS / cotiz.USD;
+    else if (to === 'EUR') resultado = enARS / cotiz.EUR;
+
+    document.getElementById("conv-result").textContent = fmtMon(resultado, to);
+    document.getElementById("conv-nota").textContent   = "Tipo de cambio oficial BNA";
+  }
+
   function filtrados() {
-    const mes  = document.getElementById("f-mes").value;
-    const anio = document.getElementById("f-anio").value;
-    const tipo = document.getElementById("f-tipo").value;
-    const cat  = document.getElementById("f-cat").value;
+    const mes    = document.getElementById("f-mes").value;
+    const anio   = document.getElementById("f-anio").value;
+    const tipo   = document.getElementById("f-tipo").value;
+    const moneda = document.getElementById("f-moneda").value;
+    const cat    = document.getElementById("f-cat").value;
 
     return datos.filter(t => {
       const f = new Date(t.fecha + "T00:00:00");
-      if (mes  && MESES[f.getMonth()] !== mes)  return false;
-      if (anio && f.getFullYear() !== +anio)     return false;
-      if (tipo && t.tipo !== tipo)               return false;
-      if (cat  && normalizar(t.categoria) !== normalizar(cat)) return false;
+      if (mes    && MESES[f.getMonth()] !== mes)         return false;
+      if (anio   && f.getFullYear() !== +anio)           return false;
+      if (tipo   && t.tipo !== tipo)                     return false;
+      if (moneda && (t.moneda || 'ARS') !== moneda)      return false;
+      if (cat    && normalizar(t.categoria) !== normalizar(cat)) return false;
       return true;
     }).sort((a, b) => b.fecha.localeCompare(a.fecha));
   }
 
   function actualizarCatFiltro() {
     const seen = new Map();
-    datos.forEach(t => { if (t.categoria && !seen.has(normalizar(t.categoria))) seen.set(normalizar(t.categoria), t.categoria); });
+    datos.forEach(t => {
+      if (t.categoria && !seen.has(normalizar(t.categoria)))
+        seen.set(normalizar(t.categoria), t.categoria);
+    });
     const cats = [...seen.values()].sort((a, b) => normalizar(a).localeCompare(normalizar(b)));
     const sel = document.getElementById("f-cat");
     const val = sel.value;
@@ -355,20 +453,44 @@
 
   function render() {
     actualizarCatFiltro();
-    const lista = filtrados();
+    const lista       = filtrados();
+    const monedaFiltro = document.getElementById("f-moneda").value;
 
-    // Balances
-    const ing = lista.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
-    const gas = lista.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
-    const net = ing - gas;
+    if (monedaFiltro) {
+      // Vista single: ingresos/gastos/balance para la moneda seleccionada
+      document.getElementById("cards-multi").style.display  = "none";
+      document.getElementById("cards-single").style.display = "";
 
-    document.getElementById("bal-ingresos").textContent = fmt(ing);
-    document.getElementById("bal-gastos").textContent   = fmt(gas);
-    const elNet = document.getElementById("bal-neto");
-    elNet.textContent = (net >= 0 ? "+" : "") + fmt(net);
-    elNet.className = "card-value " + (net >= 0 ? "green" : "red");
+      const ing = lista.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
+      const gas = lista.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
+      const net = ing - gas;
 
-    // Lista agrupada por mes
+      document.getElementById("bal-ingresos").textContent = fmtMon(ing, monedaFiltro);
+      document.getElementById("bal-gastos").textContent   = fmtMon(gas, monedaFiltro);
+      const netEl = document.getElementById("bal-neto");
+      netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(net, monedaFiltro);
+      netEl.className = "card-value " + (net >= 0 ? "green" : "red");
+
+    } else {
+      // Vista multi: fila por moneda
+      document.getElementById("cards-multi").style.display  = "";
+      document.getElementById("cards-single").style.display = "none";
+
+      ["ARS", "USD", "EUR"].forEach(m => {
+        const txs = lista.filter(t => (t.moneda || "ARS") === m);
+        const ing = txs.filter(t => t.tipo === "Ingreso").reduce((s, t) => s + t.monto, 0);
+        const gas = txs.filter(t => t.tipo === "Gasto").reduce((s, t) => s + t.monto, 0);
+        const net = ing - gas;
+
+        document.getElementById(`bm-ing-${m}`).textContent = fmtMon(ing, m);
+        document.getElementById(`bm-gas-${m}`).textContent = fmtMon(gas, m);
+        const netEl = document.getElementById(`bm-net-${m}`);
+        netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(net, m);
+        netEl.className = "bal-mon-val " + (net >= 0 ? "green" : "red");
+      });
+    }
+
+    // Lista de transacciones
     const el = document.getElementById("lista");
     if (!lista.length) {
       el.innerHTML = '<div class="empty">Sin movimientos</div>';
@@ -385,7 +507,10 @@
 
     el.innerHTML = Object.entries(grupos).map(([mes, txs]) => `
       <div class="mes-header">${mes}</div>
-      ${txs.map(t => `
+      ${txs.map(t => {
+        const mon = t.moneda || 'ARS';
+        const badge = mon !== 'ARS' ? `<div class="badge-mon">${mon}</div>` : '';
+        return `
         <div class="tx">
           <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "💚" : "🔴"}</div>
           <div class="tx-info">
@@ -394,15 +519,13 @@
             <div class="tx-fecha">${formatFecha(t.fecha)}</div>
           </div>
           <div class="tx-right">
-            <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmt(t.monto)}</div>
+            <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmtMon(t.monto, mon)}</div>
+            ${badge}
           </div>
           <button class="tx-del" onclick="eliminar(${t.id})">×</button>
-        </div>`).join("")}
+        </div>`;
+      }).join("")}
     `).join("");
-  }
-
-  function fmt(n) {
-    return "$" + n.toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
 
   function formatFecha(iso) {
@@ -410,10 +533,19 @@
     return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3).toLowerCase()}. ${f.getFullYear()}`;
   }
 
-function setTipo(t) {
+  function setTipo(t) {
     tipoActual = t;
     document.getElementById("btn-gasto").className   = "tipo-btn " + (t==="Gasto"   ? "gasto-active"   : "inactive");
     document.getElementById("btn-ingreso").className = "tipo-btn " + (t==="Ingreso" ? "ingreso-active" : "inactive");
+  }
+
+  function setMonedaForm(m) {
+    monedaActual = m;
+    ["ARS","USD","EUR"].forEach(k => {
+      document.getElementById("btn-mon-" + k).classList.toggle("active", k === m);
+    });
+    const labels = { ARS: "MONTO (ARS $)", USD: "MONTO (USD)", EUR: "MONTO (EUR €)" };
+    document.getElementById("lbl-monto").textContent = labels[m];
   }
 
   function abrirModal() {
@@ -432,18 +564,16 @@ function setTipo(t) {
     if (!monto || monto <= 0) { toast("Ingresá un monto válido"); return; }
     if (!fecha)               { toast("Elegí una fecha"); return; }
 
-    const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc };
+    const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual };
 
     try {
       const r = await fetch("/api/finanzas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tx)
       });
       const nuevo = await r.json();
       datos.push(nuevo);
       cerrarModal();
-      // reset form
       document.getElementById("inp-monto").value = "";
       document.getElementById("inp-cat").value   = "";
       document.getElementById("inp-desc").value  = "";
@@ -462,14 +592,8 @@ function setTipo(t) {
 
   function toast(msg) {
     const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.classList.add("show");
+    el.textContent = msg; el.classList.add("show");
     setTimeout(() => el.classList.remove("show"), 2500);
-  }
-
-  // Service worker
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/finanzas/sw.js");
   }
 
   function cerrarSesion() {
@@ -478,7 +602,10 @@ function setTipo(t) {
     }
   }
 
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/finanzas/sw.js");
+
   cargar();
+  cargarCotizaciones();
 </script>
 </body>
 </html>
