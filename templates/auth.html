@@ -143,22 +143,8 @@
       body: JSON.stringify({ email, username, password: pass })
     });
     const data = await r.json();
-    if (data.ok && data.pendiente) {
-      document.querySelector('.card').innerHTML = `
-        <div style="text-align:center;padding:16px 0">
-          <div style="font-size:48px;margin-bottom:16px">📧</div>
-          <h2 style="font-size:18px;margin-bottom:10px">Revisá tu email</h2>
-          <p style="color:#94a3b8;font-size:14px;line-height:1.6">
-            Te enviamos un link de verificación a <strong style="color:#e2e8f0">${email}</strong>.<br>
-            Hacé click en el link para activar tu cuenta.
-          </p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:16px">¿No llegó? Revisá la carpeta de spam.</p>
-        </div>`;
-    } else if (data.ok) {
-      window.location.href = "/finanzas";
-    } else {
-      mostrarError(data.error);
-    }
+    if (data.ok) window.location.href = "/finanzas";
+    else mostrarError(data.error);
   }
 
   // Enter para enviar

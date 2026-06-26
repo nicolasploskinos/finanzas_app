@@ -1,7 +1,4 @@
 import os
-import uuid
-import threading
-import resend
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
 from flask_cors import CORS
 from supabase import create_client
@@ -18,30 +15,6 @@ app.secret_key = os.environ["SECRET_KEY"]
 app.permanent_session_lifetime = timedelta(days=30)
 
 db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
-
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:5001")
-resend.api_key = os.environ.get("RESEND_API_KEY", "")
-
-def enviar_email_verificacion(destinatario, username, link):
-    try:
-        resend.Emails.send({
-            "from":    "Control de Finanzas <onboarding@resend.dev>",
-            "to":      [destinatario],
-            "subject": "Verificá tu cuenta de Finanzas",
-            "html":    f"""
-            <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#1e1e2e;color:#e2e8f0;border-radius:16px">
-                <h2 style="color:#60a5fa;margin-bottom:8px">&#128176; Control de Finanzas</h2>
-                <p>Hola <strong>{username}</strong>, gracias por registrarte.</p>
-                <p style="margin-top:12px">Hacé click en el botón para verificar tu cuenta:</p>
-                <a href="{link}" style="display:inline-block;margin:24px 0;background:#60a5fa;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px">
-                    Verificar mi cuenta
-                </a>
-                <p style="color:#94a3b8;font-size:13px">Si no creaste esta cuenta podés ignorar este email.</p>
-            </div>
-            """
-        })
-    except Exception as e:
-        print(f"Error enviando email: {e}")
 
 def login_required(f):
     @wraps(f)
@@ -69,15 +42,6 @@ def logout():
     session.clear()
     return redirect("/finanzas/login")
 
-@app.route("/finanzas/verificar/<token>")
-def verificar(token):
-    res = db.table("usuarios").select("*").eq("token_verificacion", token).execute()
-    if not res.data:
-        return render_template("verificado.html", exito=False)
-    user = res.data[0]
-    db.table("usuarios").update({"verificado": True, "token_verificacion": None}).eq("id", user["id"]).execute()
-    return render_template("verificado.html", exito=True)
-
 @app.route("/finanzas/manifest.json")
 def manifest():
     return send_from_directory("static", "finanzas_manifest.json", mimetype="application/manifest+json")
@@ -99,9 +63,6 @@ def login():
         return jsonify({"ok": False, "error": "Email o contraseña incorrectos"}), 401
 
     user = res.data[0]
-    if not user.get("verificado"):
-        return jsonify({"ok": False, "error": "Verificá tu email antes de ingresar. Revisá tu bandeja de entrada."}), 401
-
     session.permanent = True
     session["user_id"]  = user["id"]
     session["username"] = user["username"]
@@ -123,26 +84,20 @@ def register():
     if db.table("usuarios").select("id").eq("username", username).execute().data:
         return jsonify({"ok": False, "error": "Ese nombre de usuario ya está en uso"}), 400
 
-    token = str(uuid.uuid4())
     res = db.table("usuarios").insert({
-        "email":               email,
-        "username":            username,
-        "password_hash":       generate_password_hash(password),
-        "verificado":          False,
-        "token_verificacion":  token,
+        "email":        email,
+        "username":     username,
+        "password_hash": generate_password_hash(password),
+        "verificado":   True,
     }).execute()
 
     user = res.data[0]
     db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()
 
-    link = f"{BASE_URL}/finanzas/verificar/{token}"
-    threading.Thread(
-        target=enviar_email_verificacion,
-        args=(email, username, link),
-        daemon=True
-    ).start()
-
-    return jsonify({"ok": True, "pendiente": True}), 201
+    session.permanent = True
+    session["user_id"]  = user["id"]
+    session["username"] = user["username"]
+    return jsonify({"ok": True}), 201
 
 # ── Transacciones API ─────────────────────────────────────────────────────────
 
