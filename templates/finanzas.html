@@ -320,13 +320,15 @@
       if (mes  && MESES[f.getMonth()] !== mes)  return false;
       if (anio && f.getFullYear() !== +anio)     return false;
       if (tipo && t.tipo !== tipo)               return false;
-      if (cat  && t.categoria !== cat)           return false;
+      if (cat  && (t.categoria || "").toLowerCase() !== cat.toLowerCase()) return false;
       return true;
     }).sort((a, b) => b.fecha.localeCompare(a.fecha));
   }
 
   function actualizarCatFiltro() {
-    const cats = [...new Set(datos.map(t => t.categoria).filter(Boolean))].sort();
+    const seen = new Map();
+    datos.forEach(t => { if (t.categoria && !seen.has(t.categoria.toLowerCase())) seen.set(t.categoria.toLowerCase(), t.categoria); });
+    const cats = [...seen.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     const sel = document.getElementById("f-cat");
     const val = sel.value;
     sel.innerHTML = '<option value="">Todas las categorías</option>';

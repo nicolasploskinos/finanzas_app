@@ -1,12 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import json
 import os
 from datetime import datetime, date
 from collections import defaultdict
 from tkcalendar import DateEntry
+from dotenv import load_dotenv
+from supabase import create_client
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "finanzas_data.json")
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
+_db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
 MESES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -28,15 +31,24 @@ COLORES = {
 
 
 def cargar_datos():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+    res = _db.table("transacciones").select("*").order("fecha", desc=True).execute()
+    return res.data
 
 
-def guardar_datos(datos):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(datos, f, ensure_ascii=False, indent=2)
+def insertar_transaccion(t):
+    payload = {
+        "tipo": t["tipo"],
+        "monto": float(t["monto"]),
+        "fecha": t["fecha"],
+        "categoria": t.get("categoria", ""),
+        "descripcion": t.get("descripcion", ""),
+    }
+    res = _db.table("transacciones").insert(payload).execute()
+    return res.data[0]
+
+
+def eliminar_transaccion(tid):
+    _db.table("transacciones").delete().eq("id", tid).execute()
 
 
 class FinanzasApp:
@@ -383,7 +395,6 @@ class FinanzasApp:
         fecha = self.fecha_entry.get_date()
 
         transaccion = {
-            "id": int(datetime.now().timestamp() * 1000),
             "tipo": tipo,
             "monto": monto,
             "fecha": fecha.isoformat(),
@@ -391,8 +402,8 @@ class FinanzasApp:
             "descripcion": desc,
         }
 
-        self.datos.append(transaccion)
-        guardar_datos(self.datos)
+        guardado = insertar_transaccion(transaccion)
+        self.datos.insert(0, guardado)
 
         self.monto_var.set("")
         self.desc_var.set("")
@@ -424,7 +435,7 @@ class FinanzasApp:
                 continue
             if tipo_sel != "Todos" and t["tipo"] != tipo_sel:
                 continue
-            if cat_sel != "Todas" and t.get("categoria", "") != cat_sel:
+            if cat_sel != "Todas" and t.get("categoria", "").lower() != cat_sel.lower():
                 continue
             resultado.append(t)
 
@@ -432,7 +443,13 @@ class FinanzasApp:
         return resultado
 
     def _actualizar_categorias_filtro(self):
-        cats = sorted({t.get("categoria", "") for t in self.datos if t.get("categoria", "")})
+        seen, cats = set(), []
+        for t in self.datos:
+            c = t.get("categoria", "")
+            if c and c.lower() not in seen:
+                seen.add(c.lower())
+                cats.append(c)
+        cats = sorted(cats, key=str.lower)
         self.cat_filtro_combo.config(values=["Todas"] + cats)
         if self.filtro_cat.get() not in ["Todas"] + cats:
             self.filtro_cat.set("Todas")
@@ -491,8 +508,8 @@ class FinanzasApp:
         iid = int(sel[0])
         if not messagebox.askyesno("Confirmar", "¿Eliminar esta transacción?"):
             return
+        eliminar_transaccion(iid)
         self.datos = [t for t in self.datos if t["id"] != iid]
-        guardar_datos(self.datos)
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
         self._actualizar_balances()
