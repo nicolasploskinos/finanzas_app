@@ -711,10 +711,15 @@
         render();
         toast("✓ Transacción actualizada");
       } else if (recurrenciaActual !== "no") {
-        await fetch("/api/finanzas/recurrentes", {
+        const rr = await fetch("/api/finanzas/recurrentes", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...tx, frecuencia: recurrenciaActual })
         });
+        if (!rr.ok) {
+          const err = await rr.json().catch(() => ({}));
+          toast("Error: " + (err.error || `código ${rr.status}`));
+          return;
+        }
         await cargar();
         cerrarModal();
         if (recurOpen) cargarRecurrentes();

@@ -173,19 +173,22 @@ def listar_recurrentes():
 @app.route("/api/finanzas/recurrentes", methods=["POST"])
 @login_required
 def crear_recurrente():
-    t = request.get_json()
-    payload = {
-        "tipo":          t["tipo"],
-        "monto":         float(t["monto"]),
-        "categoria":     t.get("categoria", ""),
-        "descripcion":   t.get("descripcion", ""),
-        "moneda":        t.get("moneda", "ARS"),
-        "frecuencia":    t["frecuencia"],
-        "proxima_fecha": t["fecha"],
-        "user_id":       session["user_id"],
-    }
-    res = db.table("recurrentes").insert(payload).execute()
-    return jsonify(res.data[0]), 201
+    try:
+        t = request.get_json()
+        payload = {
+            "tipo":          t["tipo"],
+            "monto":         float(t["monto"]),
+            "categoria":     t.get("categoria") or "",
+            "descripcion":   t.get("descripcion") or "",
+            "moneda":        t.get("moneda") or "ARS",
+            "frecuencia":    t["frecuencia"],
+            "proxima_fecha": t["fecha"],
+            "user_id":       session["user_id"],
+        }
+        res = db.table("recurrentes").insert(payload).execute()
+        return jsonify(res.data[0]), 201
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 @app.route("/api/finanzas/recurrentes/<int:rid>", methods=["DELETE"])
 @login_required
