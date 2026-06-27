@@ -135,6 +135,21 @@ def agregar():
     res = db.table("transacciones").insert(payload).execute()
     return jsonify(res.data[0]), 201
 
+@app.route("/api/finanzas/<int:tid>", methods=["PUT"])
+@login_required
+def editar(tid):
+    t = request.get_json()
+    payload = {
+        "tipo":        t["tipo"],
+        "monto":       float(t["monto"]),
+        "fecha":       t["fecha"],
+        "categoria":   t.get("categoria", ""),
+        "descripcion": t.get("descripcion", ""),
+        "moneda":      t.get("moneda", "ARS"),
+    }
+    res = db.table("transacciones").update(payload).eq("id", tid).eq("user_id", session["user_id"]).execute()
+    return jsonify(res.data[0])
+
 @app.route("/api/finanzas/<int:tid>", methods=["DELETE"])
 @login_required
 def eliminar(tid):

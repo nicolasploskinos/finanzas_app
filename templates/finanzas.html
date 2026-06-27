@@ -127,8 +127,10 @@
       background: var(--surface2); border-radius: 4px;
       padding: 1px 5px; margin-top: 3px; display: inline-block;
     }
-    .tx-del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; line-height: 1; }
-    .tx-del:active { color: var(--red); }
+    .tx-del  { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px 4px 4px 2px; line-height: 1; }
+    .tx-del:active  { color: var(--red); }
+    .tx-edit { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 4px 2px; line-height: 1; opacity: .7; }
+    .tx-edit:active { opacity: 1; color: var(--blue); }
 
     /* FAB */
     .fab {
@@ -289,7 +291,7 @@
 <div class="overlay" id="overlay" onclick="cerrarSiFondo(event)">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2>Nueva transacción</h2>
+    <h2 id="modal-title">Nueva transacción</h2>
 
     <div class="tipo-toggle">
       <button class="tipo-btn gasto-active" id="btn-gasto"   onclick="setTipo('Gasto')">Gasto</button>
@@ -344,7 +346,8 @@
   let tipoActual    = "Gasto";
   let monedaActual  = "ARS";
   let monedaConsol  = "ARS";
-  let cotiz = { USD: null, EUR: null };
+  let cotiz         = { USD: null, EUR: null };
+  let editandoId    = null;
 
   // Fecha de hoy
   const hoy = new Date();
@@ -544,7 +547,8 @@
             <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmtMon(t.monto, mon)}</div>
             ${badge}
           </div>
-          <button class="tx-del" onclick="eliminar(${t.id})">×</button>
+          <button class="tx-edit" onclick="editarTx(${t.id})">✏️</button>
+          <button class="tx-del"  onclick="eliminar(${t.id})">×</button>
         </div>`;
       }).join("")}
     `).join("");
@@ -571,11 +575,32 @@
   }
 
   function abrirModal() {
+    editandoId = null;
+    document.getElementById("modal-title").textContent = "Nueva transacción";
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
   }
-  function cerrarModal() { document.getElementById("overlay").classList.remove("open"); }
+  function cerrarModal() {
+    document.getElementById("overlay").classList.remove("open");
+    editandoId = null;
+    document.getElementById("modal-title").textContent = "Nueva transacción";
+  }
   function cerrarSiFondo(e) { if (e.target === document.getElementById("overlay")) cerrarModal(); }
+
+  function editarTx(id) {
+    const t = datos.find(x => x.id === id);
+    if (!t) return;
+    editandoId = id;
+    document.getElementById("modal-title").textContent = "Editar transacción";
+    setTipo(t.tipo);
+    setMonedaForm(t.moneda || "ARS");
+    document.getElementById("inp-monto").value = t.monto;
+    document.getElementById("inp-fecha").value = t.fecha;
+    document.getElementById("inp-cat").value   = t.categoria || "";
+    document.getElementById("inp-desc").value  = t.descripcion || "";
+    document.getElementById("overlay").classList.add("open");
+    document.getElementById("inp-monto").focus();
+  }
 
   async function guardar() {
     const monto = parseFloat(document.getElementById("inp-monto").value.replace(",", "."));
@@ -589,19 +614,31 @@
     const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual };
 
     try {
-      const r = await fetch("/api/finanzas", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tx)
-      });
-      const nuevo = await r.json();
-      datos.push(nuevo);
-      cerrarModal();
-      document.getElementById("inp-monto").value = "";
-      document.getElementById("inp-cat").value   = "";
-      document.getElementById("inp-desc").value  = "";
-      document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
-      render();
-      toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
+      if (editandoId) {
+        const r = await fetch(`/api/finanzas/${editandoId}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tx)
+        });
+        const actualizado = await r.json();
+        datos = datos.map(t => t.id === editandoId ? actualizado : t);
+        cerrarModal();
+        render();
+        toast("✓ Transacción actualizada");
+      } else {
+        const r = await fetch("/api/finanzas", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tx)
+        });
+        const nuevo = await r.json();
+        datos.push(nuevo);
+        cerrarModal();
+        document.getElementById("inp-monto").value = "";
+        document.getElementById("inp-cat").value   = "";
+        document.getElementById("inp-desc").value  = "";
+        document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
+        render();
+        toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
+      }
     } catch { toast("Error al guardar"); }
   }
 

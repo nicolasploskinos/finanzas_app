@@ -436,11 +436,17 @@ class FinanzasApp:
                                      font=("Segoe UI", 9))
         self.count_label.pack(side="left")
 
-        tk.Button(action_bar, text="Eliminar seleccionado",
+        tk.Button(action_bar, text="Eliminar",
                   bg=COLORES["accent_red"], fg="white",
                   font=("Segoe UI", 9, "bold"), bd=0, relief="flat",
                   padx=10, pady=4, cursor="hand2",
                   command=self._eliminar_seleccionado).pack(side="right")
+
+        tk.Button(action_bar, text="✏️  Editar",
+                  bg=COLORES["accent_blue"], fg="white",
+                  font=("Segoe UI", 9, "bold"), bd=0, relief="flat",
+                  padx=10, pady=4, cursor="hand2",
+                  command=self._editar_seleccionado).pack(side="right", padx=(0, 6))
 
         # Tabla
         cols = ("Fecha", "Tipo", "Moneda", "Categoría", "Descripción", "Monto")
@@ -701,6 +707,128 @@ class FinanzasApp:
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
         self._actualizar_balances()
+
+    def _editar_seleccionado(self):
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showinfo("Info", "Seleccioná una transacción para editar.")
+            return
+        iid = int(sel[0])
+        tx = next((t for t in self.datos if t["id"] == iid), None)
+        if not tx:
+            return
+
+        win = tk.Toplevel(self.root)
+        win.title("Editar transacción")
+        win.configure(bg=COLORES["bg"])
+        win.geometry("360x480")
+        win.resizable(False, False)
+        win.grab_set()
+
+        frame = tk.Frame(win, bg=COLORES["surface"], padx=20, pady=20)
+        frame.pack(fill="both", expand=True, padx=16, pady=16)
+
+        tk.Label(frame, text="Editar transacción", bg=COLORES["surface"],
+                 fg=COLORES["text"], font=("Segoe UI", 13, "bold")).pack(anchor="w", pady=(0, 12))
+
+        def campo(label):
+            tk.Label(frame, text=label, bg=COLORES["surface"], fg=COLORES["text_muted"],
+                     font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(8, 2))
+
+        # Tipo
+        tipo_var = tk.StringVar(value=tx["tipo"])
+        tipo_frame = tk.Frame(frame, bg=COLORES["surface"])
+        tipo_frame.pack(fill="x", pady=(0, 4))
+        btn_g = tk.Button(tipo_frame, text="Gasto",   bd=0, relief="flat", padx=12, pady=6,
+                          font=("Segoe UI", 10, "bold"), cursor="hand2")
+        btn_i = tk.Button(tipo_frame, text="Ingreso", bd=0, relief="flat", padx=12, pady=6,
+                          font=("Segoe UI", 10, "bold"), cursor="hand2")
+        def set_tipo_edit(t):
+            tipo_var.set(t)
+            btn_g.config(bg=COLORES["accent_red"]  if t=="Gasto"   else COLORES["surface2"],
+                         fg="white"                if t=="Gasto"   else COLORES["text_muted"])
+            btn_i.config(bg=COLORES["accent_green"] if t=="Ingreso" else COLORES["surface2"],
+                         fg="white"                if t=="Ingreso" else COLORES["text_muted"])
+        btn_g.config(command=lambda: set_tipo_edit("Gasto"))
+        btn_i.config(command=lambda: set_tipo_edit("Ingreso"))
+        btn_g.pack(side="left", padx=(0, 4))
+        btn_i.pack(side="left")
+        set_tipo_edit(tx["tipo"])
+
+        # Moneda
+        mon_var = tk.StringVar(value=tx.get("moneda", "ARS"))
+        mon_frame = tk.Frame(frame, bg=COLORES["surface"])
+        mon_frame.pack(fill="x", pady=(6, 0))
+        mon_btns = {}
+        def set_mon_edit(m):
+            mon_var.set(m)
+            for k, b in mon_btns.items():
+                b.config(bg=COLORES["accent_blue"] if k==m else COLORES["surface2"],
+                         fg="white" if k==m else COLORES["text_muted"])
+        for m, txt in [("ARS","$ ARS"),("USD","USD"),("EUR","€ EUR")]:
+            b = tk.Button(mon_frame, text=txt, bd=0, relief="flat", padx=10, pady=5,
+                          font=("Segoe UI", 9, "bold"), cursor="hand2",
+                          command=lambda x=m: set_mon_edit(x))
+            b.pack(side="left", padx=(0, 4))
+            mon_btns[m] = b
+        set_mon_edit(tx.get("moneda", "ARS"))
+
+        campo("MONTO")
+        monto_var = tk.StringVar(value=str(tx["monto"]))
+        tk.Entry(frame, textvariable=monto_var, bg=COLORES["surface2"], fg=COLORES["text"],
+                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
+
+        campo("FECHA")
+        fecha_var = tk.StringVar(value=tx["fecha"])
+        DateEntry(frame, textvariable=fecha_var, date_pattern="yyyy-mm-dd",
+                  background=COLORES["surface2"], foreground=COLORES["text"],
+                  font=("Segoe UI", 10)).pack(fill="x", ipady=4)
+
+        campo("CATEGORÍA")
+        cat_var = tk.StringVar(value=tx.get("categoria", ""))
+        tk.Entry(frame, textvariable=cat_var, bg=COLORES["surface2"], fg=COLORES["text"],
+                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
+
+        campo("DESCRIPCIÓN")
+        desc_var = tk.StringVar(value=tx.get("descripcion", ""))
+        tk.Entry(frame, textvariable=desc_var, bg=COLORES["surface2"], fg=COLORES["text"],
+                 font=("Segoe UI", 11), bd=0, relief="flat", insertbackground=COLORES["text"]).pack(fill="x", ipady=7)
+
+        error_lbl = tk.Label(frame, text="", bg=COLORES["surface"], fg=COLORES["accent_red"],
+                             font=("Segoe UI", 9))
+        error_lbl.pack(pady=(6, 0))
+
+        def confirmar():
+            try:
+                monto = float(monto_var.get().replace(",", "."))
+                if monto <= 0:
+                    raise ValueError()
+            except ValueError:
+                error_lbl.config(text="Ingresá un monto válido")
+                return
+            fecha = fecha_var.get().strip()
+            if not fecha:
+                error_lbl.config(text="Elegí una fecha")
+                return
+            payload = {
+                "tipo": tipo_var.get(), "monto": monto, "fecha": fecha,
+                "categoria": cat_var.get().strip(), "descripcion": desc_var.get().strip(),
+                "moneda": mon_var.get(),
+            }
+            try:
+                db.table("transacciones").update(payload).eq("id", iid).eq("user_id", _usuario_actual["id"]).execute()
+                for k, v in payload.items():
+                    tx[k] = v
+                self._actualizar_categorias_filtro()
+                self._actualizar_tabla()
+                self._actualizar_balances()
+                win.destroy()
+            except Exception as e:
+                error_lbl.config(text=f"Error: {e}")
+
+        tk.Button(frame, text="Guardar cambios", bg=COLORES["accent_blue"], fg="white",
+                  bd=0, relief="flat", font=("Segoe UI", 11, "bold"), pady=10,
+                  cursor="hand2", command=confirmar).pack(fill="x", pady=(12, 0))
 
     def _eliminar_seleccionado(self):
         sel = self.tree.selection()
