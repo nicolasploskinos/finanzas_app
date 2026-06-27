@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import calendar
 import threading
 import requests
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from collections import defaultdict
 from tkcalendar import DateEntry
 from dotenv import load_dotenv
@@ -126,6 +127,7 @@ class FinanzasApp:
         self._actualizar_tabla()
         self._actualizar_balances()
         threading.Thread(target=self._cargar_cotizaciones, daemon=True).start()
+        threading.Thread(target=self._procesar_recurrentes, daemon=True).start()
 
     def _configurar_estilos(self):
         style = ttk.Style()
@@ -310,8 +312,24 @@ class FinanzasApp:
         desc_entry.pack(fill="x", ipady=7)
         tk.Frame(form, bg=COLORES["accent_blue"], height=2).pack(fill="x")
 
+        # Repetición
+        label("Repetición")
+        self.recur_var = tk.StringVar(value="no")
+        recur_frame = tk.Frame(form, bg=COLORES["surface"])
+        recur_frame.pack(fill="x")
+        self.btn_recur = {}
+        for r, txt in [("no","Sin repetir"),("semanal","Semanal"),("mensual","Mensual")]:
+            b = tk.Button(recur_frame, text=txt,
+                          bg=COLORES["accent_blue"] if r == "no" else COLORES["surface2"],
+                          fg="white" if r == "no" else COLORES["text_muted"],
+                          font=("Segoe UI", 9, "bold"), bd=0, relief="flat",
+                          padx=6, pady=5, cursor="hand2",
+                          command=lambda x=r: self._set_recur(x))
+            b.pack(side="left", fill="x", expand=True, padx=1)
+            self.btn_recur[r] = b
+
         # Botón agregar
-        tk.Frame(form, bg=COLORES["surface"], height=15).pack()
+        tk.Frame(form, bg=COLORES["surface"], height=10).pack()
         btn_agregar = tk.Button(form, text="+ Agregar Transacción",
                                 bg=COLORES["accent_blue"], fg="white",
                                 font=("Segoe UI", 11, "bold"), bd=0, relief="flat",
@@ -321,11 +339,19 @@ class FinanzasApp:
         btn_agregar.bind("<Leave>", lambda e: btn_agregar.config(bg=COLORES["accent_blue"]))
 
         # Info
-        tk.Frame(parent, bg=COLORES["surface"], height=10).pack()
+        tk.Frame(parent, bg=COLORES["surface"], height=6).pack()
         self.info_label = tk.Label(parent, text="", bg=COLORES["surface"],
                                    fg=COLORES["accent_green"], font=("Segoe UI", 9),
                                    wraplength=220)
         self.info_label.pack(padx=15, anchor="w")
+
+        sep2 = tk.Frame(parent, bg=COLORES["border"], height=1)
+        sep2.pack(fill="x", padx=15, pady=8)
+        tk.Button(parent, text="📅  Ver / gestionar recurrentes",
+                  bg=COLORES["surface2"], fg=COLORES["text_muted"],
+                  font=("Segoe UI", 9), bd=0, relief="flat",
+                  padx=10, pady=6, cursor="hand2",
+                  command=self._abrir_recurrentes).pack(fill="x", padx=15)
 
     def _set_tipo(self, tipo):
         self.tipo_var.set(tipo)
@@ -335,6 +361,12 @@ class FinanzasApp:
         else:
             self.btn_ingreso.config(bg=COLORES["accent_green"], fg="#1e1e2e")
             self.btn_gasto.config(bg=COLORES["surface2"], fg=COLORES["text_muted"])
+
+    def _set_recur(self, r):
+        self.recur_var.set(r)
+        for k, btn in self.btn_recur.items():
+            btn.config(bg=COLORES["accent_blue"] if k == r else COLORES["surface2"],
+                       fg="white" if k == r else COLORES["text_muted"])
 
     def _set_moneda(self, moneda):
         self.moneda_form.set(moneda)
@@ -498,31 +530,45 @@ class FinanzasApp:
         fecha = self.fecha_entry.get_date()
 
         transaccion = {
-            "tipo": tipo,
-            "monto": monto,
-            "fecha": fecha.isoformat(),
-            "categoria": cat,
-            "descripcion": desc,
-            "moneda": self.moneda_form.get(),
+            "tipo": tipo, "monto": monto, "fecha": fecha.isoformat(),
+            "categoria": cat, "descripcion": desc, "moneda": self.moneda_form.get(),
         }
+        frecuencia = self.recur_var.get()
 
-        guardado = insertar_transaccion(transaccion)
-        self.datos.insert(0, guardado)
+        if frecuencia != "no":
+            try:
+                _db.table("recurrentes").insert({
+                    **transaccion,
+                    "frecuencia": frecuencia,
+                    "proxima_fecha": transaccion["fecha"],
+                    "user_id": _usuario_actual["id"],
+                }).execute()
+                # Procesamos inmediatamente para que aparezca la primera
+                threading.Thread(target=self._procesar_recurrentes, daemon=True).start()
+                self.info_label.config(
+                    text=f"✓ Recurrente {frecuencia} guardado.",
+                    fg=COLORES["accent_blue"]
+                )
+            except Exception as e:
+                self.info_label.config(text=f"Error: {e}", fg=COLORES["accent_red"])
+        else:
+            guardado = insertar_transaccion(transaccion)
+            self.datos.insert(0, guardado)
+            mon = self.moneda_form.get()
+            signo = "+" if tipo == "Ingreso" else "-"
+            self.info_label.config(
+                text=f"✓ {tipo} de {signo}{fmt_mon(monto, mon)} agregado.",
+                fg=COLORES["accent_green"] if tipo == "Ingreso" else COLORES["accent_red"]
+            )
 
         self.monto_var.set("")
         self.desc_var.set("")
         self.fecha_entry.set_date(date.today())
+        self._set_recur("no")
 
         self._actualizar_categorias_filtro()
         self._actualizar_tabla()
         self._actualizar_balances()
-
-        mon = self.moneda_form.get()
-        signo = "+" if tipo == "Ingreso" else "-"
-        self.info_label.config(
-            text=f"✓ {tipo} de {signo}{fmt_mon(monto, mon)} agregado.",
-            fg=COLORES["accent_green"] if tipo == "Ingreso" else COLORES["accent_red"]
-        )
         self.root.after(3000, lambda: self.info_label.config(text=""))
 
     def _datos_filtrados(self):
@@ -599,6 +645,96 @@ class FinanzasApp:
 
     def _actualizar_balances(self):
         self._actualizar_consolidado()
+
+    def _siguiente_fecha_recur(self, fecha_str, frecuencia):
+        d = date.fromisoformat(fecha_str)
+        if frecuencia == "semanal":
+            return (d + timedelta(weeks=1)).isoformat()
+        mes  = d.month + 1 if d.month < 12 else 1
+        anio = d.year      if d.month < 12 else d.year + 1
+        return date(anio, mes, min(d.day, calendar.monthrange(anio, mes)[1])).isoformat()
+
+    def _procesar_recurrentes(self):
+        try:
+            hoy = date.today().isoformat()
+            pendientes = _db.table("recurrentes").select("*").eq("user_id", _usuario_actual["id"]).eq("activo", True).lte("proxima_fecha", hoy).execute().data
+            if not pendientes:
+                return
+            for r in pendientes:
+                prox = r["proxima_fecha"]
+                nuevas = []
+                while prox <= hoy:
+                    nuevas.append({
+                        "tipo": r["tipo"], "monto": r["monto"], "fecha": prox,
+                        "categoria": r["categoria"], "descripcion": r["descripcion"],
+                        "moneda": r["moneda"], "user_id": _usuario_actual["id"],
+                    })
+                    prox = self._siguiente_fecha_recur(prox, r["frecuencia"])
+                if nuevas:
+                    _db.table("transacciones").insert(nuevas).execute()
+                    _db.table("recurrentes").update({"proxima_fecha": prox}).eq("id", r["id"]).execute()
+            res = _db.table("transacciones").select("*").eq("user_id", _usuario_actual["id"]).execute()
+            self.datos = sorted(res.data, key=lambda x: x["fecha"], reverse=True)
+            self.root.after(0, self._actualizar_tabla)
+            self.root.after(0, self._actualizar_balances)
+        except Exception:
+            pass
+
+    def _abrir_recurrentes(self):
+        win = tk.Toplevel(self.root)
+        win.title("Recurrentes activos")
+        win.configure(bg=COLORES["bg"])
+        win.geometry("500x420")
+        win.grab_set()
+
+        tk.Label(win, text="📅  Recurrentes activos", bg=COLORES["bg"],
+                 fg=COLORES["text"], font=("Segoe UI", 13, "bold")).pack(padx=20, pady=(16, 8), anchor="w")
+
+        frame = tk.Frame(win, bg=COLORES["surface"])
+        frame.pack(fill="both", expand=True, padx=16, pady=(0, 16))
+
+        try:
+            data = _db.table("recurrentes").select("*").eq("user_id", _usuario_actual["id"]).eq("activo", True).order("creado_en", desc=True).execute().data
+        except Exception:
+            data = []
+
+        if not data:
+            tk.Label(frame, text="No hay recurrentes activos.", bg=COLORES["surface"],
+                     fg=COLORES["text_muted"], font=("Segoe UI", 11)).pack(pady=40)
+            return
+
+        sb = ttk.Scrollbar(frame, orient="vertical")
+        cols = ("Tipo","Monto","Moneda","Categoría","Frecuencia","Próximo")
+        tree = ttk.Treeview(frame, columns=cols, show="headings", yscrollcommand=sb.set)
+        sb.config(command=tree.yview)
+
+        for c, w in zip(cols, [65, 100, 70, 130, 80, 95]):
+            tree.heading(c, text=c)
+            tree.column(c, width=w, anchor="center")
+
+        for r in data:
+            tree.insert("", "end", iid=r["id"], values=(
+                r["tipo"], fmt_mon(r["monto"], r.get("moneda","ARS")),
+                r.get("moneda","ARS"), r.get("categoria",""), r["frecuencia"], r["proxima_fecha"]
+            ))
+
+        tree.pack(side="left", fill="both", expand=True, padx=(12,0), pady=12)
+        sb.pack(side="right", fill="y", pady=12, padx=(0,12))
+
+        def eliminar_sel():
+            sel = tree.selection()
+            if not sel: return
+            rid = int(sel[0])
+            if not messagebox.askyesno("Confirmar", "¿Eliminar este recurrente?\nNo se borrarán las transacciones ya creadas."): return
+            try:
+                _db.table("recurrentes").update({"activo": False}).eq("id", rid).execute()
+                tree.delete(sel[0])
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+
+        tk.Button(win, text="Eliminar seleccionado", bg=COLORES["accent_red"], fg="white",
+                  bd=0, relief="flat", font=("Segoe UI", 9, "bold"), padx=12, pady=6,
+                  cursor="hand2", command=eliminar_sel).pack(pady=(0, 12))
 
     def _construir_consolidado(self, parent):
         frame = tk.Frame(parent, bg=COLORES["surface"])

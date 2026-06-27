@@ -1,11 +1,12 @@
 import os
+import calendar
 import requests as req
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
 from flask_cors import CORS
 from supabase import create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import timedelta
+from datetime import date, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -111,11 +112,39 @@ def cotizaciones():
     except Exception as e:
         return jsonify({"USD": None, "EUR": None}), 200
 
+# ── Recurrentes helpers ───────────────────────────────────────────────────────
+
+def _siguiente_fecha(fecha_str, frecuencia):
+    d = date.fromisoformat(fecha_str)
+    if frecuencia == "semanal":
+        return (d + timedelta(weeks=1)).isoformat()
+    mes  = d.month + 1 if d.month < 12 else 1
+    anio = d.year      if d.month < 12 else d.year + 1
+    return date(anio, mes, min(d.day, calendar.monthrange(anio, mes)[1])).isoformat()
+
+def _procesar_recurrentes(user_id):
+    hoy = date.today().isoformat()
+    pendientes = db.table("recurrentes").select("*").eq("user_id", user_id).eq("activo", True).lte("proxima_fecha", hoy).execute().data
+    for r in pendientes:
+        prox = r["proxima_fecha"]
+        while prox <= hoy:
+            db.table("transacciones").insert({
+                "tipo": r["tipo"], "monto": r["monto"], "fecha": prox,
+                "categoria": r["categoria"], "descripcion": r["descripcion"],
+                "moneda": r["moneda"], "user_id": user_id,
+            }).execute()
+            prox = _siguiente_fecha(prox, r["frecuencia"])
+        db.table("recurrentes").update({"proxima_fecha": prox}).eq("id", r["id"]).execute()
+
 # ── Transacciones API ─────────────────────────────────────────────────────────
 
 @app.route("/api/finanzas", methods=["GET"])
 @login_required
 def listar():
+    try:
+        _procesar_recurrentes(session["user_id"])
+    except Exception:
+        pass
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
     return jsonify(res.data)
 
@@ -134,6 +163,35 @@ def agregar():
     }
     res = db.table("transacciones").insert(payload).execute()
     return jsonify(res.data[0]), 201
+
+@app.route("/api/finanzas/recurrentes", methods=["GET"])
+@login_required
+def listar_recurrentes():
+    res = db.table("recurrentes").select("*").eq("user_id", session["user_id"]).eq("activo", True).order("creado_en", desc=True).execute()
+    return jsonify(res.data)
+
+@app.route("/api/finanzas/recurrentes", methods=["POST"])
+@login_required
+def crear_recurrente():
+    t = request.get_json()
+    payload = {
+        "tipo":          t["tipo"],
+        "monto":         float(t["monto"]),
+        "categoria":     t.get("categoria", ""),
+        "descripcion":   t.get("descripcion", ""),
+        "moneda":        t.get("moneda", "ARS"),
+        "frecuencia":    t["frecuencia"],
+        "proxima_fecha": t["fecha"],
+        "user_id":       session["user_id"],
+    }
+    res = db.table("recurrentes").insert(payload).execute()
+    return jsonify(res.data[0]), 201
+
+@app.route("/api/finanzas/recurrentes/<int:rid>", methods=["DELETE"])
+@login_required
+def eliminar_recurrente(rid):
+    db.table("recurrentes").update({"activo": False}).eq("id", rid).eq("user_id", session["user_id"]).execute()
+    return jsonify({"ok": True})
 
 @app.route("/api/finanzas/<int:tid>", methods=["PUT"])
 @login_required
