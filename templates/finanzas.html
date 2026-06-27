@@ -723,7 +723,7 @@
         await cargar();
         cerrarModal();
         if (recurOpen) cargarRecurrentes();
-        toast(`✓ Recurrente ${recurrenciaActual} guardado`);
+        toast(`✓ Recurrente ${recurrenciaActual} creado`);
       } else {
         const r = await fetch("/api/finanzas", {
           method: "POST", headers: { "Content-Type": "application/json" },
