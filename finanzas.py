@@ -538,10 +538,14 @@ class FinanzasApp:
         if frecuencia != "no":
             try:
                 _db.table("recurrentes").insert({
-                    **transaccion,
-                    "frecuencia": frecuencia,
+                    "tipo":          transaccion["tipo"],
+                    "monto":         transaccion["monto"],
+                    "categoria":     transaccion["categoria"],
+                    "descripcion":   transaccion["descripcion"],
+                    "moneda":        transaccion["moneda"],
+                    "frecuencia":    frecuencia,
                     "proxima_fecha": transaccion["fecha"],
-                    "user_id": _usuario_actual["id"],
+                    "user_id":       _usuario_actual["id"],
                 }).execute()
                 # Procesamos inmediatamente para que aparezca la primera
                 threading.Thread(target=self._procesar_recurrentes, daemon=True).start()
