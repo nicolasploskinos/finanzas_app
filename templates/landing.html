@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Controlá tus gastos e ingresos en pesos, dólares y euros. Cotización oficial BNA automática. Gratis.">
+  <meta property="og:title" content="Finanzas — Control de gastos en ARS, USD y EUR">
+  <meta property="og:description" content="La app que entiende la economía argentina. Manejá pesos y dólares en un solo lugar, con cotización oficial actualizada.">
+  <meta property="og:type" content="website">
+  <title>Finanzas — Control de gastos en ARS, USD y EUR</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #22223a;
+      --surface3: #2a2a45;
+      --blue: #60a5fa;
+      --blue-dark: #3b82f6;
+      --green: #4ade80;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #2d2d50;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15,15,26,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px;
+    }
+    .nav-logo { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .nav-logo span { color: var(--blue); }
+    .nav-cta {
+      background: var(--blue-dark); color: #fff;
+      border: none; border-radius: 10px;
+      padding: 9px 20px; font-size: 14px; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: background .2s;
+    }
+    .nav-cta:hover { background: var(--blue); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 20px 60px;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25);
+      color: var(--blue); border-radius: 100px;
+      padding: 5px 14px; font-size: 13px; font-weight: 600;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 64px);
+      font-weight: 900; line-height: 1.1;
+      max-width: 720px; margin-bottom: 20px;
+      letter-spacing: -1.5px;
+    }
+    .hero h1 em { color: var(--blue); font-style: normal; }
+    .hero p {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--muted); max-width: 520px;
+      margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      display: inline-block;
+      background: var(--blue-dark); color: #fff;
+      border-radius: 14px; padding: 16px 36px;
+      font-size: 17px; font-weight: 800;
+      text-decoration: none; transition: all .2s;
+      box-shadow: 0 0 40px rgba(59,130,246,.35);
+    }
+    .btn-primary:hover { background: var(--blue); transform: translateY(-2px); box-shadow: 0 0 60px rgba(96,165,250,.45); }
+    .btn-secondary {
+      display: inline-block;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 36px;
+      font-size: 17px; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+    }
+    .btn-secondary:hover { background: var(--surface3); transform: translateY(-2px); }
+    .hero-note { margin-top: 18px; font-size: 13px; color: var(--muted); }
+
+    /* ── MOCKUP ── */
+    .mockup-wrap {
+      display: flex; justify-content: center;
+      padding: 20px 20px 60px;
+    }
+    .mockup {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 20px;
+      max-width: 420px; width: 100%;
+      box-shadow: 0 40px 80px rgba(0,0,0,.5);
+    }
+    .mock-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
+    }
+    .mock-title { font-size: 15px; font-weight: 700; }
+    .mock-user { font-size: 12px; color: var(--muted); }
+    .mock-consol {
+      background: var(--surface2); border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 14px;
+    }
+    .mock-consol-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+    .mock-consol-btns { display: flex; gap: 6px; margin-bottom: 12px; }
+    .mock-cbtn {
+      flex: 1; padding: 6px 0; text-align: center;
+      background: var(--surface3); border-radius: 7px;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+    }
+    .mock-cbtn.active { background: var(--blue-dark); color: #fff; }
+    .mock-consol-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .mock-val-card { text-align: center; }
+    .mock-val-label { font-size: 10px; color: var(--muted); }
+    .mock-val { font-size: 15px; font-weight: 800; }
+    .green { color: var(--green); }
+    .red   { color: var(--red); }
+    .blue  { color: var(--blue); }
+    .mock-tx-list { display: flex; flex-direction: column; gap: 8px; }
+    .mock-tx {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2); border-radius: 10px; padding: 10px 12px;
+    }
+    .mock-tx-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+    .mock-tx-info { flex: 1; }
+    .mock-tx-desc { font-size: 13px; font-weight: 600; }
+    .mock-tx-cat  { font-size: 11px; color: var(--muted); }
+    .mock-tx-monto { font-size: 14px; font-weight: 800; }
+
+    /* ── FEATURES ── */
+    .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      text-align: center; font-size: 12px; font-weight: 800;
+      color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      text-align: center; font-size: clamp(26px, 4vw, 42px);
+      font-weight: 900; letter-spacing: -1px;
+      margin-bottom: 14px;
+    }
+    .section-sub {
+      text-align: center; color: var(--muted); font-size: 17px;
+      max-width: 560px; margin: 0 auto 60px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); }
+    .feat-icon { font-size: 32px; margin-bottom: 14px; }
+    .feat-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .feat-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── PARA QUIÉN ── */
+    .para-quien {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 480px; }
+    .check-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 16px;
+    }
+    .check-list li::before {
+      content: "✓"; color: var(--green);
+      font-weight: 900; font-size: 16px; flex-shrink: 0; margin-top: 2px;
+    }
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+    }
+    @media (max-width: 680px) {
+      .two-col { grid-template-columns: 1fr; gap: 32px; }
+    }
+    .big-emoji { font-size: 96px; text-align: center; }
+
+    /* ── PRECIOS ── */
+    .precio-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 36px 32px;
+      max-width: 380px; margin: 0 auto; text-align: center;
+      position: relative;
+    }
+    .precio-badge {
+      display: inline-block;
+      background: var(--green); color: #000;
+      border-radius: 100px; padding: 4px 14px;
+      font-size: 12px; font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .precio-num {
+      font-size: 64px; font-weight: 900; line-height: 1;
+      color: var(--green); margin-bottom: 4px;
+    }
+    .precio-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 15px; }
+    .precio-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
+
+    /* ── CTA FINAL ── */
+    .cta-final {
+      text-align: center; padding: 100px 20px;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,.1), transparent);
+    }
+    .cta-final h2 {
+      font-size: clamp(28px, 5vw, 52px); font-weight: 900;
+      letter-spacing: -1px; margin-bottom: 16px;
+    }
+    .cta-final p { color: var(--muted); font-size: 18px; margin-bottom: 40px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center; padding: 28px 20px;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); max-width: 1100px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">💰 <span>Finanzas</span></div>
+  <a href="/finanzas/login" class="nav-cta">Empezar gratis →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🇦🇷 Hecho para la economía argentina</div>
+  <h1>Controlá tus finanzas en <em>pesos y dólares</em>, sin complicaciones</h1>
+  <p>Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola. Gratis.</p>
+  <div class="hero-btns">
+    <a href="/finanzas/login" class="btn-primary">Quiero acceso gratis →</a>
+    <a href="#features" class="btn-secondary">Ver cómo funciona</a>
+  </div>
+  <p class="hero-note">Sin tarjeta de crédito · Sin trucos · Funciona desde el celular</p>
+</section>
+
+<!-- MOCKUP -->
+<div class="mockup-wrap">
+  <div class="mockup">
+    <div class="mock-header">
+      <div>
+        <div class="mock-title">💰 Mis Finanzas</div>
+        <div class="mock-user" style="color:var(--muted);font-size:12px;">Hola, nico 👋</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">Jun 2026</div>
+    </div>
+    <div class="mock-consol">
+      <div class="mock-consol-label">TOTAL CONSOLIDADO EN</div>
+      <div class="mock-consol-btns">
+        <div class="mock-cbtn active">ARS $</div>
+        <div class="mock-cbtn">USD</div>
+        <div class="mock-cbtn">EUR €</div>
+      </div>
+      <div class="mock-consol-row">
+        <div class="mock-val-card">
+          <div class="mock-val-label">Ingresos</div>
+          <div class="mock-val green">$842.500</div>
+        </div>
+        <div class="mock-val-card">
+          <div class="mock-val-label">Gastos</div>
+          <div class="mock-val red">$613.200</div>
+        </div>
+        <div class="mock-val-card">
+          <div class="mock-val-label">Saldo</div>
+          <div class="mock-val blue">$229.300</div>
+        </div>
+      </div>
+    </div>
+    <div class="mock-tx-list">
+      <div class="mock-tx">
+        <div class="mock-tx-dot" style="background:var(--green)"></div>
+        <div class="mock-tx-info">
+          <div class="mock-tx-desc">Sueldo</div>
+          <div class="mock-tx-cat">Ingreso · ARS</div>
+        </div>
+        <div class="mock-tx-monto green">+$750.000</div>
+      </div>
+      <div class="mock-tx">
+        <div class="mock-tx-dot" style="background:var(--red)"></div>
+        <div class="mock-tx-info">
+          <div class="mock-tx-desc">Alquiler</div>
+          <div class="mock-tx-cat">Vivienda · ARS 🔄</div>
+        </div>
+        <div class="mock-tx-monto red">-$400.000</div>
+      </div>
+      <div class="mock-tx">
+        <div class="mock-tx-dot" style="background:var(--red)"></div>
+        <div class="mock-tx-info">
+          <div class="mock-tx-desc">Netflix</div>
+          <div class="mock-tx-cat">Suscripciones · USD 🔄</div>
+        </div>
+        <div class="mock-tx-monto red">-USD 7.99</div>
+      </div>
+      <div class="mock-tx">
+        <div class="mock-tx-dot" style="background:var(--green)"></div>
+        <div class="mock-tx-info">
+          <div class="mock-tx-desc">Freelance</div>
+          <div class="mock-tx-cat">Ingreso · USD</div>
+        </div>
+        <div class="mock-tx-monto green">+USD 150</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="divider"></div>
+<section class="section" id="features">
+  <div class="section-label">Por qué Finanzas</div>
+  <h2>Todo lo que necesitás, nada que no</h2>
+  <p class="section-sub">Diseñado para argentinos que manejan más de una moneda y no quieren complicarse.</p>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">💵</div>
+      <h3>Multi-moneda real</h3>
+      <p>Registrá gastos e ingresos en ARS, USD o EUR. Ves todo convertido a la moneda que prefieras, con cotización oficial BNA actualizada automáticamente.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔄</div>
+      <h3>Gastos recurrentes</h3>
+      <p>El alquiler, las suscripciones, la cuota del gimnasio. Configurás una vez y se agregan solos cada semana o cada mes.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>Saldo consolidado</h3>
+      <p>Un solo número que te dice cuánto tenés. Sin importar si ganás en dólares y gastás en pesos: ves el total en la moneda que elijas.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">✏️</div>
+      <h3>Editable y simple</h3>
+      <p>Metiste mal un monto? Editás cualquier transacción en dos toques. Sin formularios complicados, sin pasos innecesarios.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌐</div>
+      <h3>Web y escritorio</h3>
+      <p>Desde el celular o desde la computadora, tus datos siempre sincronizados. Funciona en cualquier navegador o como app de escritorio.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔐</div>
+      <h3>Tus datos, seguros</h3>
+      <p>Cuenta con usuario y contraseña. Tus transacciones son tuyas y nadie más las puede ver. Base de datos en la nube con cifrado.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUIÉN -->
+<div class="para-quien">
+  <div class="section">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Para quién es</div>
+        <h2 style="text-align:left">¿Esto es para vos?</h2>
+        <p style="color:var(--muted);font-size:16px;margin-bottom:28px;">Si alguno de estos te suena familiar, sí.</p>
+        <ul class="check-list">
+          <li>Trabajás en relación de dependencia y también en freelance en dólares</li>
+          <li>Querés saber cuánto gastás por mes, pero en pesos y dólares juntos</li>
+          <li>Tenés gastos fijos que se repiten y te olvidás de anotarlos</li>
+          <li>Probaste Excel o Google Sheets pero se volvió demasiado complejo</li>
+          <li>Querés una app que entienda que en Argentina la moneda es complicada</li>
+        </ul>
+      </div>
+      <div class="big-emoji">🇦🇷</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRECIO -->
+<div class="divider"></div>
+<section class="section" id="precio">
+  <div class="section-label">Precio</div>
+  <h2>Simple y directo</h2>
+  <p class="section-sub">Sin planes confusos, sin prueba gratis de 14 días que se cobra sola.</p>
+  <div class="precio-card">
+    <div class="precio-badge">GRATIS POR TIEMPO LIMITADO</div>
+    <div class="precio-num">$0</div>
+    <p class="precio-sub">Acceso completo mientras está en beta</p>
+    <ul class="precio-features">
+      <li>Transacciones ilimitadas</li>
+      <li>Multi-moneda (ARS, USD, EUR)</li>
+      <li>Cotización BNA automática</li>
+      <li>Gastos recurrentes</li>
+      <li>Acceso web y escritorio</li>
+      <li>Soporte activo</li>
+    </ul>
+    <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;">Empezar ahora →</a>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <h2>Empezá a controlar tus finanzas hoy</h2>
+  <p>Gratis. Sin tarjeta. Sin trucos. En dos minutos tenés todo listo.</p>
+  <a href="/finanzas/login" class="btn-primary">Quiero acceso gratis →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>💰 Finanzas &nbsp;·&nbsp; <a href="/finanzas">Acceder</a> &nbsp;·&nbsp; Hecho en Argentina 🇦🇷</p>
+</footer>
+
+</body>
+</html>

@@ -28,6 +28,10 @@ def login_required(f):
 
 # ── Páginas ───────────────────────────────────────────────────────────────────
 
+@app.route("/")
+def landing():
+    return render_template("landing.html")
+
 @app.route("/finanzas")
 @login_required
 def index():
