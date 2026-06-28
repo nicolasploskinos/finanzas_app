@@ -13,9 +13,14 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg: #1a1410; --surface: #252018; --surface2: #2e2820;
-      --green: #4ade80; --red: #f87171; --blue: #f59e0b;
-      --yellow: #f59e0b; --text: #f5e6d0; --muted: #a89478; --border: #3d3020;
+      --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
+      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
+      --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
+    }
+    body.light {
+      --bg: #f1f5f9; --surface: #ffffff; --surface2: #f8fafc;
+      --green: #16a34a; --red: #dc2626; --blue: #2563eb;
+      --yellow: #d97706; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
     }
 
     body {
@@ -225,6 +230,7 @@
       {% else %}
       <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;">✓ Pro</span>
       {% endif %}
+      <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px 4px;" title="Cambiar modo">🌙</button>
       <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;">Salir</a>
     </div>
   </div>
@@ -864,6 +870,16 @@
     if (confirm("¿Estás seguro que querés cerrar sesión?")) {
       window.location.href = "/finanzas/logout";
     }
+  }
+
+  function toggleModo() {
+    const light = document.body.classList.toggle("light");
+    document.getElementById("btn-modo").textContent = light ? "☀️" : "🌙";
+    localStorage.setItem("modo", light ? "light" : "dark");
+  }
+  if (localStorage.getItem("modo") === "light") {
+    document.body.classList.add("light");
+    document.getElementById("btn-modo").textContent = "☀️";
   }
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/finanzas/sw.js");
