@@ -189,6 +189,24 @@
 
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); color: var(--text); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; }
     .toast.show { opacity: 1; }
+
+    /* Modal Pro */
+    .pro-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; align-items: flex-end; justify-content: center; }
+    .pro-overlay.open { display: flex; }
+    .pro-modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; }
+    .pro-modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+    .pro-titulo { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 4px; }
+    .pro-precio { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .pro-precio strong { color: var(--yellow); font-size: 20px; }
+    .pro-beneficios { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+    .pro-fila { display: flex; gap: 12px; background: var(--surface2); border-radius: 12px; padding: 14px; }
+    .pro-fila-icono { font-size: 22px; flex-shrink: 0; }
+    .pro-fila-texto h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .pro-fila-texto p  { font-size: 12px; color: var(--muted); }
+    .pro-fila-texto span { color: var(--red); }
+    .btn-pro-pagar { width: 100%; background: var(--yellow); color: #000; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
+    .btn-pro-pagar:active { opacity: .85; }
+    .btn-pro-cancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px; }
   </style>
 </head>
 <body>
@@ -202,8 +220,8 @@
     <div style="font-size:16px;font-weight:700;color:var(--text)">Hola, {{ username }}</div>
     <div style="display:flex;gap:10px;align-items:center">
       {% if not is_pro %}
-      <a href="https://finanzas13579.lemonsqueezy.com/checkout/buy/9e166e70-6e35-4bdc-8f8b-6291a16b9fbe" target="_blank"
-         style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;text-decoration:none;">⭐ Pro</a>
+      <button onclick="abrirModalPro()"
+         style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;">⭐ Pro</button>
       {% else %}
       <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;">✓ Pro</span>
       {% endif %}
@@ -372,6 +390,44 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Modal Pro -->
+<div class="pro-overlay" id="pro-overlay" onclick="cerrarModalProFondo(event)">
+  <div class="pro-modal">
+    <div class="pro-modal-handle"></div>
+    <div class="pro-titulo">⭐ Finanzas Pro</div>
+    <p class="pro-precio">por solo <strong>$1.999</strong>/mes</p>
+
+    <div class="pro-beneficios">
+      <div class="pro-fila">
+        <div class="pro-fila-icono">♾️</div>
+        <div class="pro-fila-texto">
+          <h4>Transacciones ilimitadas</h4>
+          <p>La cuenta gratis tiene un límite de <span>50 transacciones por mes</span>. Con Pro podés registrar todo sin límite.</p>
+        </div>
+      </div>
+      <div class="pro-fila">
+        <div class="pro-fila-icono">📅</div>
+        <div class="pro-fila-texto">
+          <h4>Historial completo</h4>
+          <p>La cuenta gratis muestra solo los <span>últimos 3 meses</span>. Con Pro accedés a todo tu historial.</p>
+        </div>
+      </div>
+      <div class="pro-fila">
+        <div class="pro-fila-icono">📊</div>
+        <div class="pro-fila-texto">
+          <h4>Exportar a Excel / CSV</h4>
+          <p>Descargá todas tus transacciones para analizarlas en Excel o Google Sheets.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-pro-pagar" onclick="window.open('https://finanzas13579.lemonsqueezy.com/checkout/buy/9e166e70-6e35-4bdc-8f8b-6291a16b9fbe', '_blank')">
+      Suscribirme — $1.999/mes →
+    </button>
+    <button class="btn-pro-cancel" onclick="cerrarModalPro()">Ahora no</button>
+  </div>
+</div>
 
 <script>
   const ES_PRO = {{ is_pro | tojson }};
@@ -784,6 +840,16 @@
     const el = document.getElementById("toast");
     el.textContent = msg; el.classList.add("show");
     setTimeout(() => el.classList.remove("show"), 2500);
+  }
+
+  function abrirModalPro() {
+    document.getElementById("pro-overlay").classList.add("open");
+  }
+  function cerrarModalPro() {
+    document.getElementById("pro-overlay").classList.remove("open");
+  }
+  function cerrarModalProFondo(e) {
+    if (e.target === document.getElementById("pro-overlay")) cerrarModalPro();
   }
 
   function cerrarSesion() {
