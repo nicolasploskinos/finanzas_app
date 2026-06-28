@@ -197,14 +197,13 @@ def exportar():
         return jsonify({"error": "Pro requerido"}), 403
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=["fecha","tipo","monto","moneda","categoria","descripcion"])
-    writer.writeheader()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(["Fecha", "Tipo", "Monto", "Moneda", "Categoría", "Descripción"])
     for t in res.data:
-        writer.writerow({
-            "fecha": t["fecha"], "tipo": t["tipo"], "monto": t["monto"],
-            "moneda": t.get("moneda","ARS"), "categoria": t.get("categoria",""),
-            "descripcion": t.get("descripcion",""),
-        })
+        writer.writerow([
+            t["fecha"], t["tipo"], t["monto"],
+            t.get("moneda","ARS"), t.get("categoria",""), t.get("descripcion",""),
+        ])
     from flask import Response
     return Response(output.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
