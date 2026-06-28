@@ -263,21 +263,50 @@ def eliminar(tid):
     db.table("transacciones").delete().eq("id", tid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
-@app.route("/api/finanzas/webhook/lemonsqueezy", methods=["POST"])
-def webhook_lemonsqueezy():
-    secret = os.environ.get("LEMONSQUEEZY_WEBHOOK_SECRET", "")
-    sig = request.headers.get("X-Signature", "")
-    digest = hmac.new(secret.encode(), request.data, hashlib.sha256).hexdigest()
-    if secret and not hmac.compare_digest(digest, sig):
-        return jsonify({"error": "invalid signature"}), 401
+@app.route("/api/finanzas/suscribir")
+@login_required
+def suscribir():
+    mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
+    r = req.post(
+        "https://api.mercadopago.com/preapproval",
+        headers={"Authorization": f"Bearer {mp_token}"},
+        json={
+            "reason": "Finanzas Pro",
+            "external_reference": session["user_id"],
+            "payer_email": f"{session['username']}@finanzas.local",
+            "auto_recurring": {
+                "frequency": 1,
+                "frequency_type": "months",
+                "transaction_amount": 1999,
+                "currency_id": "ARS",
+            },
+            "back_url": "https://web-production-d822b.up.railway.app/finanzas",
+            "notification_url": "https://web-production-d822b.up.railway.app/api/finanzas/webhook/mercadopago",
+        }
+    )
+    data = r.json()
+    init_point = data.get("init_point")
+    if not init_point:
+        return jsonify({"error": "No se pudo crear la suscripción", "detalle": data}), 500
+    return redirect(init_point)
 
+@app.route("/api/finanzas/webhook/mercadopago", methods=["POST"])
+def webhook_mp():
     data = request.get_json(silent=True) or {}
-    event = data.get("meta", {}).get("event_name", "")
-    email = data.get("data", {}).get("attributes", {}).get("user_email", "")
+    topic = data.get("type") or request.args.get("topic", "")
+    resource_id = data.get("data", {}).get("id") or request.args.get("id", "")
 
-    if event in ("order_created", "subscription_created", "subscription_payment_success") and email:
-        username = email.replace("@finanzas.local", "")
-        db.table("usuarios").update({"plan": "pro"}).eq("username", username).execute()
+    if topic in ("subscription_preapproval", "preapproval") and resource_id:
+        mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
+        r = req.get(
+            f"https://api.mercadopago.com/preapproval/{resource_id}",
+            headers={"Authorization": f"Bearer {mp_token}"}
+        )
+        preapproval = r.json()
+        if preapproval.get("status") == "authorized":
+            user_id = preapproval.get("external_reference")
+            if user_id:
+                db.table("usuarios").update({"plan": "pro"}).eq("id", user_id).execute()
 
     return jsonify({"ok": True})
 
