@@ -32,15 +32,19 @@
     /* Header */
     header {
       background: var(--surface);
-      padding: 14px 20px;
+      padding: 12px 16px;
       position: sticky; top: 0;
       display: flex; justify-content: space-between; align-items: center;
       z-index: 100;
       border-bottom: 1px solid var(--border);
       box-shadow: 0 2px 12px rgba(0,0,0,.15);
+      gap: 8px;
     }
-    header h1 { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
-    header p  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    header h1 { font-size: 16px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }
+    header p  { font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap; }
+    .header-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; min-width: 0; }
+    .header-username { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+    .header-actions { display:flex; gap:8px; align-items:center; flex-wrap: nowrap; }
 
     /* Balance por moneda */
     .bal-moneda { padding: 12px 12px 4px; }
@@ -177,17 +181,20 @@
 
     /* Consolidado */
     .cons-section { margin: 12px 12px 8px; background: var(--surface); border-radius: 18px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,.12); border: 1px solid var(--border); }
-    .cons-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cons-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
     .cons-title { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
     .cons-toggle { display: flex; gap: 4px; background: var(--surface2); border-radius: 8px; padding: 3px; }
-    .cons-btn { padding: 5px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: transparent; color: var(--muted); transition: all .2s; }
+    .cons-btn { flex: 1; padding: 6px 8px; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: transparent; color: var(--muted); transition: all .2s; text-align: center; }
     .cons-btn.active { background: var(--blue); color: white; box-shadow: 0 1px 4px rgba(96,165,250,.4); }
-    .cons-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .cons-card { background: var(--surface2); border-radius: 12px; padding: 10px 12px; }
-    .cons-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
-    .cons-card-value { font-size: 16px; font-weight: 800; margin-top: 4px; }
+    .cons-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .cons-card { background: var(--surface2); border-radius: 12px; padding: 10px 10px; }
+    .cons-card-label { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .cons-card-value { font-size: clamp(12px, 3.8vw, 16px); font-weight: 800; margin-top: 4px; word-break: break-all; }
     .cons-nota { font-size: 10px; color: var(--muted); text-align: right; margin-top: 8px; }
 
+    /* Recurrentes */
+    .cot-wrap { margin: 0 12px 8px; background: var(--surface); border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.1); border: 1px solid var(--border); overflow: hidden; }
+    .cot-wrap .cot-header { padding: 12px 16px; font-size: 13px; font-weight: 700; }
     .recur-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
     .recur-item:last-child { border-bottom:none; }
 
@@ -223,17 +230,16 @@
     <h1>💰 Finanzas</h1>
     <p id="fecha-hoy"></p>
   </div>
-  <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-    <div style="font-size:16px;font-weight:700;color:var(--text)">Hola, {{ username }}</div>
-    <div style="display:flex;gap:10px;align-items:center">
+  <div class="header-right">
+    <div class="header-username">Hola, {{ username }}</div>
+    <div class="header-actions">
       {% if not is_pro %}
-      <button onclick="abrirModalPro()"
-         style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;">⭐ Pro</button>
+      <button onclick="abrirModalPro()" style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;white-space:nowrap;">⭐ Pro</button>
       {% else %}
-      <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;">✓ Pro</span>
+      <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
-      <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px 4px;" title="Cambiar modo">🌙</button>
-      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;">Salir</a>
+      <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
+      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;">Salir</a>
     </div>
   </div>
 </header>
