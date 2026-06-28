@@ -217,6 +217,8 @@ def listar_recurrentes():
 @app.route("/api/finanzas/recurrentes", methods=["POST"])
 @login_required
 def crear_recurrente():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
     try:
         t = request.get_json()
         payload = {

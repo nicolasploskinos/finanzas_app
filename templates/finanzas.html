@@ -414,6 +414,13 @@
         </div>
       </div>
       <div class="pro-fila">
+        <div class="pro-fila-icono">🔄</div>
+        <div class="pro-fila-texto">
+          <h4>Gastos recurrentes</h4>
+          <p>Configurá el alquiler, suscripciones y otros gastos fijos para que se agreguen solos cada semana o mes.</p>
+        </div>
+      </div>
+      <div class="pro-fila">
         <div class="pro-fila-icono">📊</div>
         <div class="pro-fila-texto">
           <h4>Exportar a Excel / CSV</h4>
@@ -795,6 +802,7 @@
         });
         if (!rr.ok) {
           const err = await rr.json().catch(() => ({}));
+          if (rr.status === 403) { abrirModalPro(); return; }
           toast("Error: " + (err.error || `código ${rr.status}`));
           return;
         }
