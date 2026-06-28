@@ -198,9 +198,17 @@
     <h1>💰 Finanzas</h1>
     <p id="fecha-hoy"></p>
   </div>
-  <div style="text-align:right">
-    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px">Hola, {{ username }}</div>
-    <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;">Cerrar sesión</a>
+  <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <div style="font-size:16px;font-weight:700;color:var(--text)">Hola, {{ username }}</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      {% if not is_pro %}
+      <a href="https://finanzas13579.lemonsqueezy.com/checkout/buy/9e166e70-6e35-4bdc-8f8b-6291a16b9fbe" target="_blank"
+         style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;text-decoration:none;">⭐ Pro</a>
+      {% else %}
+      <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;">✓ Pro</span>
+      {% endif %}
+      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;">Salir</a>
+    </div>
   </div>
 </header>
 

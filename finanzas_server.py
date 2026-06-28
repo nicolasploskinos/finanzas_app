@@ -1,5 +1,7 @@
 import os
 import calendar
+import hmac
+import hashlib
 import requests as req
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
 from flask_cors import CORS
@@ -35,7 +37,9 @@ def landing():
 @app.route("/finanzas")
 @login_required
 def index():
-    return render_template("finanzas.html", username=session["username"])
+    user = db.table("usuarios").select("plan").eq("id", session["user_id"]).execute().data
+    is_pro = user[0]["plan"] == "pro" if user else False
+    return render_template("finanzas.html", username=session["username"], is_pro=is_pro)
 
 @app.route("/finanzas/login")
 def login_page():
@@ -219,6 +223,24 @@ def editar(tid):
 @login_required
 def eliminar(tid):
     db.table("transacciones").delete().eq("id", tid).eq("user_id", session["user_id"]).execute()
+    return jsonify({"ok": True})
+
+@app.route("/api/finanzas/webhook/lemonsqueezy", methods=["POST"])
+def webhook_lemonsqueezy():
+    secret = os.environ.get("LEMONSQUEEZY_WEBHOOK_SECRET", "")
+    sig = request.headers.get("X-Signature", "")
+    digest = hmac.new(secret.encode(), request.data, hashlib.sha256).hexdigest()
+    if secret and not hmac.compare_digest(digest, sig):
+        return jsonify({"error": "invalid signature"}), 401
+
+    data = request.get_json(silent=True) or {}
+    event = data.get("meta", {}).get("event_name", "")
+    email = data.get("data", {}).get("attributes", {}).get("user_email", "")
+
+    if event in ("order_created", "subscription_created", "subscription_payment_success") and email:
+        username = email.replace("@finanzas.local", "")
+        db.table("usuarios").update({"plan": "pro"}).eq("username", username).execute()
+
     return jsonify({"ok": True})
 
 if __name__ == "__main__":
