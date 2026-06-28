@@ -1,6 +1,6 @@
 # Textos de marketing — Finanzas App
 
-Listos para copiar y pegar. Reemplazá [TU_LINK] con la URL real del servidor.
+Listos para copiar y pegar. Reemplazá https://web-production-d822b.up.railway.app con la URL real del servidor.
 
 ---
 
@@ -18,7 +18,7 @@ Hice una app web (funciona también en el celu) que:
 - Tiene gastos recurrentes (alquiler, suscripciones) que se agregan solos
 - Gratis
 
-Acá está: [TU_LINK]
+Acá está: https://web-production-d822b.up.railway.app
 
 Si la prueban y tienen sugerencias, les presto atención — está en desarrollo activo.
 
@@ -37,7 +37,7 @@ Proyecto de fin de semana que se fue agrandando. Stack:
 
 Lo que tiene: multi-moneda real (ARS/USD/EUR), conversión con API de bluelytics.com.ar, gastos recurrentes semanales/mensuales, edición de transacciones.
 
-Acá el repo / app: [TU_LINK]
+Acá el repo / app: https://web-production-d822b.up.railway.app
 
 Feedback técnico bienvenido.
 
@@ -54,7 +54,7 @@ Lo que hace:
 ✅ Gastos recurrentes que se agregan solos (alquiler, Netflix, etc.)
 ✅ Funciona desde el celular
 
-→ [TU_LINK]
+→ https://web-production-d822b.up.railway.app
 
 Gratis, sin registro complicado (solo usuario y contraseña). Si la prueban, cuenten qué les pareció!
 
@@ -75,7 +75,7 @@ Lo que hice:
 
 Stack completo: Python, Flask, Supabase/PostgreSQL, Vanilla JS, tkinter, Railway.
 
-El link si quieren probarlo: [TU_LINK]
+El link si quieren probarlo: https://web-production-d822b.up.railway.app
 
 ¿Qué feature agregarían? Abierto a feedback.
 
@@ -86,5 +86,5 @@ El link si quieren probarlo: [TU_LINK]
 ## WhatsApp / grupos personales (mensaje corto)
 
 Hice una app para controlar gastos en pesos y dólares, con cotización BNA automática. Gratis.
-→ [TU_LINK]
+→ https://web-production-d822b.up.railway.app
 Si la prueban me cuentan qué les parece!
