@@ -156,6 +156,27 @@
     .mock-tx-cat  { font-size: 11px; color: var(--muted); }
     .mock-tx-monto { font-size: 14px; font-weight: 800; }
 
+    .mock-form-label { font-size: 10px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+    .mock-form-input {
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px;
+      font-size: 13px; color: var(--text); width: 100%; margin-bottom: 10px;
+    }
+    .mock-tipo-btns { display: flex; gap: 6px; margin-bottom: 10px; }
+    .mock-tipo-btn {
+      flex: 1; padding: 8px 0; text-align: center; border-radius: 8px;
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      background: var(--surface3);
+    }
+    .mock-tipo-btn.gasto  { background: rgba(248,113,113,.2); color: var(--red); }
+    .mock-tipo-btn.ingreso { background: rgba(74,222,128,.2); color: var(--green); }
+    .mock-guardar {
+      width: 100%; background: var(--blue-dark); color: #fff;
+      border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 800;
+      text-align: center; margin-top: 4px;
+    }
+    .mockup-wrap { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px 20px 60px; }
+
     /* ── FEATURES ── */
     .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
     .section-label {
@@ -278,6 +299,42 @@
 
 <!-- MOCKUP -->
 <div class="mockup-wrap">
+  <!-- Mockup 2: formulario -->
+  <div class="mockup" style="align-self:center">
+    <div class="mock-header">
+      <div class="mock-title">+ Nueva transacción</div>
+    </div>
+    <div>
+      <div class="mock-form-label">TIPO</div>
+      <div class="mock-tipo-btns">
+        <div class="mock-tipo-btn gasto">Gasto</div>
+        <div class="mock-tipo-btn">Ingreso</div>
+      </div>
+
+      <div class="mock-form-label">MONEDA</div>
+      <div class="mock-tipo-btns" style="margin-bottom:10px">
+        <div class="mock-tipo-btn ingreso">ARS $</div>
+        <div class="mock-tipo-btn">USD</div>
+        <div class="mock-tipo-btn">EUR €</div>
+      </div>
+
+      <div class="mock-form-label">MONTO</div>
+      <div class="mock-form-input">$ 15.000</div>
+
+      <div class="mock-form-label">CATEGORÍA</div>
+      <div class="mock-form-input">Supermercado</div>
+
+      <div class="mock-form-label">DESCRIPCIÓN</div>
+      <div class="mock-form-input" style="color:var(--muted)">Compra semanal...</div>
+
+      <div class="mock-form-label">FECHA</div>
+      <div class="mock-form-input">2026-06-28</div>
+
+      <div class="mock-guardar">Guardar</div>
+    </div>
+  </div>
+
+  <!-- Mockup 1: lista principal -->
   <div class="mockup">
     <div class="mock-header">
       <div>
