@@ -1,4 +1,6 @@
 import os
+import csv
+import io
 import calendar
 import hmac
 import hashlib
@@ -120,6 +122,12 @@ def cotizaciones():
     except Exception as e:
         return jsonify({"USD": None, "EUR": None}), 200
 
+# ── Plan helpers ─────────────────────────────────────────────────────────────
+
+def _es_pro(user_id):
+    res = db.table("usuarios").select("plan").eq("id", user_id).execute()
+    return bool(res.data) and res.data[0].get("plan") == "pro"
+
 # ── Recurrentes helpers ───────────────────────────────────────────────────────
 
 def _siguiente_fecha(fecha_str, frecuencia):
@@ -153,12 +161,22 @@ def listar():
         _procesar_recurrentes(session["user_id"])
     except Exception:
         pass
-    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
+    es_pro = _es_pro(session["user_id"])
+    query = db.table("transacciones").select("*").eq("user_id", session["user_id"])
+    if not es_pro:
+        desde = (date.today() - timedelta(days=90)).isoformat()
+        query = query.gte("fecha", desde)
+    res = query.order("fecha", desc=True).execute()
     return jsonify(res.data)
 
 @app.route("/api/finanzas", methods=["POST"])
 @login_required
 def agregar():
+    if not _es_pro(session["user_id"]):
+        inicio_mes = date.today().replace(day=1).isoformat()
+        count = len(db.table("transacciones").select("id").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).execute().data)
+        if count >= 50:
+            return jsonify({"ok": False, "error": "limite_pro"}), 403
     t = request.get_json()
     payload = {
         "tipo":        t["tipo"],
@@ -171,6 +189,25 @@ def agregar():
     }
     res = db.table("transacciones").insert(payload).execute()
     return jsonify(res.data[0]), 201
+
+@app.route("/api/finanzas/export", methods=["GET"])
+@login_required
+def exportar():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "Pro requerido"}), 403
+    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=["fecha","tipo","monto","moneda","categoria","descripcion"])
+    writer.writeheader()
+    for t in res.data:
+        writer.writerow({
+            "fecha": t["fecha"], "tipo": t["tipo"], "monto": t["monto"],
+            "moneda": t.get("moneda","ARS"), "categoria": t.get("categoria",""),
+            "descripcion": t.get("descripcion",""),
+        })
+    from flask import Response
+    return Response(output.getvalue(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
 
 @app.route("/api/finanzas/recurrentes", methods=["GET"])
 @login_required

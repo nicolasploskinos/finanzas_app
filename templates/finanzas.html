@@ -282,6 +282,13 @@
     </div>
   </div>
 
+  {% if not is_pro %}
+  <div style="margin:0 12px 8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:9px 14px;font-size:12px;color:#fbbf24;display:flex;justify-content:space-between;align-items:center">
+    <span>📅 Mostrando últimos 3 meses</span>
+    <a href="https://finanzas13579.lemonsqueezy.com/checkout/buy/9e166e70-6e35-4bdc-8f8b-6291a16b9fbe" target="_blank" style="color:#fbbf24;font-weight:700;text-decoration:none">Ver todo →</a>
+  </div>
+  {% endif %}
+
   <!-- Filtros -->
   <div class="filtros">
     <select id="f-mes" onchange="render()">
@@ -307,6 +314,12 @@
       <option value="">Todas las categorías</option>
     </select>
   </div>
+
+  {% if is_pro %}
+  <div style="margin:8px 12px 0;text-align:right">
+    <a href="/api/finanzas/export" style="font-size:12px;color:var(--muted);text-decoration:none">⬇️ Exportar CSV</a>
+  </div>
+  {% endif %}
 
   <div id="lista"></div>
 </div>
@@ -361,6 +374,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  const ES_PRO = {{ is_pro | tojson }};
   const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -737,6 +751,15 @@
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(tx)
         });
+        if (r.status === 403) {
+          const err = await r.json().catch(() => ({}));
+          if (err.error === "limite_pro") {
+            toast("Límite de 50 transacciones/mes. Upgrade a ⭐ Pro para agregar más.");
+          } else {
+            toast("Sin permiso");
+          }
+          return;
+        }
         const nuevo = await r.json();
         datos.push(nuevo);
         cerrarModal();
