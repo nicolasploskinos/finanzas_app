@@ -197,6 +197,7 @@ def exportar():
         return jsonify({"error": "Pro requerido"}), 403
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
     output = io.StringIO()
+    output.write("sep=;\n")
     writer = csv.writer(output, delimiter=";")
     writer.writerow(["Fecha", "Tipo", "Monto", "Moneda", "Categoría", "Descripción"])
     for t in res.data:
