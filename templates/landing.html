@@ -25,6 +25,23 @@
       --muted: #94a3b8;
       --border: #2d2d50;
     }
+    body.light {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --surface3: #e2e8f0;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --green: #16a34a;
+      --red: #dc2626;
+      --yellow: #d97706;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+    }
+    body.light nav { background: rgba(248,250,252,.92); }
+    body.light .btn-primary { box-shadow: 0 0 40px rgba(37,99,235,.2); }
+    body.light .hero { background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37,99,235,.08), transparent); }
 
     html { scroll-behavior: smooth; }
 
@@ -284,7 +301,10 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo">💰 <span>Finanzas</span></div>
-  <a href="/finanzas/login" class="nav-cta">Empezar gratis →</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button id="btn-modo" onclick="toggleModo()" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;padding:4px;" title="Cambiar modo">🌙</button>
+    <a href="/finanzas/login" class="nav-cta">Empezar gratis →</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -497,5 +517,16 @@
   <p>💰 Finanzas &nbsp;·&nbsp; <a href="/finanzas">Acceder</a> &nbsp;·&nbsp; Hecho en Argentina 🇦🇷</p>
 </footer>
 
+<script>
+  function toggleModo() {
+    const light = document.body.classList.toggle("light");
+    document.getElementById("btn-modo").textContent = light ? "☀️" : "🌙";
+    localStorage.setItem("modo-landing", light ? "light" : "dark");
+  }
+  if (localStorage.getItem("modo-landing") === "light") {
+    document.body.classList.add("light");
+    document.getElementById("btn-modo").textContent = "☀️";
+  }
+</script>
 </body>
 </html>
