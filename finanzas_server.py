@@ -237,11 +237,14 @@ def exportar():
 @login_required
 def stats():
     from collections import defaultdict
-    hoy = date.today()
-    inicio_mes = hoy.replace(day=1).isoformat()
-    inicio_mes_ant = date(hoy.year if hoy.month > 1 else hoy.year - 1,
-                          hoy.month - 1 if hoy.month > 1 else 12, 1).isoformat()
-    res_act = db.table("transacciones").select("tipo,monto,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).execute()
+    hoy_ar = (datetime.now(timezone.utc) - timedelta(hours=3)).date()
+    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
+    anio = request.args.get("anio", type=int, default=hoy_ar.year)
+    mes  = max(1, min(12, mes))
+    inicio_mes = date(anio, mes, 1).isoformat()
+    inicio_mes_ant = date(anio if mes > 1 else anio - 1, mes - 1 if mes > 1 else 12, 1).isoformat()
+    fin_mes = date(anio if mes < 12 else anio + 1, mes + 1 if mes < 12 else 1, 1).isoformat()
+    res_act = db.table("transacciones").select("tipo,monto,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
     res_ant = db.table("transacciones").select("tipo,monto").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
     cats = defaultdict(float)
     gas_act = ing_act = 0.0
@@ -260,7 +263,7 @@ def stats():
         "resumen": {
             "gastos_actual": gas_act, "ingresos_actual": ing_act,
             "gastos_anterior": gas_ant, "ingresos_anterior": ing_ant,
-            "mes_actual": meses[hoy.month - 1], "mes_anterior": meses[(hoy.month - 2) % 12],
+            "mes_actual": meses[mes - 1], "mes_anterior": meses[(mes - 2) % 12],
         },
         "count_mes": len(res_act.data),
     })

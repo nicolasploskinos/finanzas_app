@@ -301,8 +301,17 @@
       <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
     <div id="stats-body" style="display:none;padding:0 14px 14px">
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <select id="stats-mes" onchange="cargarStats()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+        <select id="stats-anio" onchange="cargarStats()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none"></select>
+      </div>
       <div class="stats-grid" id="resumen-mes"></div>
-      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Gastos por categoría · mes actual · ARS</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Gastos por categoría · ARS</div>
       <canvas id="cat-chart"></canvas>
       <div id="cat-vacio" style="display:none;text-align:center;color:var(--muted);font-size:13px;padding:16px 0">Sin gastos este mes</div>
     </div>
@@ -939,10 +948,20 @@
     if (statsOpen) cargarStats();
   }
 
+  // Inicializar selectores de stats con mes/año actual
+  const statsAnioEl = document.getElementById("stats-anio");
+  for (let y = anioAct; y >= Math.max(2020, anioAct - 4); y--) {
+    const o = document.createElement("option");
+    o.value = y; o.textContent = y;
+    statsAnioEl.appendChild(o);
+  }
+  document.getElementById("stats-mes").value = hoy.getMonth() + 1;
+
   async function cargarStats() {
     try {
-      const r = await fetch("/api/finanzas/stats");
-      const d = await r.json();
+      const mes  = document.getElementById("stats-mes").value  || (hoy.getMonth() + 1);
+      const anio = document.getElementById("stats-anio").value || hoy.getFullYear();
+      const r = await fetch(`/api/finanzas/stats?mes=${mes}&anio=${anio}`);
       actualizarLimiteBanner(d.count_mes);
       if (statsOpen) {
         renderResumenMes(d.resumen);
