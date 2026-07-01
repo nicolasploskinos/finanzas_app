@@ -163,14 +163,21 @@
     .mock-tx-list { display: flex; flex-direction: column; gap: 8px; }
     .mock-tx {
       display: flex; align-items: center; gap: 10px;
-      background: var(--surface2); border-radius: 10px; padding: 10px 12px;
+      background: var(--surface2); border-radius: 12px; padding: 10px 12px;
+      border-left: 3px solid transparent;
     }
-    .mock-tx-dot {
-      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    .mock-tx.mock-gasto   { border-left-color: var(--red); }
+    .mock-tx.mock-ingreso { border-left-color: var(--green); }
+    .mock-tx-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; flex-shrink: 0;
     }
+    .mock-tx-icon.g { background: rgba(248,113,113,.15); color: var(--red); }
+    .mock-tx-icon.i { background: rgba(74,222,128,.15); color: var(--green); }
     .mock-tx-info { flex: 1; }
-    .mock-tx-desc { font-size: 13px; font-weight: 600; }
-    .mock-tx-cat  { font-size: 11px; color: var(--muted); }
+    .mock-tx-desc { font-size: 13px; font-weight: 700; }
+    .mock-tx-cat  { font-size: 11px; color: var(--muted); margin-top: 1px; }
     .mock-tx-monto { font-size: 14px; font-weight: 800; }
 
     .mock-form-label { font-size: 10px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
@@ -250,27 +257,38 @@
     .big-emoji { font-size: 96px; text-align: center; }
 
     /* ── PRECIOS ── */
+    .precios-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; max-width: 760px; margin: 0 auto;
+    }
+    @media (max-width: 620px) { .precios-grid { grid-template-columns: 1fr; } }
     .precio-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 22px; padding: 36px 32px;
-      max-width: 380px; margin: 0 auto; text-align: center;
+      border-radius: 22px; padding: 32px 28px; text-align: center;
       position: relative;
+    }
+    .precio-card.pro {
+      border-color: var(--yellow);
+      box-shadow: 0 0 40px rgba(251,191,36,.15);
     }
     .precio-badge {
       display: inline-block;
       background: var(--green); color: #000;
       border-radius: 100px; padding: 4px 14px;
-      font-size: 12px; font-weight: 800;
-      margin-bottom: 16px;
+      font-size: 12px; font-weight: 800; margin-bottom: 16px;
     }
+    .precio-badge.pro { background: var(--yellow); }
     .precio-num {
-      font-size: 64px; font-weight: 900; line-height: 1;
+      font-size: 52px; font-weight: 900; line-height: 1;
       color: var(--green); margin-bottom: 4px;
     }
-    .precio-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
-    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
-    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 15px; }
+    .precio-num.pro { color: var(--yellow); font-size: 38px; }
+    .precio-sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 14px; }
     .precio-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
+    .precio-features li.no::before { content: "✗"; color: var(--muted); }
+    .precio-features li.no { color: var(--muted); }
 
     /* ── CTA FINAL ── */
     .cta-final {
@@ -393,32 +411,32 @@
       </div>
     </div>
     <div class="mock-tx-list">
-      <div class="mock-tx">
-        <div class="mock-tx-dot" style="background:var(--green)"></div>
+      <div class="mock-tx mock-ingreso">
+        <div class="mock-tx-icon i">↑</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Sueldo</div>
           <div class="mock-tx-cat">Ingreso · ARS</div>
         </div>
         <div class="mock-tx-monto green">+$750.000</div>
       </div>
-      <div class="mock-tx">
-        <div class="mock-tx-dot" style="background:var(--red)"></div>
+      <div class="mock-tx mock-gasto">
+        <div class="mock-tx-icon g">↓</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Alquiler</div>
-          <div class="mock-tx-cat">Vivienda · ARS 🔄</div>
+          <div class="mock-tx-cat">Vivienda · ARS · 🔄</div>
         </div>
         <div class="mock-tx-monto red">-$400.000</div>
       </div>
-      <div class="mock-tx">
-        <div class="mock-tx-dot" style="background:var(--red)"></div>
+      <div class="mock-tx mock-gasto">
+        <div class="mock-tx-icon g">↓</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Netflix</div>
-          <div class="mock-tx-cat">Suscripciones · USD 🔄</div>
+          <div class="mock-tx-cat">Suscripciones · USD · 🔄</div>
         </div>
-        <div class="mock-tx-monto red">-USD 7.99</div>
+        <div class="mock-tx-monto red">-USD 7,99</div>
       </div>
-      <div class="mock-tx">
-        <div class="mock-tx-dot" style="background:var(--green)"></div>
+      <div class="mock-tx mock-ingreso">
+        <div class="mock-tx-icon i">↑</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Freelance</div>
           <div class="mock-tx-cat">Ingreso · USD</div>
@@ -494,21 +512,44 @@
 <div class="divider"></div>
 <section class="section" id="precio">
   <div class="section-label">Precio</div>
-  <h2>Simple y directo</h2>
-  <p class="section-sub">Sin planes confusos, sin prueba gratis de 14 días que se cobra sola.</p>
-  <div class="precio-card">
-    <div class="precio-badge">GRATIS POR TIEMPO LIMITADO</div>
-    <div class="precio-num">$0</div>
-    <p class="precio-sub">Acceso completo mientras está en beta</p>
-    <ul class="precio-features">
-      <li>Transacciones ilimitadas</li>
-      <li>Multi-moneda (ARS, USD, EUR)</li>
-      <li>Cotización BNA automática</li>
-      <li>Gastos recurrentes</li>
-      <li>Acceso web y escritorio</li>
-      <li>Soporte activo</li>
-    </ul>
-    <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;">Empezar ahora →</a>
+  <h2>Empezá gratis, crecé con Pro</h2>
+  <p class="section-sub">Sin tarjeta de crédito para empezar.</p>
+  <div class="precios-grid">
+
+    <!-- FREE -->
+    <div class="precio-card">
+      <div class="precio-badge">GRATIS</div>
+      <div class="precio-num">$0</div>
+      <p class="precio-sub">Para siempre</p>
+      <ul class="precio-features">
+        <li>50 transacciones por mes</li>
+        <li>Multi-moneda (ARS, USD, EUR)</li>
+        <li>Cotización BNA automática</li>
+        <li>Historial últimos 3 meses</li>
+        <li>Acceso web y escritorio</li>
+        <li class="no">Gastos recurrentes</li>
+        <li class="no">Exportar a Excel</li>
+      </ul>
+      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;">Empezar gratis →</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="precio-card pro">
+      <div class="precio-badge pro">⭐ PRO</div>
+      <div class="precio-num pro">$1.999<span style="font-size:18px;font-weight:600">/mes</span></div>
+      <p class="precio-sub">Pagos seguros con Mercado Pago</p>
+      <ul class="precio-features">
+        <li>Transacciones ilimitadas</li>
+        <li>Multi-moneda (ARS, USD, EUR)</li>
+        <li>Cotización BNA automática</li>
+        <li>Historial completo</li>
+        <li>Acceso web y escritorio</li>
+        <li>Gastos recurrentes automáticos</li>
+        <li>Exportar a Excel / CSV</li>
+      </ul>
+      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;background:#d97706;">Empezar con Pro →</a>
+    </div>
+
   </div>
 </section>
 
