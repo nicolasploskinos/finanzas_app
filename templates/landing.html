@@ -180,24 +180,26 @@
     .mock-tx-cat  { font-size: 11px; color: var(--muted); margin-top: 1px; }
     .mock-tx-monto { font-size: 14px; font-weight: 800; }
 
-    .mock-form-label { font-size: 10px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+    .mock-form-label { font-size: 10px; color: var(--muted); font-weight: 800; margin-bottom: 5px; letter-spacing: .4px; text-transform: uppercase; }
     .mock-form-input {
-      background: var(--surface3); border: 1px solid var(--border);
-      border-radius: 8px; padding: 9px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 12px;
       font-size: 13px; color: var(--text); width: 100%; margin-bottom: 10px;
     }
     .mock-tipo-btns { display: flex; gap: 6px; margin-bottom: 10px; }
     .mock-tipo-btn {
-      flex: 1; padding: 8px 0; text-align: center; border-radius: 8px;
+      flex: 1; padding: 10px 0; text-align: center; border-radius: 12px;
       font-size: 13px; font-weight: 700; color: var(--muted);
-      background: var(--surface3);
+      background: var(--surface2); border: none;
     }
-    .mock-tipo-btn.gasto  { background: rgba(248,113,113,.2); color: var(--red); }
-    .mock-tipo-btn.ingreso { background: rgba(74,222,128,.2); color: var(--green); }
+    .mock-tipo-btn.gasto   { background: var(--red);       color: white; }
+    .mock-tipo-btn.ingreso { background: var(--green);     color: #0f172a; }
+    .mock-tipo-btn.active  { background: var(--blue-dark); color: white; }
     .mock-guardar {
       width: 100%; background: var(--blue-dark); color: #fff;
-      border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 800;
-      text-align: center; margin-top: 4px;
+      border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 800;
+      text-align: center; margin-top: 8px;
+      box-shadow: 0 4px 14px rgba(59,130,246,.35);
     }
     .mockup-wrap { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px 20px 60px; }
 
@@ -371,7 +373,7 @@
 
       <div class="mock-form-label">MONEDA</div>
       <div class="mock-tipo-btns" style="margin-bottom:10px">
-        <div class="mock-tipo-btn ingreso">ARS $</div>
+        <div class="mock-tipo-btn active">ARS $</div>
         <div class="mock-tipo-btn">USD</div>
         <div class="mock-tipo-btn">EUR €</div>
       </div>
@@ -390,7 +392,7 @@
 
       <div class="mock-form-label">REPETICIÓN</div>
       <div class="mock-tipo-btns">
-        <div class="mock-tipo-btn ingreso">Sin repetir</div>
+        <div class="mock-tipo-btn active">Sin repetir</div>
         <div class="mock-tipo-btn">Semanal</div>
         <div class="mock-tipo-btn">Mensual</div>
       </div>
