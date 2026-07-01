@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+_inflacion_cache = {"data": None, "ts": 0}
+
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.environ["SECRET_KEY"]
@@ -232,6 +234,26 @@ def exportar():
     encoded = output.getvalue().encode("utf-8-sig")
     return Response(encoded, mimetype="text/csv; charset=utf-8",
                     headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
+
+@app.route("/api/finanzas/inflacion")
+@login_required
+def inflacion():
+    import time
+    global _inflacion_cache
+    if time.time() - _inflacion_cache["ts"] < 86400 and _inflacion_cache["data"] is not None:
+        return jsonify(_inflacion_cache["data"])
+    try:
+        r = req.get(
+            "https://apis.datos.gob.ar/series/api/series/",
+            params={"ids": "148.3_INIVELNAL_DICI_M_26", "limit": 25, "format": "json"},
+            timeout=6,
+        )
+        series = r.json().get("data", [])
+        result = [{"mes": row[0][:7], "ipc": row[1]} for row in series if row[1] is not None]
+        _inflacion_cache = {"data": result, "ts": time.time()}
+        return jsonify(result)
+    except Exception:
+        return jsonify(_inflacion_cache["data"] or []), 200
 
 @app.route("/api/finanzas/stats")
 @login_required
