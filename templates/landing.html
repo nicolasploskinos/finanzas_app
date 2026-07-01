@@ -301,6 +301,26 @@
     }
     .cta-final p { color: var(--muted); font-size: 18px; margin-bottom: 40px; }
 
+    /* ── FAQ ── */
+    .faq-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .faq-q {
+      padding: 18px 20px; font-size: 16px; font-weight: 700;
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      user-select: none;
+    }
+    .faq-q:hover { background: var(--surface2); }
+    .faq-chev { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; margin-left: 12px; }
+    .faq-q.open .faq-chev { transform: rotate(180deg); }
+    .faq-a {
+      display: none; padding: 0 20px 18px;
+      font-size: 15px; color: var(--muted); line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+    .faq-a.open { display: block; }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -481,8 +501,8 @@
     </div>
     <div class="feat-card">
       <div class="feat-icon">🔐</div>
-      <h3>Tus datos, seguros</h3>
-      <p>Cuenta con usuario y contraseña. Tus transacciones son tuyas y nadie más las puede ver. Base de datos en la nube con cifrado.</p>
+      <h3>Tus datos, solo tuyos</h3>
+      <p>No compartimos tu información con nadie. No vendemos datos. Si borrás tu cuenta, se eliminan todos tus registros. Acceso protegido con contraseña.</p>
     </div>
   </div>
 </section>
@@ -512,8 +532,8 @@
 <div class="divider"></div>
 <section class="section" id="precio">
   <div class="section-label">Precio</div>
-  <h2>Empezá gratis, crecé con Pro</h2>
-  <p class="section-sub">Sin tarjeta de crédito para empezar.</p>
+  <h2>Empezá gratis, sin tarjeta</h2>
+  <p class="section-sub">La app es gratuita para siempre. Pro desbloquea funciones avanzadas si las necesitás.</p>
   <div class="precios-grid">
 
     <!-- FREE -->
@@ -525,7 +545,7 @@
         <li>50 transacciones por mes</li>
         <li>Multi-moneda (ARS, USD, EUR)</li>
         <li>Cotización BNA automática</li>
-        <li>Historial últimos 3 meses</li>
+        <li>Historial últimos 3 meses <span style="font-size:11px;color:var(--muted)">(la app te avisa cuando se acerca)</span></li>
         <li>Acceso web y escritorio</li>
         <li class="no">Gastos recurrentes</li>
         <li class="no">Exportar a Excel</li>
@@ -553,12 +573,63 @@
   </div>
 </section>
 
+<!-- FAQ -->
+<div class="divider"></div>
+<section class="section" id="faq">
+  <div class="section-label">FAQ</div>
+  <h2>Preguntas frecuentes</h2>
+  <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        ¿Es seguro cargar mis gastos acá? <span class="faq-chev">▼</span>
+      </div>
+      <div class="faq-a">Sí. No guardamos datos bancarios ni contraseñas de tus cuentas — solo los montos y categorías que vos ingresás. La base de datos está cifrada y tu información no se comparte con nadie.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        ¿Puedo cancelar Pro cuando quiera? <span class="faq-chev">▼</span>
+      </div>
+      <div class="faq-a">Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        ¿Cómo se actualiza la cotización del dólar? <span class="faq-chev">▼</span>
+      </div>
+      <div class="faq-a">Automáticamente cada vez que abrís la app. Usamos la cotización oficial del Banco Nación (BNA) vía la API de bluelytics.com.ar.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        ¿Qué pasa si borro mi cuenta? <span class="faq-chev">▼</span>
+      </div>
+      <div class="faq-a">Se eliminan todos tus datos permanentemente. No guardamos copias ni hacemos backups de cuentas borradas.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        ¿Funciona en el celular? <span class="faq-chev">▼</span>
+      </div>
+      <div class="faq-a">Sí, está diseñada primero para móvil. Funciona en cualquier navegador (Chrome, Safari, etc.) sin necesidad de instalar nada. También tiene versión de escritorio para Windows.</div>
+    </div>
+
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <p>💰 Finanzas &nbsp;·&nbsp; <a href="/finanzas">Acceder</a> &nbsp;·&nbsp; Hecho en Argentina 🇦🇷</p>
 </footer>
 
 <script>
+  function toggleFaq(el) {
+    const a = el.nextElementSibling;
+    el.classList.toggle("open");
+    a.classList.toggle("open");
+  }
+
   function toggleModo() {
     const light = document.body.classList.toggle("light");
     document.getElementById("btn-modo").textContent = light ? "☀️" : "🌙";
