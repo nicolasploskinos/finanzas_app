@@ -545,6 +545,7 @@
       datos = await r.json();
     } catch { datos = []; }
     render();
+    if (!ES_PRO) actualizarLimiteBanner(contarMesActual());
   }
 
   async function cargarCotizaciones() {
@@ -890,7 +891,7 @@
         document.getElementById("inp-desc").value  = "";
         document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
         render();
-        cargarStats();
+        if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
         toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
       }
     } catch { toast("Error al guardar"); }
@@ -942,6 +943,7 @@
   let grafico   = null;
 
   function toggleStats() {
+    if (!ES_PRO) { abrirModalPro(); return; }
     statsOpen = !statsOpen;
     document.getElementById("stats-body").style.display = statsOpen ? "" : "none";
     document.getElementById("stats-chev").textContent = statsOpen ? "▲" : "▼";
@@ -956,6 +958,11 @@
     statsAnioEl.appendChild(o);
   }
   document.getElementById("stats-mes").value = hoy.getMonth() + 1;
+
+  function contarMesActual() {
+    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    return datos.filter(t => new Date(t.fecha + "T00:00:00") >= inicio).length;
+  }
 
   async function cargarStats() {
     try {
@@ -1042,7 +1049,7 @@
 
   cargar();
   cargarCotizaciones();
-  cargarStats();
+  if (ES_PRO) cargarStats();
 </script>
 </body>
 </html>

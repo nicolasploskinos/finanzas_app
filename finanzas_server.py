@@ -236,6 +236,8 @@ def exportar():
 @app.route("/api/finanzas/stats")
 @login_required
 def stats():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "pro_requerido"}), 403
     import unicodedata
     from collections import defaultdict
     def _norm(s):
