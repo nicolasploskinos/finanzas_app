@@ -962,6 +962,7 @@
       const mes  = document.getElementById("stats-mes").value  || (hoy.getMonth() + 1);
       const anio = document.getElementById("stats-anio").value || hoy.getFullYear();
       const r = await fetch(`/api/finanzas/stats?mes=${mes}&anio=${anio}`);
+      const d = await r.json();
       actualizarLimiteBanner(d.count_mes);
       if (statsOpen) {
         renderResumenMes(d.resumen);
