@@ -162,7 +162,7 @@ def _siguiente_fecha(fecha_str, frecuencia):
     return date(anio, mes, min(d.day, calendar.monthrange(anio, mes)[1])).isoformat()
 
 def _procesar_recurrentes(user_id):
-    hoy = date.today().isoformat()
+    hoy = (datetime.now(timezone.utc) - timedelta(hours=3)).date().isoformat()
     pendientes = db.table("recurrentes").select("*").eq("user_id", user_id).eq("activo", True).lte("proxima_fecha", hoy).execute().data
     for r in pendientes:
         prox = r["proxima_fecha"]
