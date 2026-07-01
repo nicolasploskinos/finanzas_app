@@ -236,7 +236,11 @@ def exportar():
 @app.route("/api/finanzas/stats")
 @login_required
 def stats():
+    import unicodedata
     from collections import defaultdict
+    def _norm(s):
+        s = (s or "otros").strip().lower()
+        return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
     hoy_ar = (datetime.now(timezone.utc) - timedelta(hours=3)).date()
     mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
     anio = request.args.get("anio", type=int, default=hoy_ar.year)
@@ -246,12 +250,16 @@ def stats():
     fin_mes = date(anio if mes < 12 else anio + 1, mes + 1 if mes < 12 else 1, 1).isoformat()
     res_act = db.table("transacciones").select("tipo,monto,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
     res_ant = db.table("transacciones").select("tipo,monto").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
-    cats = defaultdict(float)
+    cats_total = defaultdict(float)
+    cats_label = {}
     gas_act = ing_act = 0.0
     for t in res_act.data:
         m = float(t["monto"])
         if t["tipo"] == "Gasto":
-            cats[t.get("categoria") or "Otros"] += m
+            key = _norm(t.get("categoria"))
+            cats_total[key] += m
+            if key not in cats_label:
+                cats_label[key] = (t.get("categoria") or "Otros").strip().capitalize()
             gas_act += m
         else:
             ing_act += m
@@ -259,7 +267,7 @@ def stats():
     ing_ant  = sum(float(t["monto"]) for t in res_ant.data if t["tipo"] == "Ingreso")
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     return jsonify({
-        "categorias": [{"nombre": k, "total": v} for k, v in sorted(cats.items(), key=lambda x: -x[1])],
+        "categorias": [{"nombre": cats_label[k], "total": v} for k, v in sorted(cats_total.items(), key=lambda x: -x[1])],
         "resumen": {
             "gastos_actual": gas_act, "ingresos_actual": ing_act,
             "gastos_anterior": gas_ant, "ingresos_anterior": ing_ant,
