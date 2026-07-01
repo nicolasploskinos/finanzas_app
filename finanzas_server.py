@@ -10,7 +10,7 @@ from flask_cors import CORS
 from supabase import create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,9 +39,22 @@ def landing():
 @app.route("/finanzas")
 @login_required
 def index():
-    user = db.table("usuarios").select("plan").eq("id", session["user_id"]).execute().data
-    is_pro = user[0]["plan"] == "pro" if user else False
-    return render_template("finanzas.html", username=session["username"], is_pro=is_pro)
+    user = db.table("usuarios").select("plan,trial_expira").eq("id", session["user_id"]).execute().data
+    is_pro = False
+    is_trial = False
+    trial_dias = 0
+    if user:
+        plan = user[0].get("plan")
+        trial_expira = user[0].get("trial_expira")
+        if plan == "pro":
+            is_pro = True
+        elif plan == "trial" and trial_expira:
+            expira = datetime.fromisoformat(trial_expira.replace("Z", "+00:00"))
+            if expira > datetime.now(timezone.utc):
+                is_pro = True
+                is_trial = True
+                trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
+    return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial, trial_dias=trial_dias)
 
 @app.route("/finanzas/login")
 def login_page():
@@ -98,6 +111,8 @@ def register():
         "username":      username,
         "password_hash": generate_password_hash(password),
         "verificado":    True,
+        "plan":          "trial",
+        "trial_expira":  (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
     }).execute()
 
     user = res.data[0]
@@ -125,8 +140,16 @@ def cotizaciones():
 # ── Plan helpers ─────────────────────────────────────────────────────────────
 
 def _es_pro(user_id):
-    res = db.table("usuarios").select("plan").eq("id", user_id).execute()
-    return bool(res.data) and res.data[0].get("plan") == "pro"
+    res = db.table("usuarios").select("plan,trial_expira").eq("id", user_id).execute()
+    if not res.data:
+        return False
+    u = res.data[0]
+    if u.get("plan") == "pro":
+        return True
+    if u.get("plan") == "trial" and u.get("trial_expira"):
+        expira = datetime.fromisoformat(u["trial_expira"].replace("Z", "+00:00"))
+        return expira > datetime.now(timezone.utc)
+    return False
 
 # ── Recurrentes helpers ───────────────────────────────────────────────────────
 
@@ -209,6 +232,38 @@ def exportar():
     encoded = output.getvalue().encode("utf-8-sig")
     return Response(encoded, mimetype="text/csv; charset=utf-8",
                     headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
+
+@app.route("/api/finanzas/stats")
+@login_required
+def stats():
+    from collections import defaultdict
+    hoy = date.today()
+    inicio_mes = hoy.replace(day=1).isoformat()
+    inicio_mes_ant = date(hoy.year if hoy.month > 1 else hoy.year - 1,
+                          hoy.month - 1 if hoy.month > 1 else 12, 1).isoformat()
+    res_act = db.table("transacciones").select("tipo,monto,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).execute()
+    res_ant = db.table("transacciones").select("tipo,monto").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
+    cats = defaultdict(float)
+    gas_act = ing_act = 0.0
+    for t in res_act.data:
+        m = float(t["monto"])
+        if t["tipo"] == "Gasto":
+            cats[t.get("categoria") or "Otros"] += m
+            gas_act += m
+        else:
+            ing_act += m
+    gas_ant = sum(float(t["monto"]) for t in res_ant.data if t["tipo"] == "Gasto")
+    ing_ant  = sum(float(t["monto"]) for t in res_ant.data if t["tipo"] == "Ingreso")
+    meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    return jsonify({
+        "categorias": [{"nombre": k, "total": v} for k, v in sorted(cats.items(), key=lambda x: -x[1])],
+        "resumen": {
+            "gastos_actual": gas_act, "ingresos_actual": ing_act,
+            "gastos_anterior": gas_ant, "ingresos_anterior": ing_ant,
+            "mes_actual": meses[hoy.month - 1], "mes_anterior": meses[(hoy.month - 2) % 12],
+        },
+        "count_mes": len(res_act.data),
+    })
 
 @app.route("/api/finanzas/recurrentes", methods=["GET"])
 @login_required

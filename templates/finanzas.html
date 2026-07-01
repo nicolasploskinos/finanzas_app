@@ -221,7 +221,18 @@
     .btn-pro-pagar { width: 100%; background: var(--yellow); color: #000; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
     .btn-pro-pagar:active { opacity: .85; }
     .btn-pro-cancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px; }
+
+    /* Trial banner */
+    .trial-banner { background: linear-gradient(135deg,rgba(96,165,250,.15),rgba(139,92,246,.15)); border-bottom: 1px solid rgba(96,165,250,.25); padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .stats-card { background: var(--surface2); border-radius: 12px; padding: 12px; }
+    .stats-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+    .stats-card-value { font-size: 20px; font-weight: 800; }
+    .stats-diff { font-size: 11px; margin-top: 3px; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -243,6 +254,13 @@
     </div>
   </div>
 </header>
+
+{% if is_trial %}
+<div class="trial-banner">
+  <span>🎉 <strong>Prueba Pro</strong> activa — te {{ 'queda' if trial_dias == 1 else 'quedan' }} <strong>{{ trial_dias }} día{{ '' if trial_dias == 1 else 's' }}</strong></span>
+  <a href="/api/finanzas/suscribir" style="font-size:11px;color:var(--blue);font-weight:700;text-decoration:none">Suscribirme →</a>
+</div>
+{% endif %}
 
 <div id="tab-resumen">
 
@@ -271,6 +289,23 @@
       </div>
     </div>
     <div class="cons-nota" id="cons-nota">Al tipo de cambio oficial BNA</div>
+  </div>
+
+  <!-- Límite transacciones (free) -->
+  <div id="limite-banner" style="display:none;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center"></div>
+
+  <!-- Estadísticas del mes -->
+  <div class="cot-wrap">
+    <div class="cot-header" onclick="toggleStats()">
+      <span>📊 Resumen del mes</span>
+      <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
+    </div>
+    <div id="stats-body" style="display:none;padding:0 14px 14px">
+      <div class="stats-grid" id="resumen-mes"></div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Gastos por categoría · mes actual · ARS</div>
+      <canvas id="cat-chart"></canvas>
+      <div id="cat-vacio" style="display:none;text-align:center;color:var(--muted);font-size:13px;padding:16px 0">Sin gastos este mes</div>
+    </div>
   </div>
 
   <!-- Recurrentes -->
@@ -846,6 +881,7 @@
         document.getElementById("inp-desc").value  = "";
         document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
         render();
+        cargarStats();
         toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
       }
     } catch { toast("Error al guardar"); }
@@ -892,8 +928,101 @@
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/finanzas/sw.js");
 
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  let statsOpen = false;
+  let grafico   = null;
+
+  function toggleStats() {
+    statsOpen = !statsOpen;
+    document.getElementById("stats-body").style.display = statsOpen ? "" : "none";
+    document.getElementById("stats-chev").textContent = statsOpen ? "▲" : "▼";
+    if (statsOpen) cargarStats();
+  }
+
+  async function cargarStats() {
+    try {
+      const r = await fetch("/api/finanzas/stats");
+      const d = await r.json();
+      actualizarLimiteBanner(d.count_mes);
+      if (statsOpen) {
+        renderResumenMes(d.resumen);
+        renderChart(d.categorias);
+      }
+    } catch {}
+  }
+
+  function actualizarLimiteBanner(count) {
+    if (ES_PRO) return;
+    const el = document.getElementById("limite-banner");
+    if (count < 35) { el.style.display = "none"; return; }
+    el.style.display = "";
+    const restantes = 50 - count;
+    if (count >= 50) {
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);color:#f87171";
+      el.innerHTML = `⛔ Límite alcanzado — <button onclick="abrirModalPro()" style="background:none;border:none;color:#f87171;font-weight:800;cursor:pointer;text-decoration:underline">Upgrade a Pro</button> para seguir`;
+    } else if (count >= 45) {
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.4);color:#fb923c";
+      el.innerHTML = `⚠️ Te quedan <strong>${restantes}</strong> transacciones este mes · <button onclick="abrirModalPro()" style="background:none;border:none;color:#fb923c;font-weight:800;cursor:pointer;text-decoration:underline">Upgrade →</button>`;
+    } else {
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24";
+      el.innerHTML = `📊 Usaste ${count} de 50 transacciones este mes · <button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer">Ver Pro →</button>`;
+    }
+  }
+
+  function renderResumenMes(r) {
+    const fmt = v => '$' + Math.round(v).toLocaleString("es-AR");
+    const diff = (act, ant, buenoCuandoBaja) => {
+      if (!ant) return "";
+      const pct = Math.round((act - ant) / ant * 100);
+      const sube = act > ant;
+      const bueno = buenoCuandoBaja ? !sube : sube;
+      return `<div class="stats-diff" style="color:${bueno ? 'var(--green)' : 'var(--red)'}">
+        ${sube ? '▲' : '▼'} ${Math.abs(pct)}% vs ${r.mes_anterior}</div>`;
+    };
+    document.getElementById("resumen-mes").innerHTML = `
+      <div class="stats-card">
+        <div class="stats-card-label">Gastos ${r.mes_actual}</div>
+        <div class="stats-card-value red">${fmt(r.gastos_actual)}</div>
+        ${diff(r.gastos_actual, r.gastos_anterior, true)}
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-label">Ingresos ${r.mes_actual}</div>
+        <div class="stats-card-value green">${fmt(r.ingresos_actual)}</div>
+        ${diff(r.ingresos_actual, r.ingresos_anterior, false)}
+      </div>`;
+  }
+
+  function renderChart(cats) {
+    const canvas = document.getElementById("cat-chart");
+    const vacio  = document.getElementById("cat-vacio");
+    if (!cats || !cats.length) {
+      canvas.style.display = "none"; vacio.style.display = ""; return;
+    }
+    canvas.style.display = ""; vacio.style.display = "none";
+    const COLS = ["#60a5fa","#f87171","#4ade80","#fbbf24","#a78bfa","#fb923c","#34d399","#f472b6","#38bdf8","#facc15"];
+    if (grafico) grafico.destroy();
+    grafico = new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: cats.map(c => c.nombre),
+        datasets: [{ data: cats.map(c => c.total), backgroundColor: cats.map((_, i) => COLS[i % COLS.length]), borderWidth: 0, hoverOffset: 4 }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 8, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => {
+            const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            return ` $${Math.round(ctx.raw).toLocaleString("es-AR")} (${Math.round(ctx.raw/t*100)}%)`;
+          }}}
+        }
+      }
+    });
+  }
+
   cargar();
   cargarCotizaciones();
+  cargarStats();
 </script>
 </body>
 </html>
