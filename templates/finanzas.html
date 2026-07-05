@@ -535,6 +535,9 @@
     `${hoy.getDate()} de ${MESES[hoy.getMonth()].toLowerCase()} de ${hoy.getFullYear()}`;
   document.getElementById("inp-fecha").value = hoy.toISOString().split("T")[0];
 
+  // Mes actual por defecto
+  document.getElementById("f-mes").value = MESES[hoy.getMonth()];
+
   // Años en filtro
   const fAnio = document.getElementById("f-anio");
   const anioAct = hoy.getFullYear();
