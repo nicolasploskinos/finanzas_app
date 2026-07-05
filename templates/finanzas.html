@@ -366,6 +366,13 @@
   </div>
   {% endif %}
 
+  <!-- Búsqueda -->
+  <div style="padding:0 12px 6px;position:relative">
+    <input type="text" id="busqueda" placeholder="Buscar..." oninput="onBusquedaInput()" autocomplete="off"
+      style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:100px;color:var(--text);padding:9px 38px 9px 16px;font-size:13px;outline:none;transition:border-color .2s">
+    <button id="btn-clear-busq" onclick="limpiarBusqueda()" style="display:none;position:absolute;right:22px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
+  </div>
+
   <!-- Filtros -->
   <div class="filtros">
     <select id="f-mes" onchange="render()">
@@ -421,7 +428,7 @@
 
     <div class="campo">
       <label id="lbl-monto">MONTO (ARS)</label>
-      <input type="text" id="inp-monto" inputmode="decimal" placeholder="0,00">
+      <input type="text" id="inp-monto" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
     <div class="campo">
       <label>FECHA</label>
@@ -429,7 +436,8 @@
     </div>
     <div class="campo">
       <label>CATEGORÍA</label>
-      <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo...">
+      <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo..." list="cat-suggestions" autocomplete="off">
+      <datalist id="cat-suggestions"></datalist>
     </div>
     <div class="campo">
       <label>DESCRIPCIÓN</label>
@@ -650,16 +658,47 @@
     const tipo   = document.getElementById("f-tipo").value;
     const moneda = document.getElementById("f-moneda").value;
     const cat    = document.getElementById("f-cat").value;
+    const busq   = normalizar(document.getElementById("busqueda").value.trim());
 
     return datos.filter(t => {
       const f = new Date(t.fecha + "T00:00:00");
-      if (mes    && MESES[f.getMonth()] !== mes)         return false;
-      if (anio   && f.getFullYear() !== +anio)           return false;
-      if (tipo   && t.tipo !== tipo)                     return false;
-      if (moneda && (t.moneda || 'ARS') !== moneda)      return false;
-      if (cat    && normalizar(t.categoria) !== normalizar(cat)) return false;
+      if (mes    && MESES[f.getMonth()] !== mes)                     return false;
+      if (anio   && f.getFullYear() !== +anio)                       return false;
+      if (tipo   && t.tipo !== tipo)                                  return false;
+      if (moneda && (t.moneda || 'ARS') !== moneda)                  return false;
+      if (cat    && normalizar(t.categoria) !== normalizar(cat))     return false;
+      if (busq) {
+        const hayMatch = normalizar(t.categoria).includes(busq)
+          || normalizar(t.descripcion).includes(busq)
+          || String(t.monto).includes(busq);
+        if (!hayMatch) return false;
+      }
       return true;
     }).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }
+
+  function onBusquedaInput() {
+    document.getElementById("btn-clear-busq").style.display =
+      document.getElementById("busqueda").value ? "" : "none";
+    render();
+  }
+
+  function limpiarBusqueda() {
+    document.getElementById("busqueda").value = "";
+    document.getElementById("btn-clear-busq").style.display = "none";
+    render();
+    document.getElementById("busqueda").focus();
+  }
+
+  function actualizarSugerenciasCat() {
+    const freq = {};
+    datos.forEach(t => {
+      const c = (t.categoria || "").trim();
+      if (c) freq[c] = (freq[c] || 0) + 1;
+    });
+    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+    document.getElementById("cat-suggestions").innerHTML =
+      sorted.map(c => `<option value="${c.replace(/"/g, '&quot;')}">`).join("");
   }
 
   function actualizarCatFiltro() {
@@ -805,6 +844,7 @@
     document.getElementById("modal-title").textContent = "Nueva transacción";
     document.getElementById("recur-campo").style.display = "";
     setRecur("no");
+    actualizarSugerenciasCat();
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
   }
@@ -829,6 +869,7 @@
     document.getElementById("inp-fecha").value = t.fecha;
     document.getElementById("inp-cat").value   = t.categoria || "";
     document.getElementById("inp-desc").value  = t.descripcion || "";
+    actualizarSugerenciasCat();
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
   }
