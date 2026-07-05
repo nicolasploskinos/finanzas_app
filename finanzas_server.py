@@ -1,11 +1,13 @@
 import os
 import csv
 import io
+import re
+import unicodedata
 import calendar
 import hmac
 import hashlib
 import requests as req
-from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect
+from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect, Response
 from flask_cors import CORS
 from supabase import create_client
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -230,10 +232,269 @@ def exportar():
             t["fecha"], t["tipo"], t["monto"],
             t.get("moneda","ARS"), t.get("categoria",""), t.get("descripcion",""),
         ])
-    from flask import Response
     encoded = output.getvalue().encode("utf-8-sig")
     return Response(encoded, mimetype="text/csv; charset=utf-8",
                     headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
+
+@app.route("/api/finanzas/export/excel", methods=["GET"])
+@login_required
+def exportar_excel():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "Pro requerido"}), 403
+    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Transacciones"
+    headers = ["Fecha", "Tipo", "Monto", "Moneda", "Categoría", "Descripción"]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(start_color="16A34A", end_color="16A34A", fill_type="solid")
+        cell.alignment = Alignment(horizontal="center")
+    for t in res.data:
+        ws.append([
+            t["fecha"], t["tipo"], float(t["monto"]),
+            t.get("moneda", "ARS"), t.get("categoria", ""), t.get("descripcion", ""),
+        ])
+    for col, width in zip("ABCDEF", (12, 10, 14, 8, 20, 34)):
+        ws.column_dimensions[col].width = width
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return Response(
+        buf.read(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=finanzas.xlsx"},
+    )
+
+@app.route("/api/finanzas/export/pdf", methods=["GET"])
+@login_required
+def exportar_pdf():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "Pro requerido"}), 403
+    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
+
+    from fpdf import FPDF
+
+    def _safe(s):
+        return (s or "").encode("latin-1", "replace").decode("latin-1")
+
+    total_gastos = sum(float(t["monto"]) for t in res.data if t["tipo"] == "Gasto")
+    total_ingresos = sum(float(t["monto"]) for t in res.data if t["tipo"] == "Ingreso")
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, _safe("Finanzas - Historial de transacciones"), ln=1)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(0, 6, _safe(f"Generado el {date.today().isoformat()} - Usuario: {session['username']}"), ln=1)
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(0, 6, _safe(f"Total ingresos: {total_ingresos:,.2f}   Total gastos: {total_gastos:,.2f}"), ln=1)
+    pdf.ln(4)
+
+    col_widths = [22, 18, 26, 14, 40, 68]
+    headers = ["Fecha", "Tipo", "Monto", "Moneda", "Categoria", "Descripcion"]
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_fill_color(22, 163, 74)
+    pdf.set_text_color(255, 255, 255)
+    for w, h in zip(col_widths, headers):
+        pdf.cell(w, 7, h, border=1, fill=True)
+    pdf.ln()
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Helvetica", "", 8)
+    for t in res.data:
+        fila = [
+            t["fecha"], t["tipo"], f'{float(t["monto"]):,.2f}',
+            t.get("moneda", "ARS"), (t.get("categoria") or "")[:22], (t.get("descripcion") or "")[:45],
+        ]
+        for w, val in zip(col_widths, fila):
+            pdf.cell(w, 6, _safe(str(val)), border=1)
+        pdf.ln()
+        if pdf.get_y() > 270:
+            pdf.add_page()
+
+    salida = bytes(pdf.output())
+    return Response(
+        salida, mimetype="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=finanzas.pdf"},
+    )
+
+# ── Importar movimientos (banco / billetera virtual) ──────────────────────────
+
+def _norm_header(s):
+    s = (s or "").strip().lower()
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+
+def _buscar_col(headers, candidatos):
+    for i, h in enumerate(headers):
+        if any(c in h for c in candidatos):
+            return i
+    return None
+
+def _parse_fecha_import(s):
+    s = (s or "").strip()
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d/%m/%y", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(s, fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+def _parse_monto_import(s):
+    s = (s or "").strip()
+    if not s:
+        return None
+    neg = s.startswith("-") or (s.startswith("(") and s.endswith(")"))
+    s = re.sub(r"[^\d,.\-]", "", s).lstrip("-")
+    if "," in s and "." in s:
+        if s.rfind(",") > s.rfind("."):
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    elif "," in s:
+        partes = s.split(",")
+        if len(partes[-1]) == 2:
+            s = s.replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    if not s:
+        return None
+    try:
+        val = float(s)
+    except ValueError:
+        return None
+    return -val if neg else val
+
+@app.route("/api/finanzas/import/preview", methods=["POST"])
+@login_required
+def import_preview():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
+
+    archivo = request.files.get("archivo")
+    if not archivo or not archivo.filename.lower().endswith(".csv"):
+        return jsonify({"ok": False, "error": "Subí un archivo .csv"}), 400
+
+    raw = archivo.read(2_000_000)
+    texto = None
+    for enc in ("utf-8-sig", "utf-8", "latin-1"):
+        try:
+            texto = raw.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if texto is None:
+        return jsonify({"ok": False, "error": "No se pudo leer el archivo"}), 400
+
+    muestra = texto[:2000]
+    try:
+        delim = csv.Sniffer().sniff(muestra, delimiters=",;\t").delimiter
+    except csv.Error:
+        delim = ";" if muestra.count(";") > muestra.count(",") else ","
+
+    filas = list(csv.reader(io.StringIO(texto), delimiter=delim))
+    if len(filas) < 2:
+        return jsonify({"ok": False, "error": "El archivo está vacío"}), 400
+
+    headers = [_norm_header(h) for h in filas[0]]
+    idx_fecha = _buscar_col(headers, ["fecha", "date"])
+    idx_monto = _buscar_col(headers, ["importe", "monto", "valor", "amount", "total"])
+    idx_desc  = _buscar_col(headers, ["descripcion", "concepto", "detalle", "description", "glosa"])
+    idx_debe  = _buscar_col(headers, ["debe", "egreso", "cargo", "debito"])
+    idx_haber = _buscar_col(headers, ["haber", "ingreso", "abono", "credito"])
+
+    if idx_fecha is None or (idx_monto is None and (idx_debe is None or idx_haber is None)):
+        return jsonify({
+            "ok": False,
+            "error": "No reconocemos las columnas del archivo. Verificá que tenga fecha, monto y descripción.",
+        }), 400
+
+    transacciones = []
+    errores = 0
+    for fila in filas[1:]:
+        if not fila or all(not c.strip() for c in fila):
+            continue
+        try:
+            fecha = _parse_fecha_import(fila[idx_fecha]) if idx_fecha < len(fila) else None
+            desc  = fila[idx_desc].strip() if idx_desc is not None and idx_desc < len(fila) else ""
+
+            if idx_monto is not None:
+                monto_raw = _parse_monto_import(fila[idx_monto]) if idx_monto < len(fila) else None
+                if not monto_raw:
+                    errores += 1
+                    continue
+                tipo, monto = ("Gasto" if monto_raw < 0 else "Ingreso"), abs(monto_raw)
+            else:
+                debe  = abs(_parse_monto_import(fila[idx_debe])  or 0) if idx_debe  < len(fila) else 0
+                haber = abs(_parse_monto_import(fila[idx_haber]) or 0) if idx_haber < len(fila) else 0
+                if haber > 0:
+                    tipo, monto = "Ingreso", haber
+                elif debe > 0:
+                    tipo, monto = "Gasto", debe
+                else:
+                    errores += 1
+                    continue
+
+            if not fecha:
+                errores += 1
+                continue
+
+            transacciones.append({
+                "fecha": fecha, "tipo": tipo, "monto": round(monto, 2),
+                "descripcion": desc, "categoria": "", "moneda": "ARS",
+            })
+        except Exception:
+            errores += 1
+
+        if len(transacciones) >= 1000:
+            break
+
+    return jsonify({"ok": True, "transacciones": transacciones, "errores": errores})
+
+@app.route("/api/finanzas/import/confirm", methods=["POST"])
+@login_required
+def import_confirm():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
+
+    data = request.get_json() or {}
+    filas = data.get("transacciones") or []
+    if not isinstance(filas, list) or not filas:
+        return jsonify({"ok": False, "error": "Nada para importar"}), 400
+    if len(filas) > 1000:
+        return jsonify({"ok": False, "error": "Demasiadas transacciones (máx. 1000)"}), 400
+
+    payload = []
+    for t in filas:
+        try:
+            payload.append({
+                "tipo":        "Ingreso" if t.get("tipo") == "Ingreso" else "Gasto",
+                "monto":       abs(float(t["monto"])),
+                "fecha":       date.fromisoformat(t["fecha"]).isoformat(),
+                "categoria":   (t.get("categoria") or "").strip()[:60],
+                "descripcion": (t.get("descripcion") or "").strip()[:200],
+                "moneda":      t.get("moneda") if t.get("moneda") in ("ARS", "USD", "EUR") else "ARS",
+                "user_id":     session["user_id"],
+            })
+        except (KeyError, ValueError, TypeError):
+            continue
+
+    if not payload:
+        return jsonify({"ok": False, "error": "Nada válido para importar"}), 400
+
+    insertados = 0
+    for i in range(0, len(payload), 500):
+        lote = payload[i:i + 500]
+        db.table("transacciones").insert(lote).execute()
+        insertados += len(lote)
+
+    return jsonify({"ok": True, "insertados": insertados})
 
 @app.route("/api/finanzas/inflacion")
 @login_required

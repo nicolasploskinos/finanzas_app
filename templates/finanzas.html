@@ -399,11 +399,15 @@
     </select>
   </div>
 
-  {% if is_pro %}
-  <div style="margin:8px 12px 0;text-align:right">
-    <a href="/api/finanzas/export" style="font-size:12px;color:var(--muted);text-decoration:none">⬇️ Exportar CSV</a>
+  <div style="margin:8px 12px 0;display:flex;justify-content:flex-end;align-items:center;gap:16px;position:relative">
+    <button onclick="triggerImport()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">⬆️ Importar</button>
+    <button onclick="toggleExportMenu(event)" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">⬇️ Exportar</button>
+    <div id="export-menu" style="display:none;position:absolute;top:22px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);overflow:hidden;z-index:50;min-width:160px">
+      <a href="#" onclick="exportar('excel');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none">📊 Excel (.xlsx)</a>
+      <a href="#" onclick="exportar('pdf');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none;border-top:1px solid var(--border)">📄 PDF</a>
+    </div>
   </div>
-  {% endif %}
+  <input type="file" id="import-file" accept=".csv" style="display:none" onchange="onImportFile(event)">
 
   <div id="lista"></div>
 </div>
@@ -500,6 +504,21 @@
       Suscribirme — $1.999/mes →
     </button>
     <button class="btn-pro-cancel" onclick="cerrarModalPro()">Ahora no</button>
+  </div>
+</div>
+
+<!-- Modal Importar -->
+<div class="overlay" id="import-overlay" onclick="cerrarModalImportFondo(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Importar movimientos</h2>
+    <p id="import-resumen" style="font-size:13px;color:var(--muted);margin:-10px 0 14px"></p>
+    <div class="campo">
+      <label>CATEGORÍA (opcional, se aplica a todos los seleccionados)</label>
+      <input type="text" id="import-cat" placeholder="Ej: Importado" autocomplete="off">
+    </div>
+    <div id="import-lista" style="max-height:280px;overflow-y:auto;margin:10px 0"></div>
+    <button class="btn-guardar" onclick="confirmarImport()">Importar seleccionados</button>
   </div>
 </div>
 
@@ -963,6 +982,99 @@
   }
   function cerrarModalProFondo(e) {
     if (e.target === document.getElementById("pro-overlay")) cerrarModalPro();
+  }
+
+  // ── Exportar ───────────────────────────────────────────────────────────────
+  function toggleExportMenu(e) {
+    e.stopPropagation();
+    if (!ES_PRO) { abrirModalPro(); return; }
+    const menu = document.getElementById("export-menu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  }
+  document.addEventListener("click", () => {
+    document.getElementById("export-menu").style.display = "none";
+  });
+  function exportar(formato) {
+    document.getElementById("export-menu").style.display = "none";
+    window.location.href = `/api/finanzas/export/${formato}`;
+  }
+
+  // ── Importar ───────────────────────────────────────────────────────────────
+  let importPendientes = [];
+
+  function triggerImport() {
+    if (!ES_PRO) { abrirModalPro(); return; }
+    const input = document.getElementById("import-file");
+    input.value = "";
+    input.click();
+  }
+
+  async function onImportFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("archivo", file);
+    toast("Leyendo archivo…");
+    try {
+      const r = await fetch("/api/finanzas/import/preview", { method: "POST", body: fd });
+      const data = await r.json();
+      if (!r.ok || !data.ok) {
+        if (r.status === 403) { abrirModalPro(); return; }
+        toast("Error: " + (data.error || "no se pudo leer el archivo"));
+        return;
+      }
+      if (!data.transacciones.length) { toast("No se encontraron movimientos para importar"); return; }
+      importPendientes = data.transacciones;
+      abrirModalImport(data.errores);
+    } catch { toast("Error al leer el archivo"); }
+  }
+
+  function abrirModalImport(errores) {
+    document.getElementById("import-resumen").textContent =
+      `${importPendientes.length} movimientos encontrados` + (errores ? ` · ${errores} filas no reconocidas` : "");
+    document.getElementById("import-cat").value = "";
+    document.getElementById("import-lista").innerHTML = importPendientes.map((t, i) => `
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <input type="checkbox" checked data-i="${i}" class="import-chk" style="margin-top:3px">
+        <span style="flex:1">
+          <strong>${t.fecha}</strong> · ${t.tipo === "Gasto" ? "🔴" : "🟢"} ${fmtMon(t.monto, t.moneda)}
+          ${t.descripcion ? `<br><span style="color:var(--muted)">${t.descripcion}</span>` : ""}
+        </span>
+      </label>
+    `).join("");
+    document.getElementById("import-overlay").classList.add("open");
+  }
+  function cerrarModalImport() {
+    document.getElementById("import-overlay").classList.remove("open");
+    importPendientes = [];
+  }
+  function cerrarModalImportFondo(e) {
+    if (e.target === document.getElementById("import-overlay")) cerrarModalImport();
+  }
+
+  async function confirmarImport() {
+    const cat = document.getElementById("import-cat").value.trim();
+    const seleccion = [];
+    document.querySelectorAll(".import-chk").forEach(chk => {
+      if (chk.checked) {
+        const t = importPendientes[+chk.dataset.i];
+        seleccion.push({ ...t, categoria: cat || t.categoria });
+      }
+    });
+    if (!seleccion.length) { toast("Elegí al menos un movimiento"); return; }
+    try {
+      const r = await fetch("/api/finanzas/import/confirm", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transacciones: seleccion })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) { toast("Error: " + (data.error || "no se pudo importar")); return; }
+      cerrarModalImport();
+      await cargar();
+      render();
+      if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
+      toast(`✓ ${data.insertados} movimientos importados`);
+    } catch { toast("Error al importar"); }
   }
 
   function cerrarSesion() {
