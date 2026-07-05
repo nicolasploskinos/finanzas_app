@@ -994,9 +994,25 @@
   document.addEventListener("click", () => {
     document.getElementById("export-menu").style.display = "none";
   });
-  function exportar(formato) {
+  async function exportar(formato) {
     document.getElementById("export-menu").style.display = "none";
-    window.location.href = `/api/finanzas/export/${formato}`;
+    try {
+      const r = await fetch(`/api/finanzas/export/${formato}`);
+      if (!r.ok) {
+        if (r.status === 403) { abrirModalPro(); return; }
+        toast("No se pudo exportar");
+        return;
+      }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `finanzas.${formato === "excel" ? "xlsx" : "pdf"}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch { toast("No se pudo exportar"); }
   }
 
   // ── Importar ───────────────────────────────────────────────────────────────
