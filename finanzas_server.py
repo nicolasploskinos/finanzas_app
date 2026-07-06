@@ -508,10 +508,18 @@ def import_confirm():
 
 # ── Bot de WhatsApp ────────────────────────────────────────────────────────────
 
-_WA_PALABRAS_INGRESO = {"ingreso", "cobre", "deposito"}
+_WA_PALABRAS_INGRESO = {
+    "ingreso", "ingrese", "ingresaron",
+    "cobre", "cobro",
+    "deposito", "depositaron",
+    "recibi",
+    "gane",
+    "sueldo",
+}
 _WA_PALABRAS_DESCARTE = {
-    "gaste", "gasto", "pague", "cobre", "ingreso", "deposito",
-    "en", "de", "del", "la", "el", "los", "las",
+    "gaste", "gasto", "pague",
+    "cobre", "cobro", "ingreso", "ingrese", "ingresaron", "deposito", "depositaron", "recibi", "gane",
+    "en", "de", "del", "la", "el", "los", "las", "me",
     "usd", "dolar", "dolares", "eur", "euro", "euros",
 }
 
