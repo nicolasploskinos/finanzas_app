@@ -575,6 +575,7 @@ def _procesar_mensaje_whatsapp(msg):
 
     telefono = msg.get("from", "")
     texto = ((msg.get("text") or {}).get("body") or "").strip()
+    print(f"[whatsapp] mensaje recibido de '{telefono}': {texto!r}")
     if not telefono or not texto:
         return
 
