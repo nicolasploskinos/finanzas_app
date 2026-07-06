@@ -332,6 +332,31 @@
     </div>
   </div>
 
+  <!-- WhatsApp -->
+  <div class="cot-wrap">
+    <div class="cot-header" onclick="toggleWhatsapp()">
+      <span>📱 Cargar gastos por WhatsApp</span>
+      <span id="wa-chev" style="font-size:11px;color:var(--muted)">▼</span>
+    </div>
+    <div id="wa-body" style="display:none;padding:0 14px 14px">
+      <div id="wa-desvinculado" style="display:none">
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+          Vinculá tu WhatsApp y cargá gastos escribiendo, por ejemplo: <em>"gasté 500 en supermercado"</em>.
+        </p>
+        <button class="btn-guardar" style="margin:0" onclick="generarCodigoWhatsapp()">Vincular WhatsApp</button>
+        <div id="wa-codigo-box" style="display:none;margin-top:12px;text-align:center">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Tocá para abrir WhatsApp con el código ya cargado:</div>
+          <a id="wa-link" href="#" target="_blank" rel="noopener" style="display:inline-block;background:#25D366;color:#fff;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:10px;font-size:14px">Abrir WhatsApp →</a>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Código <strong id="wa-codigo-txt"></strong> · vence en 15 minutos</div>
+        </div>
+      </div>
+      <div id="wa-vinculado" style="display:none">
+        <p style="font-size:13px;margin:0 0 10px">✅ Vinculado a <strong id="wa-telefono"></strong></p>
+        <button class="btn-guardar" style="margin:0;background:var(--surface2);color:var(--text)" onclick="desvincularWhatsapp()">Desvincular</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Cotizaciones + Conversor -->
   <div class="cot-card">
     <div class="cot-header" onclick="toggleCot()">
@@ -859,6 +884,45 @@
     recurrentes = recurrentes.filter(r => r.id !== id);
     renderRecurrentes();
     toast("Recurrente eliminado");
+  }
+
+  // ── WhatsApp ───────────────────────────────────────────────────────────────
+  let waOpen = false;
+
+  function toggleWhatsapp() {
+    waOpen = !waOpen;
+    document.getElementById("wa-body").style.display = waOpen ? "" : "none";
+    document.getElementById("wa-chev").textContent = waOpen ? "▲" : "▼";
+    if (waOpen) cargarEstadoWhatsapp();
+  }
+
+  async function cargarEstadoWhatsapp() {
+    try {
+      const r = await fetch("/api/finanzas/whatsapp/estado");
+      const data = await r.json();
+      document.getElementById("wa-vinculado").style.display   = data.vinculado ? "" : "none";
+      document.getElementById("wa-desvinculado").style.display = data.vinculado ? "none" : "";
+      if (data.vinculado) document.getElementById("wa-telefono").textContent = data.telefono_oculto;
+      document.getElementById("wa-codigo-box").style.display = "none";
+    } catch { toast("No se pudo cargar el estado de WhatsApp"); }
+  }
+
+  async function generarCodigoWhatsapp() {
+    try {
+      const r = await fetch("/api/finanzas/whatsapp/codigo", { method: "POST" });
+      const data = await r.json();
+      if (!data.ok) { toast("No se pudo generar el código"); return; }
+      document.getElementById("wa-codigo-txt").textContent = data.codigo;
+      document.getElementById("wa-link").href = data.wa_link;
+      document.getElementById("wa-codigo-box").style.display = "";
+    } catch { toast("No se pudo generar el código"); }
+  }
+
+  async function desvincularWhatsapp() {
+    if (!confirm("¿Desvincular tu WhatsApp de esta cuenta?")) return;
+    await fetch("/api/finanzas/whatsapp/desvincular", { method: "DELETE" });
+    cargarEstadoWhatsapp();
+    toast("WhatsApp desvinculado");
   }
 
   function abrirModal() {

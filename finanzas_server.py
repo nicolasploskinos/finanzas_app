@@ -2,11 +2,14 @@ import os
 import csv
 import io
 import re
+import time
+import random
 import unicodedata
 import calendar
 import hmac
 import hashlib
 import requests as req
+from urllib.parse import quote
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect, Response
 from flask_cors import CORS
 from supabase import create_client
@@ -18,6 +21,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 _inflacion_cache = {"data": None, "ts": 0}
+_wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
+_wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
 app = Flask(__name__)
 CORS(app)
@@ -196,26 +201,31 @@ def listar():
     res = query.order("fecha", desc=True).execute()
     return jsonify(res.data)
 
+def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS"):
+    if not _es_pro(user_id):
+        inicio_mes = date.today().replace(day=1).isoformat()
+        count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).execute().data)
+        if count >= 50:
+            return False, "limite_pro"
+    payload = {
+        "tipo": tipo, "monto": float(monto), "fecha": fecha,
+        "categoria": categoria or "", "descripcion": descripcion or "",
+        "moneda": moneda or "ARS", "user_id": user_id,
+    }
+    res = db.table("transacciones").insert(payload).execute()
+    return True, res.data[0]
+
 @app.route("/api/finanzas", methods=["POST"])
 @login_required
 def agregar():
-    if not _es_pro(session["user_id"]):
-        inicio_mes = date.today().replace(day=1).isoformat()
-        count = len(db.table("transacciones").select("id").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).execute().data)
-        if count >= 50:
-            return jsonify({"ok": False, "error": "limite_pro"}), 403
     t = request.get_json()
-    payload = {
-        "tipo":        t["tipo"],
-        "monto":       float(t["monto"]),
-        "fecha":       t["fecha"],
-        "categoria":   t.get("categoria", ""),
-        "descripcion": t.get("descripcion", ""),
-        "moneda":      t.get("moneda", "ARS"),
-        "user_id":     session["user_id"],
-    }
-    res = db.table("transacciones").insert(payload).execute()
-    return jsonify(res.data[0]), 201
+    ok, resultado = _insertar_transaccion(
+        session["user_id"], t["tipo"], t["monto"], t["fecha"],
+        t.get("categoria", ""), t.get("descripcion", ""), t.get("moneda", "ARS"),
+    )
+    if not ok:
+        return jsonify({"ok": False, "error": resultado}), 403
+    return jsonify(resultado), 201
 
 @app.route("/api/finanzas/export", methods=["GET"])
 @login_required
@@ -496,10 +506,173 @@ def import_confirm():
 
     return jsonify({"ok": True, "insertados": insertados})
 
+# ── Bot de WhatsApp ────────────────────────────────────────────────────────────
+
+_WA_PALABRAS_INGRESO = {"ingreso", "cobre", "deposito"}
+_WA_PALABRAS_DESCARTE = {
+    "gaste", "gasto", "pague", "cobre", "ingreso", "deposito",
+    "en", "de", "del", "la", "el", "los", "las",
+    "usd", "dolar", "dolares", "eur", "euro", "euros",
+}
+
+def _parse_mensaje_whatsapp(texto):
+    limpio = _norm_header(texto)
+    if not limpio:
+        return None
+
+    match = re.search(r"\d[\d.,]*", limpio)
+    if not match:
+        return None
+    monto = _parse_monto_import(match.group())
+    if not monto:
+        return None
+
+    palabras = re.findall(r"[a-z0-9$]+", limpio)
+    tipo = "Ingreso" if any(p in _WA_PALABRAS_INGRESO for p in palabras) else "Gasto"
+
+    moneda = "ARS"
+    if "usd" in palabras or "dolar" in palabras or "dolares" in palabras or "u$s" in palabras:
+        moneda = "USD"
+    elif "eur" in palabras or "euro" in palabras or "euros" in palabras:
+        moneda = "EUR"
+
+    resto = limpio[:match.start()] + limpio[match.end():]
+    cat_palabras = [w for w in re.findall(r"[a-z]+", resto) if w not in _WA_PALABRAS_DESCARTE]
+    categoria = " ".join(cat_palabras).strip().capitalize()
+
+    return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria}
+
+def _wa_enviar_mensaje(telefono, texto):
+    token = os.environ.get("WHATSAPP_TOKEN", "")
+    phone_id = os.environ.get("WHATSAPP_PHONE_ID", "")
+    if not token or not phone_id:
+        return
+    try:
+        req.post(
+            f"https://graph.facebook.com/v20.0/{phone_id}/messages",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "messaging_product": "whatsapp",
+                "to": telefono,
+                "type": "text",
+                "text": {"body": texto},
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+def _procesar_mensaje_whatsapp(msg):
+    wamid = msg.get("id")
+    if not wamid or wamid in _wa_procesados:
+        return
+    _wa_procesados.add(wamid)
+    if len(_wa_procesados) > 2000:
+        _wa_procesados.clear()
+
+    telefono = msg.get("from", "")
+    texto = ((msg.get("text") or {}).get("body") or "").strip()
+    if not telefono or not texto:
+        return
+
+    m = re.match(r"(?i)^vincular\s+(\d{6})$", texto.strip())
+    if m:
+        codigo = m.group(1)
+        entrada = _wa_codigos.get(codigo)
+        if not entrada or entrada[1] < time.time():
+            _wa_enviar_mensaje(telefono, "❌ Código inválido o vencido. Generá uno nuevo desde la app.")
+            return
+        db.table("whatsapp_users").upsert({"telefono": telefono, "user_id": entrada[0]}, on_conflict="telefono").execute()
+        _wa_codigos.pop(codigo, None)
+        _wa_enviar_mensaje(telefono, "✅ ¡Listo! Tu WhatsApp quedó vinculado a tu cuenta de Finanzas.")
+        return
+
+    vinculo = db.table("whatsapp_users").select("user_id").eq("telefono", telefono).execute()
+    if not vinculo.data:
+        _wa_enviar_mensaje(
+            telefono,
+            "No reconozco este número. Vinculalo primero desde la app: Finanzas → sección WhatsApp → Vincular.",
+        )
+        return
+    user_id = vinculo.data[0]["user_id"]
+
+    parseado = _parse_mensaje_whatsapp(texto)
+    if not parseado:
+        _wa_enviar_mensaje(telefono, "No entendí 🤔. Probá algo como: *gasté 500 en supermercado* o *ingreso 300000 sueldo*.")
+        return
+
+    hoy = (datetime.now(timezone.utc) - timedelta(hours=3)).date().isoformat()
+    ok, resultado = _insertar_transaccion(
+        user_id, parseado["tipo"], parseado["monto"], hoy,
+        categoria=parseado["categoria"], descripcion="", moneda=parseado["moneda"],
+    )
+    if not ok:
+        _wa_enviar_mensaje(
+            telefono,
+            "⛔ Llegaste al límite de 50 transacciones gratis este mes. Entrá a la app para hacerte Pro y seguir cargando.",
+        )
+        return
+
+    simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(parseado["moneda"], "$")
+    emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"
+    cat_txt = f" ({parseado['categoria']})" if parseado["categoria"] else ""
+    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de {simbolo}{parseado['monto']:,.2f}{cat_txt} registrado ✓")
+
+@app.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
+@login_required
+def whatsapp_codigo():
+    codigo = f"{random.randint(0, 999999):06d}"
+    _wa_codigos[codigo] = (session["user_id"], time.time() + 900)
+    numero = re.sub(r"[^0-9]", "", os.environ.get("WHATSAPP_DISPLAY_NUMBER", ""))
+    wa_link = f"https://wa.me/{numero}?text={quote(f'VINCULAR {codigo}')}"
+    return jsonify({"ok": True, "codigo": codigo, "wa_link": wa_link})
+
+@app.route("/api/finanzas/whatsapp/estado")
+@login_required
+def whatsapp_estado():
+    res = db.table("whatsapp_users").select("telefono").eq("user_id", session["user_id"]).execute()
+    if res.data:
+        tel = res.data[0]["telefono"]
+        return jsonify({"vinculado": True, "telefono_oculto": "•••• " + tel[-4:]})
+    return jsonify({"vinculado": False})
+
+@app.route("/api/finanzas/whatsapp/desvincular", methods=["DELETE"])
+@login_required
+def whatsapp_desvincular():
+    db.table("whatsapp_users").delete().eq("user_id", session["user_id"]).execute()
+    return jsonify({"ok": True})
+
+@app.route("/api/finanzas/whatsapp/webhook", methods=["GET"])
+def whatsapp_webhook_verificar():
+    modo = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge", "")
+    if modo == "subscribe" and token and token == os.environ.get("WHATSAPP_VERIFY_TOKEN"):
+        return challenge, 200
+    return "Forbidden", 403
+
+@app.route("/api/finanzas/whatsapp/webhook", methods=["POST"])
+def whatsapp_webhook_recibir():
+    app_secret = os.environ.get("WHATSAPP_APP_SECRET", "")
+    if app_secret:
+        firma = request.headers.get("X-Hub-Signature-256", "")
+        esperado = "sha256=" + hmac.new(app_secret.encode(), request.get_data(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(firma, esperado):
+            return jsonify({"error": "firma invalida"}), 403
+
+    data = request.get_json(silent=True) or {}
+    try:
+        for entry in data.get("entry", []):
+            for change in entry.get("changes", []):
+                for msg in (change.get("value") or {}).get("messages", []):
+                    _procesar_mensaje_whatsapp(msg)
+    except Exception:
+        pass
+    return jsonify({"ok": True})
+
 @app.route("/api/finanzas/inflacion")
 @login_required
 def inflacion():
-    import time
     global _inflacion_cache
     if time.time() - _inflacion_cache["ts"] < 86400 and _inflacion_cache["data"] is not None:
         return jsonify(_inflacion_cache["data"])
@@ -521,7 +694,6 @@ def inflacion():
 def stats():
     if not _es_pro(session["user_id"]):
         return jsonify({"error": "pro_requerido"}), 403
-    import unicodedata
     from collections import defaultdict
     def _norm(s):
         s = (s or "otros").strip().lower()
