@@ -546,9 +546,10 @@ def _wa_enviar_mensaje(telefono, texto):
     token = os.environ.get("WHATSAPP_TOKEN", "")
     phone_id = os.environ.get("WHATSAPP_PHONE_ID", "")
     if not token or not phone_id:
+        print("[whatsapp] falta WHATSAPP_TOKEN o WHATSAPP_PHONE_ID en el entorno")
         return
     try:
-        req.post(
+        r = req.post(
             f"https://graph.facebook.com/v20.0/{phone_id}/messages",
             headers={"Authorization": f"Bearer {token}"},
             json={
@@ -559,8 +560,10 @@ def _wa_enviar_mensaje(telefono, texto):
             },
             timeout=10,
         )
-    except Exception:
-        pass
+        if not r.ok:
+            print(f"[whatsapp] error al enviar ({r.status_code}): {r.text}")
+    except Exception as e:
+        print(f"[whatsapp] excepcion al enviar: {e}")
 
 def _procesar_mensaje_whatsapp(msg):
     wamid = msg.get("id")
