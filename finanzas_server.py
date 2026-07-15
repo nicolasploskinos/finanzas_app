@@ -524,6 +524,11 @@ _WA_PALABRAS_DESCARTE = {
 }
 
 def _parse_mensaje_whatsapp(texto):
+    desc_match = re.search(r"\(([^)]+)\)", texto)
+    descripcion = desc_match.group(1).strip() if desc_match else ""
+    if desc_match:
+        texto = texto[:desc_match.start()] + texto[desc_match.end():]
+
     limpio = _norm_header(texto)
     if not limpio:
         return None
@@ -548,7 +553,7 @@ def _parse_mensaje_whatsapp(texto):
     cat_palabras = [w for w in re.findall(r"[a-z]+", resto) if w not in _WA_PALABRAS_DESCARTE]
     categoria = " ".join(cat_palabras).strip().capitalize()
 
-    return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria}
+    return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria, "descripcion": descripcion}
 
 def _wa_enviar_mensaje(telefono, texto):
     token = os.environ.get("WHATSAPP_TOKEN", "")
@@ -616,7 +621,7 @@ def _procesar_mensaje_whatsapp(msg):
     hoy = (datetime.now(timezone.utc) - timedelta(hours=3)).date().isoformat()
     ok, resultado = _insertar_transaccion(
         user_id, parseado["tipo"], parseado["monto"], hoy,
-        categoria=parseado["categoria"], descripcion="", moneda=parseado["moneda"],
+        categoria=parseado["categoria"], descripcion=parseado["descripcion"], moneda=parseado["moneda"],
     )
     if not ok:
         _wa_enviar_mensaje(
@@ -627,8 +632,9 @@ def _procesar_mensaje_whatsapp(msg):
 
     simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(parseado["moneda"], "$")
     emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"
-    cat_txt = f" ({parseado['categoria']})" if parseado["categoria"] else ""
-    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de {simbolo}{parseado['monto']:,.2f}{cat_txt} registrado ✓")
+    cat_txt = f" · {parseado['categoria']}" if parseado["categoria"] else ""
+    desc_txt = f" · {parseado['descripcion']}" if parseado["descripcion"] else ""
+    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de {simbolo}{parseado['monto']:,.2f}{cat_txt}{desc_txt} registrado ✓")
 
 @app.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
 @login_required
