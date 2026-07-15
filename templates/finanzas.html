@@ -89,6 +89,17 @@
     /* Filtros */
     .filtros { padding: 0 12px 10px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
     .filtros::-webkit-scrollbar { display: none; }
+    .periodo-pills { padding: 0 12px 6px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .periodo-pills::-webkit-scrollbar { display: none; }
+    .periodo-btn {
+      background: var(--surface); color: var(--muted);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 7px 14px; font-size: 12px; font-weight: 600; flex-shrink: 0;
+      cursor: pointer; transition: all .15s;
+    }
+    .periodo-btn.active {
+      background: var(--blue); color: #fff; border-color: var(--blue);
+    }
     .filtros select {
       background: var(--surface); color: var(--text);
       border: 1px solid var(--border); border-radius: 100px;
@@ -398,16 +409,17 @@
     <button id="btn-clear-busq" onclick="limpiarBusqueda()" style="display:none;position:absolute;right:22px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
   </div>
 
+  <!-- Filtros de periodo -->
+  <div class="periodo-pills">
+    <button class="periodo-btn active" data-p="1m"  onclick="setPeriodo('1m')">Este mes</button>
+    <button class="periodo-btn"        data-p="3m"  onclick="setPeriodo('3m')">3 meses</button>
+    <button class="periodo-btn"        data-p="6m"  onclick="setPeriodo('6m')">6 meses</button>
+    <button class="periodo-btn"        data-p="1a"  onclick="setPeriodo('1a')">Este año</button>
+    <button class="periodo-btn"        data-p="todo" onclick="setPeriodo('todo')">Todo</button>
+  </div>
+
   <!-- Filtros -->
   <div class="filtros">
-    <select id="f-mes" onchange="render()">
-      <option value="">Todos los meses</option>
-      <option>Enero</option><option>Febrero</option><option>Marzo</option>
-      <option>Abril</option><option>Mayo</option><option>Junio</option>
-      <option>Julio</option><option>Agosto</option><option>Septiembre</option>
-      <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-    </select>
-    <select id="f-anio" onchange="render()"></select>
     <select id="f-tipo" onchange="render()">
       <option value="">Todo</option>
       <option>Gasto</option>
@@ -579,21 +591,18 @@
     `${hoy.getDate()} de ${MESES[hoy.getMonth()].toLowerCase()} de ${hoy.getFullYear()}`;
   document.getElementById("inp-fecha").value = hoy.toISOString().split("T")[0];
 
-  // Mes actual por defecto
-  document.getElementById("f-mes").value = MESES[hoy.getMonth()];
+  // Periodo seleccionado
+  let periodoActivo = "1m";
 
-  // Años en filtro
-  const fAnio = document.getElementById("f-anio");
-  const anioAct = hoy.getFullYear();
-  const optTodos = document.createElement("option");
-  optTodos.value = ""; optTodos.textContent = "Todos los años";
-  fAnio.appendChild(optTodos);
-  for (let y = anioAct + 1; y >= 2020; y--) {
-    const o = document.createElement("option");
-    o.value = y; o.textContent = y;
-    if (y === anioAct) o.selected = true;
-    fAnio.appendChild(o);
+  function setPeriodo(p) {
+    periodoActivo = p;
+    document.querySelectorAll(".periodo-btn").forEach(b =>
+      b.classList.toggle("active", b.dataset.p === p)
+    );
+    render();
   }
+
+  const anioAct = hoy.getFullYear();
 
   async function cargar() {
     try {
@@ -699,9 +708,17 @@
     document.getElementById("conv-nota").textContent   = "Tipo de cambio oficial BNA";
   }
 
+  function desdePeriodo() {
+    if (periodoActivo === "todo") return null;
+    const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    if (periodoActivo === "3m") d.setMonth(d.getMonth() - 2);
+    else if (periodoActivo === "6m") d.setMonth(d.getMonth() - 5);
+    else if (periodoActivo === "1a") { d.setMonth(0); }
+    return d;
+  }
+
   function filtrados() {
-    const mes    = document.getElementById("f-mes").value;
-    const anio   = document.getElementById("f-anio").value;
+    const desde  = desdePeriodo();
     const tipo   = document.getElementById("f-tipo").value;
     const moneda = document.getElementById("f-moneda").value;
     const cat    = document.getElementById("f-cat").value;
@@ -709,8 +726,7 @@
 
     return datos.filter(t => {
       const f = new Date(t.fecha + "T00:00:00");
-      if (mes    && MESES[f.getMonth()] !== mes)                     return false;
-      if (anio   && f.getFullYear() !== +anio)                       return false;
+      if (desde  && f < desde)                                       return false;
       if (tipo   && t.tipo !== tipo)                                  return false;
       if (moneda && (t.moneda || 'ARS') !== moneda)                  return false;
       if (cat    && normalizar(t.categoria) !== normalizar(cat))     return false;
