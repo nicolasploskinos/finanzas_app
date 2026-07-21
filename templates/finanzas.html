@@ -121,7 +121,7 @@
     /* Swipe wrapper */
     .tx-wrap { position: relative; margin-bottom: 8px; border-radius: 16px; overflow: hidden; }
     .tx-swipe-bg {
-      position: absolute; right: 0; top: 0; bottom: 0; width: 80px;
+      position: absolute; left: 0; top: 0; bottom: 0; width: 80px;
       background: var(--red); border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 22px; pointer-events: none;
@@ -1513,10 +1513,10 @@
     const dx = e.touches[0].clientX - swipeStartX;
     const dy = e.touches[0].clientY - swipeStartY;
     if (!swipeScrolling && Math.abs(dy) > Math.abs(dx) + 5) { swipeScrolling = true; }
-    if (swipeScrolling || dx > 0) { swipeEl.classList.remove("swiping"); swipeEl = null; return; }
+    if (swipeScrolling || dx < 0) { swipeEl.classList.remove("swiping"); swipeEl = null; return; }
     e.preventDefault();
     swipeDx = dx;
-    const clamped = Math.max(dx, -120);
+    const clamped = Math.min(dx, 120);
     swipeEl.style.transform = `translateX(${clamped}px)`;
   }, { passive: false });
 
@@ -1525,9 +1525,14 @@
     const el = swipeEl;
     swipeEl = null;
     el.classList.remove("swiping");
-    if (swipeDx < -SWIPE_DELETE_PX) {
+    if (swipeDx > SWIPE_DELETE_PX) {
+      if (!confirm("¿Eliminar esta transacción?")) {
+        el.style.transition = "transform .2s";
+        el.style.transform  = "translateX(0)";
+        return;
+      }
       el.style.transition = "transform .2s, opacity .15s";
-      el.style.transform  = "translateX(-110%)";
+      el.style.transform  = "translateX(110%)";
       el.style.opacity    = "0";
       const id = +el.dataset.id;
       setTimeout(async () => {
