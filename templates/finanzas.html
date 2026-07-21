@@ -587,7 +587,15 @@
       <input type="text" id="presup-inp-cat" list="cat-suggestions" placeholder="Ej: Supermercado" autocomplete="off">
     </div>
     <div class="campo">
-      <label>LÍMITE MENSUAL ($)</label>
+      <label>MONEDA</label>
+      <div class="moneda-toggle" style="margin-top:4px">
+        <button class="moneda-btn active" id="presup-mon-ARS" onclick="setPresupMoneda('ARS')">$ ARS</button>
+        <button class="moneda-btn"        id="presup-mon-USD" onclick="setPresupMoneda('USD')">USD</button>
+        <button class="moneda-btn"        id="presup-mon-EUR" onclick="setPresupMoneda('EUR')">€ EUR</button>
+      </div>
+    </div>
+    <div class="campo">
+      <label>LÍMITE MENSUAL</label>
       <input type="number" id="presup-inp-monto" placeholder="0" min="1">
     </div>
     <button class="btn-guardar" onclick="guardarPresup()">Guardar presupuesto</button>
@@ -1381,6 +1389,14 @@
 
   // ── Presupuestos ────────────────────────────────────────────────────────────
   let presupuestos = [];
+  let presupMonedaActual = "ARS";
+
+  function setPresupMoneda(m) {
+    presupMonedaActual = m;
+    ["ARS", "USD", "EUR"].forEach(x =>
+      document.getElementById(`presup-mon-${x}`).classList.toggle("active", x === m)
+    );
+  }
 
   async function cargarPresup() {
     try {
@@ -1402,19 +1418,21 @@
       if (t.tipo !== "Gasto") return;
       const f = new Date(t.fecha + "T00:00:00");
       if (f < inicio) return;
-      const k = normalizar(t.categoria);
+      const k = normalizar(t.categoria) + "|" + (t.moneda || "ARS");
       gasto[k] = (gasto[k] || 0) + parseFloat(t.monto);
     });
 
     el.innerHTML = presupuestos.map(p => {
-      const gastado = gasto[normalizar(p.categoria)] || 0;
+      const moneda  = p.moneda || "ARS";
+      const gastado = gasto[normalizar(p.categoria) + "|" + moneda] || 0;
       const pct     = Math.min(gastado / p.monto * 100, 100);
       const color   = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
-      const amtTxt  = `$${Math.round(gastado).toLocaleString("es-AR")} / $${Math.round(p.monto).toLocaleString("es-AR")}`;
+      const amtTxt  = `${fmtMon(gastado, moneda)} / ${fmtMon(p.monto, moneda)}`;
+      const nombre  = moneda === "ARS" ? p.categoria : `${p.categoria} · ${moneda}`;
       return `
         <div class="presup-bar-row">
           <div class="presup-bar-labels">
-            <span class="presup-bar-name">${p.categoria}</span>
+            <span class="presup-bar-name">${nombre}</span>
             <span class="presup-bar-amt" style="color:${color}">${amtTxt}</span>
           </div>
           <div class="presup-bar-track">
@@ -1429,6 +1447,7 @@
     renderPresupModalLista();
     document.getElementById("presup-inp-cat").value   = "";
     document.getElementById("presup-inp-monto").value = "";
+    setPresupMoneda("ARS");
     document.getElementById("presup-overlay").classList.add("open");
   }
 
@@ -1448,7 +1467,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
           <div>
             <span style="font-size:13px;font-weight:600">${p.categoria}</span>
-            <span style="font-size:12px;color:var(--muted);margin-left:8px">$${Math.round(p.monto).toLocaleString("es-AR")}/mes</span>
+            <span style="font-size:12px;color:var(--muted);margin-left:8px">${fmtMon(p.monto, p.moneda || "ARS")}/mes${(p.moneda && p.moneda !== "ARS") ? ` · ${p.moneda}` : ""}</span>
           </div>
           <button onclick="eliminarPresup(${p.id})" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
         </div>`).join("") +
@@ -1456,17 +1475,18 @@
   }
 
   async function guardarPresup() {
-    const cat   = document.getElementById("presup-inp-cat").value.trim();
-    const monto = parseFloat(document.getElementById("presup-inp-monto").value);
+    const cat    = document.getElementById("presup-inp-cat").value.trim();
+    const monto  = parseFloat(document.getElementById("presup-inp-monto").value);
+    const moneda = presupMonedaActual;
     if (!cat || !monto || monto <= 0) { toast("Completá categoría y monto"); return; }
     const r = await fetch("/api/finanzas/presupuestos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categoria: cat, monto })
+      body: JSON.stringify({ categoria: cat, monto, moneda })
     });
     if (!r.ok) { toast("Error al guardar"); return; }
     const nuevo = await r.json();
-    const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat));
+    const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat) && (p.moneda || "ARS") === moneda);
     if (idx >= 0) presupuestos[idx] = nuevo; else presupuestos.push(nuevo);
     document.getElementById("presup-inp-cat").value   = "";
     document.getElementById("presup-inp-monto").value = "";

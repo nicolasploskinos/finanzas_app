@@ -816,15 +816,20 @@ def get_presupuestos():
 @login_required
 def set_presupuesto():
     d = request.get_json()
-    cat   = (d.get("categoria") or "").strip()
-    monto = float(d.get("monto") or 0)
+    cat    = (d.get("categoria") or "").strip()
+    monto  = float(d.get("monto") or 0)
+    moneda = d.get("moneda") if d.get("moneda") in ("ARS", "USD", "EUR") else "ARS"
     if not cat or monto <= 0:
         return jsonify({"error": "datos inválidos"}), 400
     db.table("presupuestos").upsert(
-        {"user_id": session["user_id"], "categoria": cat, "monto": monto},
-        on_conflict="user_id,categoria"
+        {"user_id": session["user_id"], "categoria": cat, "monto": monto, "moneda": moneda},
+        on_conflict="user_id,categoria,moneda"
     ).execute()
-    res = db.table("presupuestos").select("*").eq("user_id", session["user_id"]).eq("categoria", cat).execute()
+    res = (
+        db.table("presupuestos").select("*")
+        .eq("user_id", session["user_id"]).eq("categoria", cat).eq("moneda", moneda)
+        .execute()
+    )
     return jsonify(res.data[0] if res.data else {})
 
 @app.route("/api/finanzas/presupuestos/<int:pid>", methods=["DELETE"])
