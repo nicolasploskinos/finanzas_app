@@ -806,6 +806,33 @@ def eliminar(tid):
     db.table("transacciones").delete().eq("id", tid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
+@app.route("/api/finanzas/presupuestos", methods=["GET"])
+@login_required
+def get_presupuestos():
+    res = db.table("presupuestos").select("*").eq("user_id", session["user_id"]).execute()
+    return jsonify(res.data)
+
+@app.route("/api/finanzas/presupuestos", methods=["POST"])
+@login_required
+def set_presupuesto():
+    d = request.get_json()
+    cat   = (d.get("categoria") or "").strip()
+    monto = float(d.get("monto") or 0)
+    if not cat or monto <= 0:
+        return jsonify({"error": "datos inválidos"}), 400
+    db.table("presupuestos").upsert(
+        {"user_id": session["user_id"], "categoria": cat, "monto": monto},
+        on_conflict="user_id,categoria"
+    ).execute()
+    res = db.table("presupuestos").select("*").eq("user_id", session["user_id"]).eq("categoria", cat).execute()
+    return jsonify(res.data[0] if res.data else {})
+
+@app.route("/api/finanzas/presupuestos/<int:pid>", methods=["DELETE"])
+@login_required
+def del_presupuesto(pid):
+    db.table("presupuestos").delete().eq("id", pid).eq("user_id", session["user_id"]).execute()
+    return jsonify({"ok": True})
+
 @app.route("/api/finanzas/suscribir")
 @login_required
 def suscribir():

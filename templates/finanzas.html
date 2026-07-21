@@ -118,17 +118,29 @@
     }
     .mes-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
+    /* Swipe wrapper */
+    .tx-wrap { position: relative; margin-bottom: 8px; border-radius: 16px; overflow: hidden; }
+    .tx-swipe-bg {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 80px;
+      background: var(--red); border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; pointer-events: none;
+    }
+
     .tx {
       background: var(--surface); border-radius: 16px;
-      padding: 13px 14px; margin-bottom: 8px;
+      padding: 13px 14px; margin-bottom: 0;
       display: flex; align-items: center; gap: 12px;
       box-shadow: 0 1px 4px rgba(0,0,0,.1);
       border-left: 3px solid transparent;
-      transition: transform .1s;
+      transition: transform .2s cubic-bezier(.25,.46,.45,.94);
+      touch-action: pan-y;
+      position: relative;
     }
     .tx.gasto-tx   { border-left-color: var(--red); }
     .tx.ingreso-tx { border-left-color: var(--green); }
     .tx:active { transform: scale(.99); }
+    .tx.swiping { transition: none; }
 
     .tx-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; flex-shrink: 0; }
     .tx-icon.gasto   { background: rgba(248,113,113,.15); color: var(--red); }
@@ -151,6 +163,19 @@
     .tx-del:active  { color: var(--red); background: rgba(248,113,113,.1); }
     .tx-edit { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 4px; line-height: 1; opacity: .7; border-radius: 8px; }
     .tx-edit:active { opacity: 1; color: var(--blue); background: rgba(96,165,250,.1); }
+
+    /* Presupuestos */
+    .presup-section { padding: 0 12px 10px; }
+    .presup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .presup-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; }
+    .presup-add-btn { background: none; border: none; color: var(--blue); font-size: 12px; font-weight: 700; cursor: pointer; padding: 2px 0; }
+    .presup-bar-row { margin-bottom: 10px; }
+    .presup-bar-labels { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .presup-bar-name { font-weight: 600; }
+    .presup-bar-amt { color: var(--muted); }
+    .presup-bar-track { background: var(--surface2); border-radius: 100px; height: 7px; overflow: hidden; }
+    .presup-bar-fill { height: 100%; border-radius: 100px; transition: width .4s ease; }
+    .presup-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 4px 0 2px; }
 
     /* FAB */
     .fab {
@@ -446,6 +471,15 @@
   </div>
   <input type="file" id="import-file" accept=".csv" style="display:none" onchange="onImportFile(event)">
 
+  <!-- Presupuestos -->
+  <div class="presup-section" id="presup-section">
+    <div class="presup-header">
+      <span class="presup-title">Presupuestos del mes</span>
+      <button class="presup-add-btn" onclick="abrirModalPresup()">+ Agregar</button>
+    </div>
+    <div id="presup-bars"></div>
+  </div>
+
   <div id="lista"></div>
 </div>
 
@@ -541,6 +575,24 @@
       Suscribirme — $1.999/mes →
     </button>
     <button class="btn-pro-cancel" onclick="cerrarModalPro()">Ahora no</button>
+  </div>
+</div>
+
+<!-- Modal Presupuestos -->
+<div class="overlay" id="presup-overlay" onclick="cerrarModalPresupFondo(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Presupuestos mensuales</h2>
+    <div id="presup-modal-lista" style="margin-bottom:14px"></div>
+    <div class="campo">
+      <label>CATEGORÍA</label>
+      <input type="text" id="presup-inp-cat" list="cat-suggestions" placeholder="Ej: Supermercado" autocomplete="off">
+    </div>
+    <div class="campo">
+      <label>LÍMITE MENSUAL ($)</label>
+      <input type="number" id="presup-inp-monto" placeholder="0" min="1">
+    </div>
+    <button class="btn-guardar" onclick="guardarPresup()">Guardar presupuesto</button>
   </div>
 </div>
 
@@ -787,8 +839,8 @@
     const lista       = filtrados();
     const monedaFiltro = document.getElementById("f-moneda").value;
 
-
     actualizarConsolidado();
+    if (typeof renderPresup === "function") renderPresup();
 
     // Lista de transacciones
     const el = document.getElementById("lista");
@@ -811,19 +863,22 @@
         const mon = t.moneda || 'ARS';
         const badge = mon !== 'ARS' ? `<div class="badge-mon">${mon}</div>` : '';
         return `
-        <div class="tx ${t.tipo.toLowerCase()}-tx">
-          <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
-          <div class="tx-info">
-            <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
-            ${t.descripcion ? `<div class="tx-desc">${t.descripcion}</div>` : ""}
-            <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+        <div class="tx-wrap">
+          <div class="tx-swipe-bg">🗑</div>
+          <div class="tx ${t.tipo.toLowerCase()}-tx" data-id="${t.id}">
+            <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
+            <div class="tx-info">
+              <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+              ${t.descripcion ? `<div class="tx-desc">${t.descripcion}</div>` : ""}
+              <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmtMon(t.monto, mon)}</div>
+              ${badge}
+            </div>
+            <button class="tx-edit" onclick="editarTx(${t.id})">✏️</button>
+            <button class="tx-del"  onclick="eliminar(${t.id})">×</button>
           </div>
-          <div class="tx-right">
-            <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmtMon(t.monto, mon)}</div>
-            ${badge}
-          </div>
-          <button class="tx-edit" onclick="editarTx(${t.id})">✏️</button>
-          <button class="tx-del"  onclick="eliminar(${t.id})">×</button>
         </div>`;
       }).join("")}
     `).join("");
@@ -1332,6 +1387,162 @@
   cargar();
   cargarCotizaciones();
   if (ES_PRO) cargarStats();
+  cargarPresup();
+
+  // ── Presupuestos ────────────────────────────────────────────────────────────
+  let presupuestos = [];
+
+  async function cargarPresup() {
+    try {
+      const r = await fetch("/api/finanzas/presupuestos");
+      presupuestos = await r.json();
+    } catch { presupuestos = []; }
+    renderPresup();
+  }
+
+  function renderPresup() {
+    const el = document.getElementById("presup-bars");
+    if (!presupuestos.length) {
+      el.innerHTML = '<div class="presup-empty">Sin presupuestos. Agregá uno para ver el progreso.</div>';
+      return;
+    }
+    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const gasto = {};
+    datos.forEach(t => {
+      if (t.tipo !== "Gasto") return;
+      const f = new Date(t.fecha + "T00:00:00");
+      if (f < inicio) return;
+      const k = normalizar(t.categoria);
+      gasto[k] = (gasto[k] || 0) + parseFloat(t.monto);
+    });
+
+    el.innerHTML = presupuestos.map(p => {
+      const gastado = gasto[normalizar(p.categoria)] || 0;
+      const pct     = Math.min(gastado / p.monto * 100, 100);
+      const color   = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
+      const amtTxt  = `$${Math.round(gastado).toLocaleString("es-AR")} / $${Math.round(p.monto).toLocaleString("es-AR")}`;
+      return `
+        <div class="presup-bar-row">
+          <div class="presup-bar-labels">
+            <span class="presup-bar-name">${p.categoria}</span>
+            <span class="presup-bar-amt" style="color:${color}">${amtTxt}</span>
+          </div>
+          <div class="presup-bar-track">
+            <div class="presup-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  function abrirModalPresup() {
+    actualizarSugerenciasCat();
+    renderPresupModalLista();
+    document.getElementById("presup-inp-cat").value   = "";
+    document.getElementById("presup-inp-monto").value = "";
+    document.getElementById("presup-overlay").classList.add("open");
+  }
+
+  function cerrarModalPresup() {
+    document.getElementById("presup-overlay").classList.remove("open");
+  }
+
+  function cerrarModalPresupFondo(e) {
+    if (e.target === document.getElementById("presup-overlay")) cerrarModalPresup();
+  }
+
+  function renderPresupModalLista() {
+    const el = document.getElementById("presup-modal-lista");
+    if (!presupuestos.length) { el.innerHTML = ""; return; }
+    el.innerHTML = `<div style="margin-bottom:12px">` +
+      presupuestos.map(p => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <span style="font-size:13px;font-weight:600">${p.categoria}</span>
+            <span style="font-size:12px;color:var(--muted);margin-left:8px">$${Math.round(p.monto).toLocaleString("es-AR")}/mes</span>
+          </div>
+          <button onclick="eliminarPresup(${p.id})" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
+        </div>`).join("") +
+      `</div>`;
+  }
+
+  async function guardarPresup() {
+    const cat   = document.getElementById("presup-inp-cat").value.trim();
+    const monto = parseFloat(document.getElementById("presup-inp-monto").value);
+    if (!cat || !monto || monto <= 0) { toast("Completá categoría y monto"); return; }
+    const r = await fetch("/api/finanzas/presupuestos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categoria: cat, monto })
+    });
+    if (!r.ok) { toast("Error al guardar"); return; }
+    const nuevo = await r.json();
+    const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat));
+    if (idx >= 0) presupuestos[idx] = nuevo; else presupuestos.push(nuevo);
+    document.getElementById("presup-inp-cat").value   = "";
+    document.getElementById("presup-inp-monto").value = "";
+    renderPresupModalLista();
+    renderPresup();
+    toast("✓ Presupuesto guardado");
+  }
+
+  async function eliminarPresup(id) {
+    await fetch(`/api/finanzas/presupuestos/${id}`, { method: "DELETE" });
+    presupuestos = presupuestos.filter(p => p.id !== id);
+    renderPresupModalLista();
+    renderPresup();
+    toast("Presupuesto eliminado");
+  }
+
+  // ── Swipe para eliminar ─────────────────────────────────────────────────────
+  let swipeEl = null, swipeStartX = 0, swipeStartY = 0, swipeDx = 0, swipeScrolling = false;
+  const SWIPE_DELETE_PX = 80;
+
+  document.getElementById("lista").addEventListener("touchstart", e => {
+    const tx = e.target.closest(".tx");
+    if (!tx) return;
+    swipeEl        = tx;
+    swipeStartX    = e.touches[0].clientX;
+    swipeStartY    = e.touches[0].clientY;
+    swipeDx        = 0;
+    swipeScrolling = false;
+    swipeEl.classList.add("swiping");
+  }, { passive: true });
+
+  document.getElementById("lista").addEventListener("touchmove", e => {
+    if (!swipeEl) return;
+    const dx = e.touches[0].clientX - swipeStartX;
+    const dy = e.touches[0].clientY - swipeStartY;
+    if (!swipeScrolling && Math.abs(dy) > Math.abs(dx) + 5) { swipeScrolling = true; }
+    if (swipeScrolling || dx > 0) { swipeEl.classList.remove("swiping"); swipeEl = null; return; }
+    e.preventDefault();
+    swipeDx = dx;
+    const clamped = Math.max(dx, -120);
+    swipeEl.style.transform = `translateX(${clamped}px)`;
+  }, { passive: false });
+
+  document.getElementById("lista").addEventListener("touchend", () => {
+    if (!swipeEl) return;
+    const el = swipeEl;
+    swipeEl = null;
+    el.classList.remove("swiping");
+    if (swipeDx < -SWIPE_DELETE_PX) {
+      el.style.transition = "transform .2s, opacity .15s";
+      el.style.transform  = "translateX(-110%)";
+      el.style.opacity    = "0";
+      const id = +el.dataset.id;
+      setTimeout(async () => {
+        await fetch(`/api/finanzas/${id}`, { method: "DELETE" });
+        datos = datos.filter(t => t.id !== id);
+        render();
+        renderPresup();
+        if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
+        toast("Transacción eliminada");
+      }, 180);
+    } else {
+      el.style.transition = "transform .2s";
+      el.style.transform  = "translateX(0)";
+    }
+  });
 </script>
 </body>
 </html>
