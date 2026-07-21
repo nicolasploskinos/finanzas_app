@@ -267,6 +267,20 @@
     } else {
       mostrarLista();
     }
+    window.addEventListener("popstate", () => {
+      const idPop = idDeUrl();
+      if (idPop) { mostrarDetalle(idPop); } else { mostrarLista(); }
+    });
+  }
+
+  function abrirDetalle(id) {
+    history.pushState({}, "", `/finanzas/viajes?id=${id}`);
+    mostrarDetalle(id);
+  }
+
+  function volverALista() {
+    history.pushState({}, "", "/finanzas/viajes");
+    mostrarLista();
   }
 
   function mostrarLista() {
@@ -315,7 +329,7 @@
           </div>`;
       }).join("");
       return `
-        <div class="viaje-card" onclick="location.href='/finanzas/viajes?id=${v.id}'">
+        <div class="viaje-card" onclick="abrirDetalle(${v.id})">
           <div class="viaje-card-nombre">${v.nombre}</div>
           <div class="viaje-card-fechas">${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}</div>
           ${barras || '<div style="font-size:12px;color:var(--muted)">Sin presupuesto asignado</div>'}
@@ -375,13 +389,13 @@
     if (!viajeActual) return;
     if (!confirm("¿Eliminar este viaje? Las transacciones no se borran, solo se desvinculan.")) return;
     await fetch(`/api/finanzas/viajes/${viajeActual}`, { method: "DELETE" });
-    location.href = "/finanzas/viajes";
+    volverALista();
   }
 
   async function cargarDetalle(id) {
     try {
       const r = await fetch(`/api/finanzas/viajes/${id}`);
-      if (!r.ok) { toast("No se pudo cargar el viaje"); location.href = "/finanzas/viajes"; return; }
+      if (!r.ok) { toast("No se pudo cargar el viaje"); volverALista(); return; }
       detData = await r.json();
     } catch (e) {
       console.error("Error al pedir el viaje:", e);
