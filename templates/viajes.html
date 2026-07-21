@@ -93,6 +93,7 @@
     .moneda-btn:disabled { opacity: .35; cursor: not-allowed; }
 
     .chart-wrap { background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 18px; }
+    .chart-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; }
     .chart-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
 
     .tx-wrap { margin-bottom: 8px; }
@@ -168,10 +169,18 @@
 
   <div class="cons-cards" id="det-totales"></div>
 
+  <div class="moneda-toggle" id="det-mon-toggle"></div>
+
   <div class="chart-wrap">
-    <div class="moneda-toggle" id="det-mon-toggle"></div>
+    <div class="chart-title">Gasto por día</div>
     <canvas id="det-chart" height="180"></canvas>
     <div class="chart-empty" id="det-chart-empty" style="display:none">Sin gastos en esta moneda</div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Gasto por categoría</div>
+    <canvas id="det-chart-cat" height="180"></canvas>
+    <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos en esta moneda</div>
   </div>
 
   <div id="det-tx-lista"></div>
@@ -241,6 +250,7 @@
   let viajes = [];
   let viajeActual = null;
   let detChart = null;
+  let detChartCat = null;
   let detMonedaActual = "ARS";
   let detData = null;
 
@@ -373,46 +383,56 @@
       const r = await fetch(`/api/finanzas/viajes/${id}`);
       if (!r.ok) { toast("No se pudo cargar el viaje"); location.href = "/finanzas/viajes"; return; }
       detData = await r.json();
-    } catch { toast("No se pudo cargar el viaje"); return; }
+    } catch (e) {
+      console.error("Error al pedir el viaje:", e);
+      toast("No se pudo cargar el viaje");
+      return;
+    }
 
-    const v = detData.viaje;
-    document.getElementById("det-nombre").textContent = v.nombre;
-    document.getElementById("det-fechas").textContent = `${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}`;
+    try {
+      const v = detData.viaje;
+      document.getElementById("det-nombre").textContent = v.nombre;
+      document.getElementById("det-fechas").textContent = `${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}`;
 
-    document.getElementById("det-totales").innerHTML = ["ARS", "USD", "EUR"].map(m => {
-      const gastado = detData.totales[m] || 0;
-      if (!gastado && !v[`presupuesto_${m.toLowerCase()}`]) return "";
-      return `
-        <div class="cons-card">
-          <div class="cons-card-label">Gastado ${m}</div>
-          <div class="cons-card-value">${fmtMon(gastado, m)}</div>
-        </div>`;
-    }).join("") || '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
+      document.getElementById("det-totales").innerHTML = ["ARS", "USD", "EUR"].map(m => {
+        const gastado = detData.totales[m] || 0;
+        if (!gastado && !v[`presupuesto_${m.toLowerCase()}`]) return "";
+        return `
+          <div class="cons-card">
+            <div class="cons-card-label">Gastado ${m}</div>
+            <div class="cons-card-value">${fmtMon(gastado, m)}</div>
+          </div>`;
+      }).join("") || '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
 
-    const monedasConDatos = ["ARS", "USD", "EUR"].filter(m => (detData.por_dia[m] || []).length);
-    detMonedaActual = monedasConDatos[0] || "ARS";
-    document.getElementById("det-mon-toggle").innerHTML = ["ARS", "USD", "EUR"].map(m => `
-      <button class="moneda-btn ${m === detMonedaActual ? "active" : ""}" ${monedasConDatos.includes(m) ? "" : "disabled"}
-        onclick="setDetMoneda('${m}')">${m}</button>
-    `).join("");
-    renderChart();
+      const monedasConDatos = ["ARS", "USD", "EUR"].filter(m => (detData.por_dia[m] || []).length);
+      detMonedaActual = monedasConDatos[0] || "ARS";
+      document.getElementById("det-mon-toggle").innerHTML = ["ARS", "USD", "EUR"].map(m => `
+        <button class="moneda-btn ${m === detMonedaActual ? "active" : ""}" ${monedasConDatos.includes(m) ? "" : "disabled"}
+          onclick="setDetMoneda('${m}')">${m}</button>
+      `).join("");
+      renderChart();
+      renderChartCategoria();
 
-    document.getElementById("det-tx-lista").innerHTML = detData.transacciones.length
-      ? detData.transacciones.map(t => `
-        <div class="tx-wrap">
-          <div class="tx">
-            <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
-            <div class="tx-info">
-              <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
-              <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+      document.getElementById("det-tx-lista").innerHTML = detData.transacciones.length
+        ? detData.transacciones.map(t => `
+          <div class="tx-wrap">
+            <div class="tx">
+              <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
+              <div class="tx-info">
+                <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+                <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "+" : "-"}${fmtMon(t.monto, t.moneda)}</div>
+                <button class="tx-quitar" title="Quitar del viaje" onclick="quitarDelViaje(${t.id})">×</button>
+              </div>
             </div>
-            <div class="tx-right">
-              <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "+" : "-"}${fmtMon(t.monto, t.moneda)}</div>
-              <button class="tx-quitar" title="Quitar del viaje" onclick="quitarDelViaje(${t.id})">×</button>
-            </div>
-          </div>
-        </div>`).join("")
-      : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>';
+          </div>`).join("")
+        : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>';
+    } catch (e) {
+      console.error("Error al renderizar el detalle del viaje:", e);
+      toast("Hubo un error mostrando el viaje (revisá la consola)");
+    }
   }
 
   function setDetMoneda(m) {
@@ -421,6 +441,7 @@
       b.classList.toggle("active", b.textContent.trim() === m)
     );
     renderChart();
+    renderChartCategoria();
   }
 
   function renderChart() {
@@ -431,6 +452,13 @@
     if (!dias.length) {
       canvas.style.display = "none";
       vacio.style.display = "block";
+      return;
+    }
+    if (typeof Chart === "undefined") {
+      console.error("Chart.js no cargó (¿bloqueado por la red?)");
+      canvas.style.display = "none";
+      vacio.style.display = "block";
+      vacio.textContent = "No se pudo cargar el gráfico";
       return;
     }
     canvas.style.display = "";
@@ -445,6 +473,51 @@
         plugins: { legend: { display: false } },
         scales: {
           y: { ticks: { callback: v => fmtMon(v, detMonedaActual) } },
+        },
+      },
+    });
+  }
+
+  function renderChartCategoria() {
+    const canvas = document.getElementById("det-chart-cat");
+    const vacio  = document.getElementById("det-chart-cat-empty");
+    if (detChartCat) { detChartCat.destroy(); detChartCat = null; }
+
+    const porCat = {};
+    detData.transacciones.forEach(t => {
+      if (t.tipo !== "Gasto") return;
+      if ((t.moneda || "ARS") !== detMonedaActual) return;
+      const cat = t.categoria || "Sin categoría";
+      porCat[cat] = (porCat[cat] || 0) + parseFloat(t.monto);
+    });
+    const entradas = Object.entries(porCat).sort((a, b) => b[1] - a[1]);
+
+    if (!entradas.length) {
+      canvas.style.display = "none";
+      vacio.style.display = "block";
+      vacio.textContent = "Sin gastos en esta moneda";
+      return;
+    }
+    if (typeof Chart === "undefined") {
+      console.error("Chart.js no cargó (¿bloqueado por la red?)");
+      canvas.style.display = "none";
+      vacio.style.display = "block";
+      vacio.textContent = "No se pudo cargar el gráfico";
+      return;
+    }
+    canvas.style.display = "";
+    vacio.style.display = "none";
+    detChartCat = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: entradas.map(e => e[0]),
+        datasets: [{ data: entradas.map(e => e[1]), backgroundColor: "#4ade80", borderRadius: 6 }],
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { callback: v => fmtMon(v, detMonedaActual) } },
         },
       },
     });
