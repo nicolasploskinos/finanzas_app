@@ -325,6 +325,15 @@
     <div class="cons-nota" id="cons-nota">Al tipo de cambio oficial BNA</div>
   </div>
 
+  <!-- Presupuestos -->
+  <div class="presup-section" id="presup-section">
+    <div class="presup-header">
+      <span class="presup-title">Presupuestos del mes</span>
+      <button class="presup-add-btn" onclick="abrirModalPresup()">+ Agregar</button>
+    </div>
+    <div id="presup-bars"></div>
+  </div>
+
   <!-- Límite transacciones (free) -->
   <div id="limite-banner" style="display:none;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center"></div>
 
@@ -468,15 +477,6 @@
     </div>
   </div>
   <input type="file" id="import-file" accept=".csv" style="display:none" onchange="onImportFile(event)">
-
-  <!-- Presupuestos -->
-  <div class="presup-section" id="presup-section">
-    <div class="presup-header">
-      <span class="presup-title">Presupuestos del mes</span>
-      <button class="presup-add-btn" onclick="abrirModalPresup()">+ Agregar</button>
-    </div>
-    <div id="presup-bars"></div>
-  </div>
 
   <div id="lista"></div>
 </div>
