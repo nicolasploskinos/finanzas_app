@@ -65,6 +65,11 @@ def index():
                 trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
     return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial, trial_dias=trial_dias)
 
+@app.route("/finanzas/viajes")
+@login_required
+def viajes_page():
+    return render_template("viajes.html", username=session["username"], is_pro=_es_pro(session["user_id"]))
+
 @app.route("/finanzas/login")
 def login_page():
     if "user_id" in session:
@@ -201,7 +206,7 @@ def listar():
     res = query.order("fecha", desc=True).execute()
     return jsonify(res.data)
 
-def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS"):
+def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS", viaje_id=None):
     if not _es_pro(user_id):
         inicio_mes = date.today().replace(day=1).isoformat()
         count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).execute().data)
@@ -210,7 +215,7 @@ def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion
     payload = {
         "tipo": tipo, "monto": float(monto), "fecha": fecha,
         "categoria": categoria or "", "descripcion": descripcion or "",
-        "moneda": moneda or "ARS", "user_id": user_id,
+        "moneda": moneda or "ARS", "user_id": user_id, "viaje_id": viaje_id,
     }
     res = db.table("transacciones").insert(payload).execute()
     return True, res.data[0]
@@ -222,6 +227,7 @@ def agregar():
     ok, resultado = _insertar_transaccion(
         session["user_id"], t["tipo"], t["monto"], t["fecha"],
         t.get("categoria", ""), t.get("descripcion", ""), t.get("moneda", "ARS"),
+        t.get("viaje_id"),
     )
     if not ok:
         return jsonify({"ok": False, "error": resultado}), 403
@@ -796,6 +802,7 @@ def editar(tid):
         "categoria":   t.get("categoria", ""),
         "descripcion": t.get("descripcion", ""),
         "moneda":      t.get("moneda", "ARS"),
+        "viaje_id":    t.get("viaje_id"),
     }
     res = db.table("transacciones").update(payload).eq("id", tid).eq("user_id", session["user_id"]).execute()
     return jsonify(res.data[0])
@@ -837,6 +844,119 @@ def set_presupuesto():
 def del_presupuesto(pid):
     db.table("presupuestos").delete().eq("id", pid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
+
+# ── Viajes ──────────────────────────────────────────────────────────────────
+
+def _num_o_none(v):
+    try:
+        n = float(v)
+        return n if n > 0 else None
+    except (TypeError, ValueError):
+        return None
+
+def _payload_viaje(d):
+    return {
+        "nombre":          (d.get("nombre") or "").strip(),
+        "fecha_inicio":    d.get("fecha_inicio"),
+        "fecha_fin":       d.get("fecha_fin"),
+        "presupuesto_ars": _num_o_none(d.get("presupuesto_ars")),
+        "presupuesto_usd": _num_o_none(d.get("presupuesto_usd")),
+        "presupuesto_eur": _num_o_none(d.get("presupuesto_eur")),
+    }
+
+@app.route("/api/finanzas/viajes", methods=["GET"])
+@login_required
+def listar_viajes():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "pro_requerido"}), 403
+    viajes = (
+        db.table("viajes").select("*").eq("user_id", session["user_id"])
+        .order("fecha_inicio", desc=True).execute().data
+    )
+    ids = [v["id"] for v in viajes]
+    gastos = {}
+    if ids:
+        txs = (
+            db.table("transacciones").select("viaje_id,tipo,monto,moneda")
+            .eq("user_id", session["user_id"]).in_("viaje_id", ids).execute().data
+        )
+        for t in txs:
+            if t["tipo"] != "Gasto":
+                continue
+            vid = t["viaje_id"]
+            m = t.get("moneda") or "ARS"
+            gastos.setdefault(vid, {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
+            gastos[vid][m] = gastos[vid].get(m, 0.0) + float(t["monto"])
+    for v in viajes:
+        v["gastado"] = gastos.get(v["id"], {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
+    return jsonify(viajes)
+
+@app.route("/api/finanzas/viajes", methods=["POST"])
+@login_required
+def crear_viaje():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
+    d = request.get_json()
+    payload = _payload_viaje(d)
+    if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
+        return jsonify({"ok": False, "error": "Completá nombre y fechas"}), 400
+    payload["user_id"] = session["user_id"]
+    res = db.table("viajes").insert(payload).execute()
+    return jsonify(res.data[0]), 201
+
+@app.route("/api/finanzas/viajes/<int:vid>", methods=["PUT"])
+@login_required
+def editar_viaje(vid):
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
+    d = request.get_json()
+    payload = _payload_viaje(d)
+    if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
+        return jsonify({"ok": False, "error": "Completá nombre y fechas"}), 400
+    res = db.table("viajes").update(payload).eq("id", vid).eq("user_id", session["user_id"]).execute()
+    if not res.data:
+        return jsonify({"ok": False, "error": "no encontrado"}), 404
+    return jsonify(res.data[0])
+
+@app.route("/api/finanzas/viajes/<int:vid>", methods=["DELETE"])
+@login_required
+def eliminar_viaje(vid):
+    db.table("viajes").delete().eq("id", vid).eq("user_id", session["user_id"]).execute()
+    return jsonify({"ok": True})
+
+@app.route("/api/finanzas/viajes/<int:vid>", methods=["GET"])
+@login_required
+def detalle_viaje(vid):
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "pro_requerido"}), 403
+    viaje = db.table("viajes").select("*").eq("id", vid).eq("user_id", session["user_id"]).execute().data
+    if not viaje:
+        return jsonify({"error": "no encontrado"}), 404
+    viaje = viaje[0]
+
+    txs = (
+        db.table("transacciones").select("*")
+        .eq("user_id", session["user_id"]).eq("viaje_id", vid)
+        .order("fecha").execute().data
+    )
+
+    totales = {"ARS": 0.0, "USD": 0.0, "EUR": 0.0}
+    por_dia = {"ARS": {}, "USD": {}, "EUR": {}}
+    for t in txs:
+        if t["tipo"] != "Gasto":
+            continue
+        m = t.get("moneda") or "ARS"
+        monto = float(t["monto"])
+        totales[m] = totales.get(m, 0.0) + monto
+        por_dia.setdefault(m, {})
+        por_dia[m][t["fecha"]] = por_dia[m].get(t["fecha"], 0.0) + monto
+
+    por_dia_lista = {
+        m: sorted([{"fecha": f, "monto": v} for f, v in dias.items()], key=lambda x: x["fecha"])
+        for m, dias in por_dia.items()
+    }
+
+    return jsonify({"viaje": viaje, "transacciones": txs, "totales": totales, "por_dia": por_dia_lista})
 
 @app.route("/api/finanzas/suscribir")
 @login_required

@@ -283,6 +283,7 @@
       {% else %}
       <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
+      <a href="/finanzas/viajes" title="Viajes" style="font-size:15px;text-decoration:none;padding:2px;">✈️</a>
       <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
       <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;">Salir</a>
     </div>
@@ -512,6 +513,14 @@
       <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo..." list="cat-suggestions" autocomplete="off">
       <datalist id="cat-suggestions"></datalist>
     </div>
+    {% if is_pro %}
+    <div class="campo">
+      <label>VIAJE (opcional)</label>
+      <select id="inp-viaje">
+        <option value="">Ninguno</option>
+      </select>
+    </div>
+    {% endif %}
     <div class="campo">
       <label>DESCRIPCIÓN</label>
       <input type="text" id="inp-desc" placeholder="Descripción opcional">
@@ -1007,6 +1016,7 @@
     document.getElementById("recur-campo").style.display = "";
     setRecur("no");
     actualizarSugerenciasCat();
+    if (document.getElementById("inp-viaje")) document.getElementById("inp-viaje").value = "";
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
   }
@@ -1031,6 +1041,7 @@
     document.getElementById("inp-fecha").value = t.fecha;
     document.getElementById("inp-cat").value   = t.categoria || "";
     document.getElementById("inp-desc").value  = t.descripcion || "";
+    if (document.getElementById("inp-viaje")) document.getElementById("inp-viaje").value = t.viaje_id || "";
     actualizarSugerenciasCat();
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
@@ -1045,7 +1056,9 @@
     if (!monto || monto <= 0) { toast("Ingresá un monto válido"); return; }
     if (!fecha)               { toast("Elegí una fecha"); return; }
 
-    const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual };
+    const viajeSel = document.getElementById("inp-viaje");
+    const viajeId  = viajeSel && viajeSel.value ? +viajeSel.value : null;
+    const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual, viaje_id: viajeId };
 
     try {
       if (editandoId) {
@@ -1386,6 +1399,20 @@
   cargarCotizaciones();
   if (ES_PRO) cargarStats();
   cargarPresup();
+  if (ES_PRO) cargarViajesSelect();
+
+  // ── Viajes (select del modal) ────────────────────────────────────────────────
+  let viajesDisponibles = [];
+  async function cargarViajesSelect() {
+    const sel = document.getElementById("inp-viaje");
+    if (!sel) return;
+    try {
+      const r = await fetch("/api/finanzas/viajes");
+      viajesDisponibles = await r.json();
+    } catch { viajesDisponibles = []; }
+    sel.innerHTML = '<option value="">Ninguno</option>' +
+      viajesDisponibles.map(v => `<option value="${v.id}">${v.nombre}</option>`).join("");
+  }
 
   // ── Presupuestos ────────────────────────────────────────────────────────────
   let presupuestos = [];

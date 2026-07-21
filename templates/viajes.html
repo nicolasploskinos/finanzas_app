@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#1e1e2e">
+  <title>Viajes — Finanzas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
+      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
+      --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
+    }
+    body.light {
+      --bg: #f1f5f9; --surface: #ffffff; --surface2: #f8fafc;
+      --green: #16a34a; --red: #dc2626; --blue: #2563eb;
+      --yellow: #d97706; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; max-width: 480px; margin: 0 auto;
+    }
+
+    header {
+      background: var(--surface);
+      padding: 12px 16px;
+      position: sticky; top: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
+      gap: 8px;
+    }
+    header h1 { font-size: 16px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+    .back-btn { background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 0 4px 0 0; line-height: 1; }
+    .header-actions { display:flex; gap:8px; align-items:center; }
+
+    .locked { margin: 60px 20px; text-align: center; color: var(--muted); }
+    .locked h2 { color: var(--text); font-size: 18px; margin-bottom: 8px; }
+    .locked a { display: inline-block; margin-top: 16px; background: var(--blue); color: #fff; text-decoration: none; padding: 12px 26px; border-radius: 12px; font-weight: 700; }
+
+    /* Lista de viajes */
+    #vista-lista { padding: 14px 12px 100px; }
+    .viaje-card {
+      background: var(--surface); border-radius: 16px; padding: 16px;
+      margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
+      cursor: pointer;
+    }
+    .viaje-card-nombre { font-size: 16px; font-weight: 800; }
+    .viaje-card-fechas { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 12px; }
+    .empty-state { text-align: center; color: var(--muted); font-size: 14px; padding: 60px 20px; }
+
+    .presup-bar-row { margin-bottom: 10px; }
+    .presup-bar-labels { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .presup-bar-name { font-weight: 600; }
+    .presup-bar-amt { color: var(--muted); }
+    .presup-bar-track { background: var(--surface2); border-radius: 100px; height: 7px; overflow: hidden; }
+    .presup-bar-fill { height: 100%; border-radius: 100px; transition: width .4s ease; }
+
+    .fab {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(206px);
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 28px; font-weight: 300;
+      border: none; box-shadow: 0 6px 20px rgba(96,165,250,.5);
+      cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center;
+    }
+    @media (max-width: 480px) { .fab { left: auto; right: 20px; transform: none; } }
+
+    /* Detalle de viaje */
+    #vista-detalle { display: none; padding: 14px 12px 100px; }
+    .detalle-header { margin-bottom: 16px; }
+    .detalle-nombre { font-size: 20px; font-weight: 900; }
+    .detalle-fechas { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .detalle-acciones { display: flex; gap: 10px; margin-top: 10px; }
+    .detalle-acciones button {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .detalle-acciones button.borrar { color: var(--red); }
+
+    .cons-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-bottom: 18px; }
+    .cons-card { background: var(--surface); border-radius: 12px; padding: 12px 12px; }
+    .cons-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .cons-card-value { font-size: 16px; font-weight: 800; margin-top: 5px; }
+
+    .moneda-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+    .moneda-btn { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; background: var(--surface2); color: var(--muted); }
+    .moneda-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+    .moneda-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .chart-wrap { background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 18px; }
+    .chart-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+
+    .tx-wrap { margin-bottom: 8px; }
+    .tx {
+      background: var(--surface); border-radius: 16px;
+      padding: 13px 14px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+    .tx-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; flex-shrink: 0; }
+    .tx-icon.gasto   { background: rgba(248,113,113,.15); color: var(--red); }
+    .tx-icon.ingreso { background: rgba(74,222,128,.15);  color: var(--green); }
+    .tx-info { flex: 1; min-width: 0; }
+    .tx-cat  { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-fecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .tx-right { text-align: right; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+    .tx-monto { font-size: 15px; font-weight: 800; }
+    .tx-monto.gasto   { color: var(--red); }
+    .tx-monto.ingreso { color: var(--green); }
+    .tx-quitar { background: none; border: none; color: var(--muted); font-size: 17px; cursor: pointer; padding: 4px; line-height: 1; }
+
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+    .overlay.open { display: flex; }
+    .modal { background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px 44px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+    .modal h2 { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+    .campo { margin-bottom: 14px; }
+    .campo label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+    .campo input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; padding: 13px 14px; outline: none; }
+    .campo input:focus { border-color: var(--blue); }
+    .campo input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+    .campo-row { display: flex; gap: 8px; }
+    .campo-row .campo { flex: 1; }
+    .btn-guardar { width: 100%; background: var(--blue); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px; }
+
+    .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); padding: 11px 22px; border-radius: 100px; font-size: 13px; font-weight: 700; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.3); border: 1px solid var(--border); }
+    .toast.show { opacity: 1; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <h1><a href="/finanzas" class="back-btn">←</a>✈️ Viajes</h1>
+  <div class="header-actions">
+    <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
+  </div>
+</header>
+
+{% if not is_pro %}
+<div class="locked">
+  <h2>⭐ Viajes es una función Pro</h2>
+  <p>Armá presupuestos de viaje y mirá cuánto gastaste por día. Necesitás una cuenta Pro para usar esta sección.</p>
+  <a href="/finanzas">Volver a Finanzas</a>
+</div>
+{% else %}
+
+<!-- Vista lista -->
+<div id="vista-lista">
+  <div id="viajes-lista"></div>
+</div>
+<button class="fab" id="fab-lista" onclick="abrirModalViaje()">+</button>
+
+<!-- Vista detalle -->
+<div id="vista-detalle">
+  <div class="detalle-header">
+    <div class="detalle-nombre" id="det-nombre"></div>
+    <div class="detalle-fechas" id="det-fechas"></div>
+    <div class="detalle-acciones">
+      <button onclick="abrirModalViaje(viajeActual)">Editar</button>
+      <button class="borrar" onclick="borrarViajeActual()">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="cons-cards" id="det-totales"></div>
+
+  <div class="chart-wrap">
+    <div class="moneda-toggle" id="det-mon-toggle"></div>
+    <canvas id="det-chart" height="180"></canvas>
+    <div class="chart-empty" id="det-chart-empty" style="display:none">Sin gastos en esta moneda</div>
+  </div>
+
+  <div id="det-tx-lista"></div>
+</div>
+
+<!-- Modal Viaje -->
+<div class="overlay" id="viaje-overlay" onclick="cerrarModalViajeFondo(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="viaje-modal-title">Nuevo viaje</h2>
+    <div class="campo">
+      <label>NOMBRE</label>
+      <input type="text" id="viaje-inp-nombre" placeholder="Ej: Brasil 2026">
+    </div>
+    <div class="campo-row">
+      <div class="campo">
+        <label>DESDE</label>
+        <input type="date" id="viaje-inp-desde">
+      </div>
+      <div class="campo">
+        <label>HASTA</label>
+        <input type="date" id="viaje-inp-hasta">
+      </div>
+    </div>
+    <div class="campo">
+      <label>PRESUPUESTO ARS (opcional)</label>
+      <input type="number" id="viaje-inp-ars" placeholder="0" min="0">
+    </div>
+    <div class="campo">
+      <label>PRESUPUESTO USD (opcional)</label>
+      <input type="number" id="viaje-inp-usd" placeholder="0" min="0">
+    </div>
+    <div class="campo">
+      <label>PRESUPUESTO EUR (opcional)</label>
+      <input type="number" id="viaje-inp-eur" placeholder="0" min="0">
+    </div>
+    <button class="btn-guardar" onclick="guardarViaje()">Guardar viaje</button>
+  </div>
+</div>
+
+{% endif %}
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SIM = { ARS: '$', USD: 'USD ', EUR: '€' };
+  function fmtMon(n, moneda) {
+    const sym = SIM[moneda || 'ARS'] || '$';
+    return sym + Math.abs(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg; el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 2500);
+  }
+  function toggleModo() {
+    const light = document.body.classList.toggle("light");
+    document.getElementById("btn-modo").textContent = light ? "☀️" : "🌙";
+    localStorage.setItem("modo", light ? "light" : "dark");
+  }
+  if (localStorage.getItem("modo") === "light") {
+    document.body.classList.add("light");
+    document.getElementById("btn-modo").textContent = "☀️";
+  }
+
+  const ES_PRO = {{ is_pro | tojson }};
+  let viajes = [];
+  let viajeActual = null;
+  let detChart = null;
+  let detMonedaActual = "ARS";
+  let detData = null;
+
+  function idDeUrl() {
+    const p = new URLSearchParams(location.search);
+    return p.get("id") ? +p.get("id") : null;
+  }
+
+  async function init() {
+    if (!ES_PRO) return;
+    const id = idDeUrl();
+    if (id) {
+      mostrarDetalle(id);
+    } else {
+      mostrarLista();
+    }
+  }
+
+  function mostrarLista() {
+    document.getElementById("vista-lista").style.display = "";
+    document.getElementById("vista-detalle").style.display = "none";
+    document.getElementById("fab-lista").style.display = "flex";
+    cargarViajes();
+  }
+
+  async function mostrarDetalle(id) {
+    viajeActual = id;
+    document.getElementById("vista-lista").style.display = "none";
+    document.getElementById("vista-detalle").style.display = "";
+    document.getElementById("fab-lista").style.display = "none";
+    await cargarDetalle(id);
+  }
+
+  async function cargarViajes() {
+    try {
+      const r = await fetch("/api/finanzas/viajes");
+      viajes = await r.json();
+    } catch { viajes = []; }
+    renderViajes();
+  }
+
+  function renderViajes() {
+    const el = document.getElementById("viajes-lista");
+    if (!viajes.length) {
+      el.innerHTML = '<div class="empty-state">Todavía no armaste ningún viaje.<br>Tocá + para crear el primero.</div>';
+      return;
+    }
+    el.innerHTML = viajes.map(v => {
+      const barras = ["ARS", "USD", "EUR"].map(m => {
+        const presu = v[`presupuesto_${m.toLowerCase()}`];
+        if (!presu) return "";
+        const gastado = (v.gastado && v.gastado[m]) || 0;
+        const pct = Math.min(gastado / presu * 100, 100);
+        const color = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
+        return `
+          <div class="presup-bar-row">
+            <div class="presup-bar-labels">
+              <span class="presup-bar-name">${m}</span>
+              <span class="presup-bar-amt" style="color:${color}">${fmtMon(gastado, m)} / ${fmtMon(presu, m)}</span>
+            </div>
+            <div class="presup-bar-track"><div class="presup-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+          </div>`;
+      }).join("");
+      return `
+        <div class="viaje-card" onclick="location.href='/finanzas/viajes?id=${v.id}'">
+          <div class="viaje-card-nombre">${v.nombre}</div>
+          <div class="viaje-card-fechas">${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}</div>
+          ${barras || '<div style="font-size:12px;color:var(--muted)">Sin presupuesto asignado</div>'}
+        </div>`;
+    }).join("");
+  }
+
+  function formatFecha(f) {
+    const d = new Date(f + "T00:00:00");
+    return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function abrirModalViaje(id) {
+    const v = id ? viajes.find(x => x.id === id) || detData?.viaje : null;
+    document.getElementById("viaje-modal-title").textContent = v ? "Editar viaje" : "Nuevo viaje";
+    document.getElementById("viaje-inp-nombre").value = v ? v.nombre : "";
+    document.getElementById("viaje-inp-desde").value  = v ? v.fecha_inicio : "";
+    document.getElementById("viaje-inp-hasta").value  = v ? v.fecha_fin : "";
+    document.getElementById("viaje-inp-ars").value = v && v.presupuesto_ars ? v.presupuesto_ars : "";
+    document.getElementById("viaje-inp-usd").value = v && v.presupuesto_usd ? v.presupuesto_usd : "";
+    document.getElementById("viaje-inp-eur").value = v && v.presupuesto_eur ? v.presupuesto_eur : "";
+    document.getElementById("viaje-overlay").dataset.editId = v ? v.id : "";
+    document.getElementById("viaje-overlay").classList.add("open");
+  }
+  function cerrarModalViaje() {
+    document.getElementById("viaje-overlay").classList.remove("open");
+  }
+  function cerrarModalViajeFondo(e) {
+    if (e.target === document.getElementById("viaje-overlay")) cerrarModalViaje();
+  }
+
+  async function guardarViaje() {
+    const nombre = document.getElementById("viaje-inp-nombre").value.trim();
+    const desde  = document.getElementById("viaje-inp-desde").value;
+    const hasta  = document.getElementById("viaje-inp-hasta").value;
+    if (!nombre || !desde || !hasta) { toast("Completá nombre y fechas"); return; }
+    if (hasta < desde) { toast("La fecha 'hasta' no puede ser anterior a 'desde'"); return; }
+    const body = {
+      nombre, fecha_inicio: desde, fecha_fin: hasta,
+      presupuesto_ars: document.getElementById("viaje-inp-ars").value || null,
+      presupuesto_usd: document.getElementById("viaje-inp-usd").value || null,
+      presupuesto_eur: document.getElementById("viaje-inp-eur").value || null,
+    };
+    const editId = document.getElementById("viaje-overlay").dataset.editId;
+    const r = await fetch(editId ? `/api/finanzas/viajes/${editId}` : "/api/finanzas/viajes", {
+      method: editId ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) { toast("Error al guardar el viaje"); return; }
+    cerrarModalViaje();
+    toast("✓ Viaje guardado");
+    if (editId) { await cargarDetalle(+editId); } else { mostrarLista(); }
+  }
+
+  async function borrarViajeActual() {
+    if (!viajeActual) return;
+    if (!confirm("¿Eliminar este viaje? Las transacciones no se borran, solo se desvinculan.")) return;
+    await fetch(`/api/finanzas/viajes/${viajeActual}`, { method: "DELETE" });
+    location.href = "/finanzas/viajes";
+  }
+
+  async function cargarDetalle(id) {
+    try {
+      const r = await fetch(`/api/finanzas/viajes/${id}`);
+      if (!r.ok) { toast("No se pudo cargar el viaje"); location.href = "/finanzas/viajes"; return; }
+      detData = await r.json();
+    } catch { toast("No se pudo cargar el viaje"); return; }
+
+    const v = detData.viaje;
+    document.getElementById("det-nombre").textContent = v.nombre;
+    document.getElementById("det-fechas").textContent = `${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}`;
+
+    document.getElementById("det-totales").innerHTML = ["ARS", "USD", "EUR"].map(m => {
+      const gastado = detData.totales[m] || 0;
+      if (!gastado && !v[`presupuesto_${m.toLowerCase()}`]) return "";
+      return `
+        <div class="cons-card">
+          <div class="cons-card-label">Gastado ${m}</div>
+          <div class="cons-card-value">${fmtMon(gastado, m)}</div>
+        </div>`;
+    }).join("") || '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
+
+    const monedasConDatos = ["ARS", "USD", "EUR"].filter(m => (detData.por_dia[m] || []).length);
+    detMonedaActual = monedasConDatos[0] || "ARS";
+    document.getElementById("det-mon-toggle").innerHTML = ["ARS", "USD", "EUR"].map(m => `
+      <button class="moneda-btn ${m === detMonedaActual ? "active" : ""}" ${monedasConDatos.includes(m) ? "" : "disabled"}
+        onclick="setDetMoneda('${m}')">${m}</button>
+    `).join("");
+    renderChart();
+
+    document.getElementById("det-tx-lista").innerHTML = detData.transacciones.length
+      ? detData.transacciones.map(t => `
+        <div class="tx-wrap">
+          <div class="tx">
+            <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
+            <div class="tx-info">
+              <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+              <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "+" : "-"}${fmtMon(t.monto, t.moneda)}</div>
+              <button class="tx-quitar" title="Quitar del viaje" onclick="quitarDelViaje(${t.id})">×</button>
+            </div>
+          </div>
+        </div>`).join("")
+      : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>';
+  }
+
+  function setDetMoneda(m) {
+    detMonedaActual = m;
+    document.querySelectorAll("#det-mon-toggle .moneda-btn").forEach(b =>
+      b.classList.toggle("active", b.textContent.trim() === m)
+    );
+    renderChart();
+  }
+
+  function renderChart() {
+    const dias = (detData.por_dia[detMonedaActual] || []);
+    const canvas = document.getElementById("det-chart");
+    const vacio  = document.getElementById("det-chart-empty");
+    if (detChart) { detChart.destroy(); detChart = null; }
+    if (!dias.length) {
+      canvas.style.display = "none";
+      vacio.style.display = "block";
+      return;
+    }
+    canvas.style.display = "";
+    vacio.style.display = "none";
+    detChart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: dias.map(d => formatFecha(d.fecha)),
+        datasets: [{ data: dias.map(d => d.monto), backgroundColor: "#60a5fa", borderRadius: 6 }],
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { callback: v => fmtMon(v, detMonedaActual) } },
+        },
+      },
+    });
+  }
+
+  async function quitarDelViaje(id) {
+    const t = detData.transacciones.find(x => x.id === id);
+    if (!t) return;
+    await fetch(`/api/finanzas/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...t, viaje_id: null }),
+    });
+    toast("Quitado del viaje");
+    await cargarDetalle(viajeActual);
+  }
+
+  init();
+</script>
+</body>
+</html>
