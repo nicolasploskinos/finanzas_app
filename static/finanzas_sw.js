@@ -1,4 +1,4 @@
-const CACHE = "finanzas-v3";
+const CACHE = "finanzas-v4";
 const URLS  = ["/finanzas", "/finanzas/viajes"];
 
 self.addEventListener("install", e => {

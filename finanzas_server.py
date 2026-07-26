@@ -42,6 +42,12 @@ def login_required(f):
 
 # ── Páginas ───────────────────────────────────────────────────────────────────
 
+@app.after_request
+def _no_cache_html(resp):
+    if resp.mimetype == "text/html":
+        resp.headers["Cache-Control"] = "no-store"
+    return resp
+
 @app.route("/")
 def landing():
     return render_template("landing.html")
