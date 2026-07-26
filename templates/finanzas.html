@@ -107,13 +107,6 @@
       appearance: none; -webkit-appearance: none;
       box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
-    .filtros input[type="date"] {
-      background: var(--surface); color: var(--text);
-      border: 1px solid var(--border); border-radius: 100px;
-      padding: 7px 30px 7px 14px; font-size: 12px; font-weight: 600; flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
-    }
-
     /* Lista */
     #lista { padding: 0 12px 100px; }
     .mes-header {
@@ -473,12 +466,17 @@
     <select id="f-cat" onchange="render()">
       <option value="">Todas las categorías</option>
     </select>
-    <div style="position:relative;display:inline-flex;align-items:center;gap:4px;flex-shrink:0">
-      <input type="date" id="f-dia-desde" onchange="filtrarPorDia()" title="Desde qué día">
-      <span style="color:var(--muted);font-size:12px">–</span>
-      <input type="date" id="f-dia-hasta" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para rangos)" style="padding-right:30px">
-      <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0">×</button>
-    </div>
+  </div>
+
+  <!-- Rango de días específico -->
+  <div style="padding:0 12px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0">📅 Ver días puntuales:</span>
+    <input type="date" id="f-dia-desde" onchange="filtrarPorDia()" title="Desde qué día"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+    <span style="color:var(--muted);font-size:12px">a</span>
+    <input type="date" id="f-dia-hasta" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para ver un rango)"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+    <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0">Limpiar ×</button>
   </div>
 
   <div id="dia-resultado" style="display:none;padding:0 12px 8px;font-size:13px;color:var(--muted)"></div>
