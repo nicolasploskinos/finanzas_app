@@ -1,23 +1,16 @@
-const CACHE = "finanzas-v4";
-const URLS  = ["/finanzas", "/finanzas/viajes"];
-
-self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
+  // Se borran todas las cachés viejas, incluida cualquier versión anterior
+  // de esta misma caché: ya no se precachea nada.
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))));
   self.clients.claim();
 });
 
-self.addEventListener("fetch", e => {
-  if (e.request.url.includes("/api/")) return; // siempre red para la API
-  e.respondWith(
-    fetch(e.request).catch(async () =>
-      (await caches.match(e.request)) || (await caches.match("/finanzas")) || Response.error()
-    )
-  );
-});
+// Sin lógica de caché/fallback: las páginas dinámicas van con
+// Cache-Control: no-store del lado del servidor, así que no hay nada
+// útil para interceptar acá. Se deja el listener solo para mantener
+// los criterios de instalabilidad de la PWA.
+self.addEventListener("fetch", () => {});
