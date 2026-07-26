@@ -473,8 +473,10 @@
     <select id="f-cat" onchange="render()">
       <option value="">Todas las categorías</option>
     </select>
-    <div style="position:relative;display:inline-flex;flex-shrink:0">
-      <input type="date" id="f-dia" onchange="filtrarPorDia()" title="Ver un día específico">
+    <div style="position:relative;display:inline-flex;align-items:center;gap:4px;flex-shrink:0">
+      <input type="date" id="f-dia-desde" onchange="filtrarPorDia()" title="Desde qué día">
+      <span style="color:var(--muted);font-size:12px">–</span>
+      <input type="date" id="f-dia-hasta" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para rangos)" style="padding-right:30px">
       <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0">×</button>
     </div>
   </div>
@@ -675,7 +677,8 @@
 
   function setPeriodo(p) {
     periodoActivo = p;
-    document.getElementById("f-dia").value = "";
+    document.getElementById("f-dia-desde").value = "";
+    document.getElementById("f-dia-hasta").value = "";
     document.getElementById("btn-clear-dia").style.display = "none";
     document.querySelectorAll(".periodo-btn").forEach(b =>
       b.classList.toggle("active", b.dataset.p === p)
@@ -683,24 +686,41 @@
     render();
   }
 
+  // Devuelve {desde, hasta} normalizado (desde <= hasta), o null si no hay filtro de día activo
+  function rangoDia() {
+    const dRaw = document.getElementById("f-dia-desde").value;
+    const hRaw = document.getElementById("f-dia-hasta").value;
+    if (!dRaw && !hRaw) return null;
+    let desde = dRaw || hRaw;
+    let hasta = hRaw || dRaw;
+    if (desde > hasta) [desde, hasta] = [hasta, desde];
+    return { desde, hasta };
+  }
+
   function filtrarPorDia() {
-    const v = document.getElementById("f-dia").value;
-    document.getElementById("btn-clear-dia").style.display = v ? "" : "none";
-    document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", !v && b.dataset.p === periodoActivo));
+    const r = rangoDia();
+    document.getElementById("btn-clear-dia").style.display = r ? "" : "none";
+    document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", !r && b.dataset.p === periodoActivo));
     render();
   }
 
   function limpiarDia() {
-    document.getElementById("f-dia").value = "";
+    document.getElementById("f-dia-desde").value = "";
+    document.getElementById("f-dia-hasta").value = "";
     document.getElementById("btn-clear-dia").style.display = "none";
     document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", b.dataset.p === periodoActivo));
     render();
   }
 
+  function fechaCorta(iso) {
+    const [, mo, d] = iso.split("-").map(Number);
+    return `${d} de ${MESES[mo - 1].toLowerCase()}`;
+  }
+
   function actualizarDiaResultado() {
     const el = document.getElementById("dia-resultado");
-    const diaSel = document.getElementById("f-dia").value;
-    if (!diaSel) { el.style.display = "none"; return; }
+    const r = rangoDia();
+    if (!r) { el.style.display = "none"; return; }
 
     const porMoneda = {};
     filtrados().forEach(t => {
@@ -710,13 +730,15 @@
     });
 
     const partes = Object.keys(porMoneda).map(m => fmtMon(porMoneda[m], m));
-    const [, mo, d] = diaSel.split("-").map(Number);
-    const fechaTxt = `${d} de ${MESES[mo - 1].toLowerCase()}`;
+    const esUnDia = r.desde === r.hasta;
+    const fechaTxt = esUnDia
+      ? `el ${fechaCorta(r.desde)}`
+      : `entre el ${fechaCorta(r.desde)} y el ${fechaCorta(r.hasta)}`;
 
     el.style.display = "";
     el.textContent = partes.length
-      ? `🗓️ Gastaste el ${fechaTxt}: ${partes.join(" + ")}`
-      : `🗓️ No hay gastos registrados el ${fechaTxt}`;
+      ? `🗓️ Gastaste ${fechaTxt}: ${partes.join(" + ")}`
+      : `🗓️ No hay gastos registrados ${fechaTxt}`;
   }
 
   const anioAct = hoy.getFullYear();
@@ -835,16 +857,16 @@
   }
 
   function filtrados() {
-    const diaSel = document.getElementById("f-dia").value;
-    const desde  = diaSel ? null : desdePeriodo();
+    const rango  = rangoDia();
+    const desde  = rango ? null : desdePeriodo();
     const tipo   = document.getElementById("f-tipo").value;
     const moneda = document.getElementById("f-moneda").value;
     const cat    = document.getElementById("f-cat").value;
     const busq   = normalizar(document.getElementById("busqueda").value.trim());
 
     return datos.filter(t => {
-      if (diaSel) {
-        if (t.fecha !== diaSel) return false;
+      if (rango) {
+        if (t.fecha < rango.desde || t.fecha > rango.hasta) return false;
       } else {
         const f = new Date(t.fecha + "T00:00:00");
         if (desde && f < desde) return false;
