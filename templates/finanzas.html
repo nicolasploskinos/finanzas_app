@@ -107,6 +107,12 @@
       appearance: none; -webkit-appearance: none;
       box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
+    .filtros input[type="date"] {
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 7px 30px 7px 14px; font-size: 12px; font-weight: 600; flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
 
     /* Lista */
     #lista { padding: 0 12px 100px; }
@@ -467,7 +473,13 @@
     <select id="f-cat" onchange="render()">
       <option value="">Todas las categorías</option>
     </select>
+    <div style="position:relative;display:inline-flex;flex-shrink:0">
+      <input type="date" id="f-dia" onchange="filtrarPorDia()" title="Ver un día específico">
+      <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0">×</button>
+    </div>
   </div>
+
+  <div id="dia-resultado" style="display:none;padding:0 12px 8px;font-size:13px;color:var(--muted)"></div>
 
   <div style="margin:8px 12px 0;display:flex;justify-content:flex-end;align-items:center;gap:16px;position:relative">
     <button onclick="triggerImport()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">⬆️ Importar</button>
@@ -663,10 +675,48 @@
 
   function setPeriodo(p) {
     periodoActivo = p;
+    document.getElementById("f-dia").value = "";
+    document.getElementById("btn-clear-dia").style.display = "none";
     document.querySelectorAll(".periodo-btn").forEach(b =>
       b.classList.toggle("active", b.dataset.p === p)
     );
     render();
+  }
+
+  function filtrarPorDia() {
+    const v = document.getElementById("f-dia").value;
+    document.getElementById("btn-clear-dia").style.display = v ? "" : "none";
+    document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", !v && b.dataset.p === periodoActivo));
+    render();
+  }
+
+  function limpiarDia() {
+    document.getElementById("f-dia").value = "";
+    document.getElementById("btn-clear-dia").style.display = "none";
+    document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", b.dataset.p === periodoActivo));
+    render();
+  }
+
+  function actualizarDiaResultado() {
+    const el = document.getElementById("dia-resultado");
+    const diaSel = document.getElementById("f-dia").value;
+    if (!diaSel) { el.style.display = "none"; return; }
+
+    const porMoneda = {};
+    filtrados().forEach(t => {
+      if (t.tipo !== "Gasto") return;
+      const m = t.moneda || "ARS";
+      porMoneda[m] = (porMoneda[m] || 0) + Number(t.monto);
+    });
+
+    const partes = Object.keys(porMoneda).map(m => fmtMon(porMoneda[m], m));
+    const [, mo, d] = diaSel.split("-").map(Number);
+    const fechaTxt = `${d} de ${MESES[mo - 1].toLowerCase()}`;
+
+    el.style.display = "";
+    el.textContent = partes.length
+      ? `🗓️ Gastaste el ${fechaTxt}: ${partes.join(" + ")}`
+      : `🗓️ No hay gastos registrados el ${fechaTxt}`;
   }
 
   const anioAct = hoy.getFullYear();
@@ -785,15 +835,20 @@
   }
 
   function filtrados() {
-    const desde  = desdePeriodo();
+    const diaSel = document.getElementById("f-dia").value;
+    const desde  = diaSel ? null : desdePeriodo();
     const tipo   = document.getElementById("f-tipo").value;
     const moneda = document.getElementById("f-moneda").value;
     const cat    = document.getElementById("f-cat").value;
     const busq   = normalizar(document.getElementById("busqueda").value.trim());
 
     return datos.filter(t => {
-      const f = new Date(t.fecha + "T00:00:00");
-      if (desde  && f < desde)                                       return false;
+      if (diaSel) {
+        if (t.fecha !== diaSel) return false;
+      } else {
+        const f = new Date(t.fecha + "T00:00:00");
+        if (desde && f < desde) return false;
+      }
       if (tipo   && t.tipo !== tipo)                                  return false;
       if (moneda && (t.moneda || 'ARS') !== moneda)                  return false;
       if (cat    && normalizar(t.categoria) !== normalizar(cat))     return false;
@@ -855,6 +910,7 @@
     const monedaFiltro = document.getElementById("f-moneda").value;
 
     actualizarConsolidado();
+    actualizarDiaResultado();
     if (typeof renderPresup === "function") renderPresup();
 
     // Lista de transacciones
