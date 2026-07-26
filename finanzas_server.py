@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 _inflacion_cache = {"data": None, "ts": 0}
+_cotiz_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
@@ -139,17 +140,35 @@ def register():
 
 # ── Cotizaciones API ──────────────────────────────────────────────────────────
 
-@app.route("/api/finanzas/cotizaciones")
-def cotizaciones():
+def _obtener_cotizaciones():
+    if _cotiz_cache["data"] and time.time() - _cotiz_cache["ts"] < 600:
+        return _cotiz_cache["data"]
     try:
         r = req.get("https://api.bluelytics.com.ar/v2/latest", timeout=5)
         data = r.json()
-        return jsonify({
+        cotiz = {
             "USD": round(data["oficial"]["value_sell"], 2),
             "EUR": round(data["oficial_euro"]["value_sell"], 2),
-        })
-    except Exception as e:
-        return jsonify({"USD": None, "EUR": None}), 200
+        }
+    except Exception:
+        cotiz = {"USD": None, "EUR": None}
+    _cotiz_cache["data"] = cotiz
+    _cotiz_cache["ts"] = time.time()
+    return cotiz
+
+def _convertir_moneda(monto, origen, destino, cotiz):
+    if origen == destino:
+        return monto
+    ars = monto if origen == "ARS" else (monto * cotiz[origen] if cotiz.get(origen) else None)
+    if ars is None:
+        return None
+    if destino == "ARS":
+        return ars
+    return ars / cotiz[destino] if cotiz.get(destino) else None
+
+@app.route("/api/finanzas/cotizaciones")
+def cotizaciones():
+    return jsonify(_obtener_cotizaciones())
 
 # ── Plan helpers ─────────────────────────────────────────────────────────────
 
@@ -876,6 +895,7 @@ def listar_viajes():
     ids = [v["id"] for v in viajes]
     gastos = {}
     if ids:
+        cotiz = _obtener_cotizaciones()
         txs = (
             db.table("transacciones").select("viaje_id,tipo,monto,moneda")
             .eq("user_id", session["user_id"]).in_("viaje_id", ids).execute().data
@@ -884,9 +904,13 @@ def listar_viajes():
             if t["tipo"] != "Gasto":
                 continue
             vid = t["viaje_id"]
-            m = t.get("moneda") or "ARS"
+            origen = t.get("moneda") or "ARS"
+            monto = float(t["monto"])
             gastos.setdefault(vid, {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
-            gastos[vid][m] = gastos[vid].get(m, 0.0) + float(t["monto"])
+            for destino in ("ARS", "USD", "EUR"):
+                conv = _convertir_moneda(monto, origen, destino, cotiz)
+                if conv is not None:
+                    gastos[vid][destino] += conv
     for v in viajes:
         v["gastado"] = gastos.get(v["id"], {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
     return jsonify(viajes)
@@ -940,16 +964,20 @@ def detalle_viaje(vid):
         .order("fecha").execute().data
     )
 
+    cotiz = _obtener_cotizaciones()
     totales = {"ARS": 0.0, "USD": 0.0, "EUR": 0.0}
     por_dia = {"ARS": {}, "USD": {}, "EUR": {}}
     for t in txs:
         if t["tipo"] != "Gasto":
             continue
-        m = t.get("moneda") or "ARS"
+        origen = t.get("moneda") or "ARS"
         monto = float(t["monto"])
-        totales[m] = totales.get(m, 0.0) + monto
-        por_dia.setdefault(m, {})
-        por_dia[m][t["fecha"]] = por_dia[m].get(t["fecha"], 0.0) + monto
+        for destino in ("ARS", "USD", "EUR"):
+            conv = _convertir_moneda(monto, origen, destino, cotiz)
+            if conv is None:
+                continue
+            totales[destino] += conv
+            por_dia[destino][t["fecha"]] = por_dia[destino].get(t["fecha"], 0.0) + conv
 
     por_dia_lista = {
         m: sorted([{"fecha": f, "monto": v} for f, v in dias.items()], key=lambda x: x["fecha"])
