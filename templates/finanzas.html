@@ -669,7 +669,7 @@
   // Fecha de hoy
   const hoy = new Date();
   document.getElementById("fecha-hoy").textContent =
-    `${hoy.getDate()} de ${MESES[hoy.getMonth()].toLowerCase()} de ${hoy.getFullYear()}`;
+    `${hoy.getDate()} de ${MESES[hoy.getMonth()]} de ${hoy.getFullYear()}`;
   document.getElementById("inp-fecha").value = hoy.toISOString().split("T")[0];
 
   // Periodo seleccionado
@@ -714,7 +714,7 @@
 
   function fechaCorta(iso) {
     const [, mo, d] = iso.split("-").map(Number);
-    return `${d} de ${MESES[mo - 1].toLowerCase()}`;
+    return `${d} de ${MESES[mo - 1]}`;
   }
 
   function actualizarDiaResultado() {
@@ -978,7 +978,7 @@
 
   function formatFecha(iso) {
     const f = new Date(iso + "T00:00:00");
-    return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3).toLowerCase()}. ${f.getFullYear()}`;
+    return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3)}. ${f.getFullYear()}`;
   }
 
   function setTipo(t) {
