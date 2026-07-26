@@ -962,6 +962,7 @@ def detalle_viaje(vid):
 @login_required
 def suscribir():
     mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
+    base_url = os.environ.get("BASE_URL") or request.host_url.rstrip("/")
     r = req.post(
         "https://api.mercadopago.com/preapproval",
         headers={"Authorization": f"Bearer {mp_token}"},
@@ -975,8 +976,8 @@ def suscribir():
                 "transaction_amount": 1999,
                 "currency_id": "ARS",
             },
-            "back_url": "https://web-production-d822b.up.railway.app/finanzas",
-            "notification_url": "https://web-production-d822b.up.railway.app/api/finanzas/webhook/mercadopago",
+            "back_url": f"{base_url}/finanzas",
+            "notification_url": f"{base_url}/api/finanzas/webhook/mercadopago",
         }
     )
     data = r.json()
