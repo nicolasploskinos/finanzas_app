@@ -96,6 +96,15 @@
     .chart-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; }
     .chart-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
 
+    .det-filtros { margin-bottom: 10px; }
+    .det-filtros select {
+      width: 100%; background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 9px 14px; font-size: 13px; font-weight: 600;
+      appearance: none; -webkit-appearance: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+
     .tx-wrap { margin-bottom: 8px; }
     .tx {
       background: var(--surface); border-radius: 16px;
@@ -181,6 +190,12 @@
     <div class="chart-title">Gasto por categoría</div>
     <canvas id="det-chart-cat" height="180"></canvas>
     <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos en esta moneda</div>
+  </div>
+
+  <div class="det-filtros">
+    <select id="det-f-cat" onchange="renderTxLista()">
+      <option value="">Todas las categorías</option>
+    </select>
   </div>
 
   <div id="det-tx-lista"></div>
@@ -427,8 +442,37 @@
       renderChart();
       renderChartCategoria();
 
-      document.getElementById("det-tx-lista").innerHTML = detData.transacciones.length
-        ? detData.transacciones.map(t => `
+      actualizarDetCatFiltro();
+      renderTxLista();
+    } catch (e) {
+      console.error("Error al renderizar el detalle del viaje:", e);
+      toast("Hubo un error mostrando el viaje (revisá la consola)");
+    }
+  }
+
+  function actualizarDetCatFiltro() {
+    const seen = new Map();
+    (detData.transacciones || []).forEach(t => {
+      if (t.categoria && !seen.has(t.categoria)) seen.set(t.categoria, t.categoria);
+    });
+    const cats = [...seen.values()].sort((a, b) => a.localeCompare(b));
+    const sel = document.getElementById("det-f-cat");
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todas las categorías</option>';
+    cats.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      if (c === val) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  function renderTxLista() {
+    const cat = document.getElementById("det-f-cat").value;
+    const lista = (detData.transacciones || []).filter(t => !cat || t.categoria === cat);
+
+    document.getElementById("det-tx-lista").innerHTML = lista.length
+      ? lista.map(t => `
           <div class="tx-wrap">
             <div class="tx">
               <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
@@ -442,11 +486,9 @@
               </div>
             </div>
           </div>`).join("")
-        : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>';
-    } catch (e) {
-      console.error("Error al renderizar el detalle del viaje:", e);
-      toast("Hubo un error mostrando el viaje (revisá la consola)");
-    }
+      : (detData.transacciones && detData.transacciones.length
+          ? '<div class="empty-state">No hay gastos en esta categoría.</div>'
+          : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>');
   }
 
   function setDetMoneda(m) {
