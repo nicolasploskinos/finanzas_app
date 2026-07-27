@@ -526,7 +526,7 @@
       <datalist id="cat-suggestions"></datalist>
     </div>
     {% if is_pro %}
-    <div class="campo">
+    <div class="campo" id="viaje-campo">
       <label>VIAJE (opcional)</label>
       <select id="inp-viaje">
         <option value="">Ninguno</option>
@@ -983,6 +983,11 @@
     tipoActual = t;
     document.getElementById("btn-gasto").className   = "tipo-btn " + (t==="Gasto"   ? "gasto-active"   : "inactive");
     document.getElementById("btn-ingreso").className = "tipo-btn " + (t==="Ingreso" ? "ingreso-active" : "inactive");
+    const viajeCampo = document.getElementById("viaje-campo");
+    if (viajeCampo) {
+      viajeCampo.style.display = t === "Gasto" ? "" : "none";
+      if (t !== "Gasto") document.getElementById("inp-viaje").value = "";
+    }
   }
 
   function setMonedaForm(m) {
@@ -1090,6 +1095,7 @@
     editandoId = null;
     document.getElementById("modal-title").textContent = "Nueva transacción";
     document.getElementById("recur-campo").style.display = "";
+    setTipo("Gasto");
     setRecur("no");
     actualizarSugerenciasCat();
     if (document.getElementById("inp-viaje")) document.getElementById("inp-viaje").value = "";
@@ -1133,7 +1139,7 @@
     if (!fecha)               { toast("Elegí una fecha"); return; }
 
     const viajeSel = document.getElementById("inp-viaje");
-    const viajeId  = viajeSel && viajeSel.value ? +viajeSel.value : null;
+    const viajeId  = tipoActual === "Gasto" && viajeSel && viajeSel.value ? +viajeSel.value : null;
     const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual, viaje_id: viajeId };
 
     try {
