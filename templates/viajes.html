@@ -172,12 +172,6 @@
   <div class="cons-cards" id="det-totales"></div>
 
   <div class="chart-wrap">
-    <div class="chart-title">Gasto por día (USD)</div>
-    <canvas id="det-chart" height="180"></canvas>
-    <div class="chart-empty" id="det-chart-empty" style="display:none">Sin gastos registrados</div>
-  </div>
-
-  <div class="chart-wrap">
     <div class="chart-title">Gasto por categoría (USD)</div>
     <canvas id="det-chart-cat" height="180"></canvas>
     <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos registrados</div>
@@ -187,6 +181,16 @@
     <select id="det-f-cat" onchange="renderTxLista()">
       <option value="">Todas las categorías</option>
     </select>
+  </div>
+
+  <div style="padding:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0">📅 Ver días puntuales:</span>
+    <input type="date" id="det-f-dia-desde" onchange="renderTxLista()" title="Desde qué día"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+    <span style="color:var(--muted);font-size:12px">a</span>
+    <input type="date" id="det-f-dia-hasta" onchange="renderTxLista()" title="Hasta qué día (opcional, para ver un rango)"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+    <button id="det-btn-clear-dia" onclick="limpiarDetDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0">Limpiar ×</button>
   </div>
 
   <div id="det-tx-lista"></div>
@@ -243,7 +247,6 @@
   const ES_PRO = {{ is_pro | tojson }};
   let viajes = [];
   let viajeActual = null;
-  let detChart = null;
   let detChartCat = null;
   // Los viajes se muestran siempre en dólares; los gastos en otras monedas
   // ya vienen convertidos desde el backend al cambio oficial.
@@ -406,11 +409,10 @@
            </div>`
         : '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
 
-      renderChart();
       renderChartCategoria();
 
       actualizarDetCatFiltro();
-      renderTxLista();
+      limpiarDetDia();
     } catch (e) {
       console.error("Error al renderizar el detalle del viaje:", e);
       toast("Hubo un error mostrando el viaje (revisá la consola)");
@@ -434,9 +436,33 @@
     });
   }
 
+  // Devuelve {desde, hasta} normalizado (desde <= hasta), o null si no hay filtro de día activo
+  function rangoDetDia() {
+    const dRaw = document.getElementById("det-f-dia-desde").value;
+    const hRaw = document.getElementById("det-f-dia-hasta").value;
+    if (!dRaw && !hRaw) return null;
+    let desde = dRaw || hRaw;
+    let hasta = hRaw || dRaw;
+    if (desde > hasta) [desde, hasta] = [hasta, desde];
+    return { desde, hasta };
+  }
+
+  function limpiarDetDia() {
+    document.getElementById("det-f-dia-desde").value = "";
+    document.getElementById("det-f-dia-hasta").value = "";
+    document.getElementById("det-btn-clear-dia").style.display = "none";
+    renderTxLista();
+  }
+
   function renderTxLista() {
     const cat = document.getElementById("det-f-cat").value;
-    const lista = (detData.transacciones || []).filter(t => !cat || t.categoria === cat);
+    const rango = rangoDetDia();
+    document.getElementById("det-btn-clear-dia").style.display = rango ? "" : "none";
+    const lista = (detData.transacciones || []).filter(t => {
+      if (cat && t.categoria !== cat) return false;
+      if (rango && (t.fecha < rango.desde || t.fecha > rango.hasta)) return false;
+      return true;
+    });
 
     document.getElementById("det-tx-lista").innerHTML = lista.length
       ? lista.map(t => `
@@ -454,42 +480,8 @@
             </div>
           </div>`).join("")
       : (detData.transacciones && detData.transacciones.length
-          ? '<div class="empty-state">No hay gastos en esta categoría.</div>'
+          ? '<div class="empty-state">No hay gastos con ese filtro.</div>'
           : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>');
-  }
-
-  function renderChart() {
-    const dias = (detData.por_dia[detMonedaActual] || []);
-    const canvas = document.getElementById("det-chart");
-    const vacio  = document.getElementById("det-chart-empty");
-    if (detChart) { detChart.destroy(); detChart = null; }
-    if (!dias.length) {
-      canvas.style.display = "none";
-      vacio.style.display = "block";
-      return;
-    }
-    if (typeof Chart === "undefined") {
-      console.error("Chart.js no cargó (¿bloqueado por la red?)");
-      canvas.style.display = "none";
-      vacio.style.display = "block";
-      vacio.textContent = "No se pudo cargar el gráfico";
-      return;
-    }
-    canvas.style.display = "";
-    vacio.style.display = "none";
-    detChart = new Chart(canvas, {
-      type: "bar",
-      data: {
-        labels: dias.map(d => formatFecha(d.fecha)),
-        datasets: [{ data: dias.map(d => d.monto), backgroundColor: "#60a5fa", borderRadius: 6 }],
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { ticks: { callback: v => fmtMon(v, detMonedaActual) } },
-        },
-      },
-    });
   }
 
   function renderChartCategoria() {

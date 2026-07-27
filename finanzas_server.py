@@ -962,7 +962,6 @@ def detalle_viaje(vid):
 
     cotiz = _obtener_cotizaciones()
     totales = {"ARS": 0.0, "USD": 0.0, "EUR": 0.0}
-    por_dia = {"ARS": {}, "USD": {}, "EUR": {}}
     por_cat = {"ARS": {}, "USD": {}, "EUR": {}}
     for t in txs:
         origen = t.get("moneda") or "ARS"
@@ -976,13 +975,8 @@ def detalle_viaje(vid):
             if conv is None:
                 continue
             totales[destino] += conv
-            por_dia[destino][t["fecha"]] = por_dia[destino].get(t["fecha"], 0.0) + conv
             por_cat[destino][cat] = por_cat[destino].get(cat, 0.0) + conv
 
-    por_dia_lista = {
-        m: sorted([{"fecha": f, "monto": v} for f, v in dias.items()], key=lambda x: x["fecha"])
-        for m, dias in por_dia.items()
-    }
     por_cat_lista = {
         m: sorted([{"nombre": c, "total": v} for c, v in cats.items()], key=lambda x: -x["total"])
         for m, cats in por_cat.items()
@@ -990,7 +984,7 @@ def detalle_viaje(vid):
 
     return jsonify({
         "viaje": viaje, "transacciones": txs, "totales": totales,
-        "por_dia": por_dia_lista, "por_categoria": por_cat_lista,
+        "por_categoria": por_cat_lista,
     })
 
 @app.route("/api/finanzas/suscribir")
