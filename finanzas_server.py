@@ -25,6 +25,10 @@ _cotiz_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
+def _hoy_ar():
+    # El servidor corre en UTC; Buenos Aires es UTC-3 todo el año (sin horario de verano).
+    return (datetime.now(timezone.utc) - timedelta(hours=3)).date()
+
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.environ["SECRET_KEY"]
@@ -201,7 +205,7 @@ def _siguiente_fecha(fecha_str, frecuencia):
     return date(anio, mes, min(d.day, calendar.monthrange(anio, mes)[1])).isoformat()
 
 def _procesar_recurrentes(user_id):
-    hoy = (datetime.now(timezone.utc) - timedelta(hours=3)).date().isoformat()
+    hoy = _hoy_ar().isoformat()
     pendientes = db.table("recurrentes").select("*").eq("user_id", user_id).eq("activo", True).lte("proxima_fecha", hoy).execute().data
     for r in pendientes:
         prox = r["proxima_fecha"]
@@ -226,14 +230,14 @@ def listar():
     es_pro = _es_pro(session["user_id"])
     query = db.table("transacciones").select("*").eq("user_id", session["user_id"])
     if not es_pro:
-        desde = (date.today() - timedelta(days=90)).isoformat()
+        desde = (_hoy_ar() - timedelta(days=90)).isoformat()
         query = query.gte("fecha", desde)
     res = query.order("fecha", desc=True).execute()
     return jsonify(res.data)
 
 def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS", viaje_id=None):
     if not _es_pro(user_id):
-        inicio_mes = date.today().replace(day=1).isoformat()
+        inicio_mes = _hoy_ar().replace(day=1).isoformat()
         count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).execute().data)
         if count >= 50:
             return False, "limite_pro"
@@ -333,7 +337,7 @@ def exportar_pdf():
     pdf.set_font("Helvetica", "B", 16)
     pdf.cell(0, 10, _safe("Finanzas - Historial de transacciones"), ln=1)
     pdf.set_font("Helvetica", "", 9)
-    pdf.cell(0, 6, _safe(f"Generado el {date.today().isoformat()} - Usuario: {session['username']}"), ln=1)
+    pdf.cell(0, 6, _safe(f"Generado el {_hoy_ar().isoformat()} - Usuario: {session['username']}"), ln=1)
     pdf.ln(2)
     pdf.set_font("Helvetica", "B", 10)
     pdf.cell(0, 6, _safe(f"Total ingresos: {total_ingresos:,.2f}   Total gastos: {total_gastos:,.2f}"), ln=1)
@@ -649,7 +653,7 @@ def _procesar_mensaje_whatsapp(msg):
         _wa_enviar_mensaje(telefono, "No entendí 🤔. Probá algo como: *gasté 500 en supermercado* o *ingreso 300000 sueldo*.")
         return
 
-    hoy = (datetime.now(timezone.utc) - timedelta(hours=3)).date().isoformat()
+    hoy = _hoy_ar().isoformat()
     ok, resultado = _insertar_transaccion(
         user_id, parseado["tipo"], parseado["monto"], hoy,
         categoria=parseado["categoria"], descripcion=parseado["descripcion"], moneda=parseado["moneda"],
@@ -747,7 +751,7 @@ def stats():
     def _norm(s):
         s = (s or "otros").strip().lower()
         return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
-    hoy_ar = (datetime.now(timezone.utc) - timedelta(hours=3)).date()
+    hoy_ar = _hoy_ar()
     mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
     anio = request.args.get("anio", type=int, default=hoy_ar.year)
     mes  = max(1, min(12, mes))
