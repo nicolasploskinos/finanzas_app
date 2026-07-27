@@ -872,21 +872,11 @@ def del_presupuesto(pid):
 
 # ── Viajes ──────────────────────────────────────────────────────────────────
 
-def _num_o_none(v):
-    try:
-        n = float(v)
-        return n if n > 0 else None
-    except (TypeError, ValueError):
-        return None
-
 def _payload_viaje(d):
     return {
-        "nombre":          (d.get("nombre") or "").strip(),
-        "fecha_inicio":    d.get("fecha_inicio"),
-        "fecha_fin":       d.get("fecha_fin"),
-        "presupuesto_ars": _num_o_none(d.get("presupuesto_ars")),
-        "presupuesto_usd": _num_o_none(d.get("presupuesto_usd")),
-        "presupuesto_eur": _num_o_none(d.get("presupuesto_eur")),
+        "nombre":       (d.get("nombre") or "").strip(),
+        "fecha_inicio": d.get("fecha_inicio"),
+        "fecha_fin":    d.get("fecha_fin"),
     }
 
 @app.route("/api/finanzas/viajes", methods=["GET"])

@@ -58,8 +58,6 @@
     .presup-bar-labels { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
     .presup-bar-name { font-weight: 600; }
     .presup-bar-amt { color: var(--muted); }
-    .presup-bar-track { background: var(--surface2); border-radius: 100px; height: 7px; overflow: hidden; }
-    .presup-bar-fill { height: 100%; border-radius: 100px; transition: width .4s ease; }
 
     .fab {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(206px);
@@ -154,7 +152,7 @@
 {% if not is_pro %}
 <div class="locked">
   <h2>⭐ Viajes es una función Pro</h2>
-  <p>Armá presupuestos de viaje y mirá cuánto gastaste por día. Necesitás una cuenta Pro para usar esta sección.</p>
+  <p>Organizá tus viajes y mirá cuánto gastaste en cada uno, por día. Necesitás una cuenta Pro para usar esta sección.</p>
   <a href="/finanzas">Volver a Finanzas</a>
 </div>
 {% else %}
@@ -219,18 +217,6 @@
         <label>HASTA</label>
         <input type="date" id="viaje-inp-hasta">
       </div>
-    </div>
-    <div class="campo">
-      <label>PRESUPUESTO ARS (opcional)</label>
-      <input type="number" id="viaje-inp-ars" placeholder="0" min="0">
-    </div>
-    <div class="campo">
-      <label>PRESUPUESTO USD (opcional)</label>
-      <input type="number" id="viaje-inp-usd" placeholder="0" min="0">
-    </div>
-    <div class="campo">
-      <label>PRESUPUESTO EUR (opcional)</label>
-      <input type="number" id="viaje-inp-eur" placeholder="0" min="0">
     </div>
     <button class="btn-guardar" onclick="guardarViaje()">Guardar viaje</button>
   </div>
@@ -329,28 +315,14 @@
     }
     el.innerHTML = viajes.map(v => {
       const filas = ["ARS", "USD", "EUR"].map(m => {
-        const presu = v[`presupuesto_${m.toLowerCase()}`];
         const gastado = (v.gastado && v.gastado[m]) || 0;
-        if (!gastado && !presu) return "";
-
-        if (!presu) {
-          return `
-            <div class="presup-bar-row">
-              <div class="presup-bar-labels">
-                <span class="presup-bar-name">${m}</span>
-                <span class="presup-bar-amt">Gastado: ${fmtMon(gastado, m)}</span>
-              </div>
-            </div>`;
-        }
-        const pct = Math.min(gastado / presu * 100, 100);
-        const color = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
+        if (!gastado) return "";
         return `
           <div class="presup-bar-row">
             <div class="presup-bar-labels">
               <span class="presup-bar-name">${m}</span>
-              <span class="presup-bar-amt" style="color:${color}">${fmtMon(gastado, m)} / ${fmtMon(presu, m)}</span>
+              <span class="presup-bar-amt">Gastado: ${fmtMon(gastado, m)}</span>
             </div>
-            <div class="presup-bar-track"><div class="presup-bar-fill" style="width:${pct}%;background:${color}"></div></div>
           </div>`;
       }).join("");
       return `
@@ -373,9 +345,6 @@
     document.getElementById("viaje-inp-nombre").value = v ? v.nombre : "";
     document.getElementById("viaje-inp-desde").value  = v ? v.fecha_inicio : "";
     document.getElementById("viaje-inp-hasta").value  = v ? v.fecha_fin : "";
-    document.getElementById("viaje-inp-ars").value = v && v.presupuesto_ars ? v.presupuesto_ars : "";
-    document.getElementById("viaje-inp-usd").value = v && v.presupuesto_usd ? v.presupuesto_usd : "";
-    document.getElementById("viaje-inp-eur").value = v && v.presupuesto_eur ? v.presupuesto_eur : "";
     document.getElementById("viaje-overlay").dataset.editId = v ? v.id : "";
     document.getElementById("viaje-overlay").classList.add("open");
   }
@@ -392,12 +361,7 @@
     const hasta  = document.getElementById("viaje-inp-hasta").value;
     if (!nombre || !desde || !hasta) { toast("Completá nombre y fechas"); return; }
     if (hasta < desde) { toast("La fecha 'hasta' no puede ser anterior a 'desde'"); return; }
-    const body = {
-      nombre, fecha_inicio: desde, fecha_fin: hasta,
-      presupuesto_ars: document.getElementById("viaje-inp-ars").value || null,
-      presupuesto_usd: document.getElementById("viaje-inp-usd").value || null,
-      presupuesto_eur: document.getElementById("viaje-inp-eur").value || null,
-    };
+    const body = { nombre, fecha_inicio: desde, fecha_fin: hasta };
     const editId = document.getElementById("viaje-overlay").dataset.editId;
     const r = await fetch(editId ? `/api/finanzas/viajes/${editId}` : "/api/finanzas/viajes", {
       method: editId ? "PUT" : "POST",
@@ -435,7 +399,7 @@
 
       document.getElementById("det-totales").innerHTML = ["ARS", "USD", "EUR"].map(m => {
         const gastado = detData.totales[m] || 0;
-        if (!gastado && !v[`presupuesto_${m.toLowerCase()}`]) return "";
+        if (!gastado) return "";
         return `
           <div class="cons-card">
             <div class="cons-card-label">Gastado ${m}</div>
