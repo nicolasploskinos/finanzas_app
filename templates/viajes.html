@@ -85,11 +85,6 @@
     .cons-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
     .cons-card-value { font-size: 21px; font-weight: 800; margin-top: 5px; }
 
-    .moneda-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
-    .moneda-btn { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; background: var(--surface2); color: var(--muted); }
-    .moneda-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
-    .moneda-btn:disabled { opacity: .35; cursor: not-allowed; }
-
     .chart-wrap { background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 18px; }
     .chart-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; }
     .chart-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
@@ -176,18 +171,16 @@
 
   <div class="cons-cards" id="det-totales"></div>
 
-  <div class="moneda-toggle" id="det-mon-toggle"></div>
-
   <div class="chart-wrap">
-    <div class="chart-title">Gasto por día</div>
+    <div class="chart-title">Gasto por día (USD)</div>
     <canvas id="det-chart" height="180"></canvas>
-    <div class="chart-empty" id="det-chart-empty" style="display:none">Sin gastos en esta moneda</div>
+    <div class="chart-empty" id="det-chart-empty" style="display:none">Sin gastos registrados</div>
   </div>
 
   <div class="chart-wrap">
-    <div class="chart-title">Gasto por categoría</div>
+    <div class="chart-title">Gasto por categoría (USD)</div>
     <canvas id="det-chart-cat" height="180"></canvas>
-    <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos en esta moneda</div>
+    <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos registrados</div>
   </div>
 
   <div class="det-filtros">
@@ -252,7 +245,9 @@
   let viajeActual = null;
   let detChart = null;
   let detChartCat = null;
-  let detMonedaActual = "ARS";
+  // Los viajes se muestran siempre en dólares; los gastos en otras monedas
+  // ya vienen convertidos desde el backend al cambio oficial.
+  const detMonedaActual = "USD";
   let detData = null;
 
   function idDeUrl() {
@@ -322,22 +317,20 @@
       return;
     }
     el.innerHTML = viajes.map(v => {
-      const filas = ["ARS", "USD", "EUR"].map(m => {
-        const gastado = (v.gastado && v.gastado[m]) || 0;
-        if (!gastado) return "";
-        return `
-          <div class="presup-bar-row">
-            <div class="presup-bar-labels">
-              <span class="presup-bar-name">${m}</span>
-              <span class="presup-bar-amt">Gastado: ${fmtMon(gastado, m)}</span>
-            </div>
-          </div>`;
-      }).join("");
+      const gastado = (v.gastado && v.gastado.USD) || 0;
+      const fila = gastado
+        ? `<div class="presup-bar-row">
+             <div class="presup-bar-labels">
+               <span class="presup-bar-name">Gastado</span>
+               <span class="presup-bar-amt">${fmtMon(gastado, "USD")}</span>
+             </div>
+           </div>`
+        : '<div style="font-size:12px;color:var(--muted)">Sin gastos registrados todavía</div>';
       return `
         <div class="viaje-card" onclick="abrirDetalle(${v.id})">
           <div class="viaje-card-nombre">${v.nombre}</div>
           <div class="viaje-card-fechas">${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}</div>
-          ${filas || '<div style="font-size:12px;color:var(--muted)">Sin gastos registrados todavía</div>'}
+          ${fila}
         </div>`;
     }).join("");
   }
@@ -405,22 +398,14 @@
       document.getElementById("det-nombre").textContent = v.nombre;
       document.getElementById("det-fechas").textContent = `${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}`;
 
-      document.getElementById("det-totales").innerHTML = ["ARS", "USD", "EUR"].map(m => {
-        const gastado = detData.totales[m] || 0;
-        if (!gastado) return "";
-        return `
-          <div class="cons-card">
-            <div class="cons-card-label">Gastado ${m}</div>
-            <div class="cons-card-value">${fmtMon(gastado, m)}</div>
-          </div>`;
-      }).join("") || '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
+      const totalUSD = detData.totales.USD || 0;
+      document.getElementById("det-totales").innerHTML = totalUSD
+        ? `<div class="cons-card">
+             <div class="cons-card-label">Total gastado</div>
+             <div class="cons-card-value">${fmtMon(totalUSD, "USD")}</div>
+           </div>`
+        : '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
 
-      const monedasConDatos = ["ARS", "USD", "EUR"].filter(m => (detData.por_dia[m] || []).length);
-      detMonedaActual = monedasConDatos.includes("USD") ? "USD" : (monedasConDatos[0] || "USD");
-      document.getElementById("det-mon-toggle").innerHTML = ["ARS", "USD", "EUR"].map(m => `
-        <button class="moneda-btn ${m === detMonedaActual ? "active" : ""}" ${monedasConDatos.includes(m) ? "" : "disabled"}
-          onclick="setDetMoneda('${m}')">${m}</button>
-      `).join("");
       renderChart();
       renderChartCategoria();
 
@@ -460,10 +445,10 @@
               <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
               <div class="tx-info">
                 <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
-                <div class="tx-fecha">${formatFecha(t.fecha)}</div>
+                <div class="tx-fecha">${formatFecha(t.fecha)}${(t.moneda || "ARS") !== "USD" ? ` · ${fmtMon(t.monto, t.moneda)}` : ""}</div>
               </div>
               <div class="tx-right">
-                <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "+" : "-"}${fmtMon(t.monto, t.moneda)}</div>
+                <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "+" : "-"}${fmtMon(t.monto_usd != null ? t.monto_usd : t.monto, "USD")}</div>
                 <button class="tx-quitar" title="Quitar del viaje" onclick="quitarDelViaje(${t.id})">×</button>
               </div>
             </div>
@@ -471,15 +456,6 @@
       : (detData.transacciones && detData.transacciones.length
           ? '<div class="empty-state">No hay gastos en esta categoría.</div>'
           : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>');
-  }
-
-  function setDetMoneda(m) {
-    detMonedaActual = m;
-    document.querySelectorAll("#det-mon-toggle .moneda-btn").forEach(b =>
-      b.classList.toggle("active", b.textContent.trim() === m)
-    );
-    renderChart();
-    renderChartCategoria();
   }
 
   function renderChart() {
@@ -521,19 +497,12 @@
     const vacio  = document.getElementById("det-chart-cat-empty");
     if (detChartCat) { detChartCat.destroy(); detChartCat = null; }
 
-    const porCat = {};
-    detData.transacciones.forEach(t => {
-      if (t.tipo !== "Gasto") return;
-      if ((t.moneda || "ARS") !== detMonedaActual) return;
-      const cat = t.categoria || "Sin categoría";
-      porCat[cat] = (porCat[cat] || 0) + parseFloat(t.monto);
-    });
-    const entradas = Object.entries(porCat).sort((a, b) => b[1] - a[1]);
+    const cats = (detData.por_categoria || {})[detMonedaActual] || [];
 
-    if (!entradas.length) {
+    if (!cats.length) {
       canvas.style.display = "none";
       vacio.style.display = "block";
-      vacio.textContent = "Sin gastos en esta moneda";
+      vacio.textContent = "Sin gastos registrados";
       return;
     }
     if (typeof Chart === "undefined") {
@@ -545,17 +514,25 @@
     }
     canvas.style.display = "";
     vacio.style.display = "none";
+    const COLS = ["#60a5fa","#f87171","#4ade80","#fbbf24","#a78bfa","#fb923c","#34d399","#f472b6","#38bdf8","#facc15"];
     detChartCat = new Chart(canvas, {
-      type: "bar",
+      type: "doughnut",
       data: {
-        labels: entradas.map(e => e[0]),
-        datasets: [{ data: entradas.map(e => e[1]), backgroundColor: "#4ade80", borderRadius: 6 }],
+        labels: cats.map(c => c.nombre),
+        datasets: [{
+          data: cats.map(c => c.total),
+          backgroundColor: cats.map((_, i) => COLS[i % COLS.length]),
+          borderWidth: 0, hoverOffset: 4,
+        }],
       },
       options: {
-        indexAxis: "y",
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { callback: v => fmtMon(v, detMonedaActual) } },
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 8, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => {
+            const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            return ` ${fmtMon(ctx.raw, detMonedaActual)} (${Math.round(ctx.raw / t * 100)}%)`;
+          }}},
         },
       },
     });
