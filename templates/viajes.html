@@ -55,9 +55,9 @@
     .empty-state { text-align: center; color: var(--muted); font-size: 14px; padding: 60px 20px; }
 
     .presup-bar-row { margin-bottom: 10px; }
-    .presup-bar-labels { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-    .presup-bar-name { font-weight: 600; }
-    .presup-bar-amt { color: var(--muted); }
+    .presup-bar-labels { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .presup-bar-name { font-weight: 600; font-size: 12px; color: var(--muted); }
+    .presup-bar-amt { font-size: 17px; font-weight: 800; }
 
     .fab {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(206px);
@@ -83,7 +83,7 @@
     .cons-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-bottom: 18px; }
     .cons-card { background: var(--surface); border-radius: 12px; padding: 12px 12px; }
     .cons-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
-    .cons-card-value { font-size: 16px; font-weight: 800; margin-top: 5px; }
+    .cons-card-value { font-size: 21px; font-weight: 800; margin-top: 5px; }
 
     .moneda-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
     .moneda-btn { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; background: var(--surface2); color: var(--muted); }
@@ -143,7 +143,7 @@
 <body>
 
 <header>
-  <h1><a href="/finanzas" class="back-btn">←</a>✈️ Viajes</h1>
+  <h1><button onclick="volverAtras()" class="back-btn">←</button>✈️ Viajes</h1>
   <div class="header-actions">
     <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
   </div>
@@ -279,6 +279,14 @@
     mostrarDetalle(id);
   }
 
+  function volverAtras() {
+    if (document.getElementById("vista-detalle").style.display !== "none") {
+      volverALista();
+    } else {
+      window.location.href = "/finanzas";
+    }
+  }
+
   function volverALista() {
     history.pushState({}, "", "/finanzas/viajes");
     mostrarLista();
@@ -294,7 +302,7 @@
   async function mostrarDetalle(id) {
     viajeActual = id;
     document.getElementById("vista-lista").style.display = "none";
-    document.getElementById("vista-detalle").style.display = "";
+    document.getElementById("vista-detalle").style.display = "block";
     document.getElementById("fab-lista").style.display = "none";
     await cargarDetalle(id);
   }
@@ -408,7 +416,7 @@
       }).join("") || '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
 
       const monedasConDatos = ["ARS", "USD", "EUR"].filter(m => (detData.por_dia[m] || []).length);
-      detMonedaActual = monedasConDatos[0] || "ARS";
+      detMonedaActual = monedasConDatos.includes("USD") ? "USD" : (monedasConDatos[0] || "USD");
       document.getElementById("det-mon-toggle").innerHTML = ["ARS", "USD", "EUR"].map(m => `
         <button class="moneda-btn ${m === detMonedaActual ? "active" : ""}" ${monedasConDatos.includes(m) ? "" : "disabled"}
           onclick="setDetMoneda('${m}')">${m}</button>
