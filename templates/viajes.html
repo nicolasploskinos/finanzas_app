@@ -328,10 +328,20 @@
       return;
     }
     el.innerHTML = viajes.map(v => {
-      const barras = ["ARS", "USD", "EUR"].map(m => {
+      const filas = ["ARS", "USD", "EUR"].map(m => {
         const presu = v[`presupuesto_${m.toLowerCase()}`];
-        if (!presu) return "";
         const gastado = (v.gastado && v.gastado[m]) || 0;
+        if (!gastado && !presu) return "";
+
+        if (!presu) {
+          return `
+            <div class="presup-bar-row">
+              <div class="presup-bar-labels">
+                <span class="presup-bar-name">${m}</span>
+                <span class="presup-bar-amt">Gastado: ${fmtMon(gastado, m)}</span>
+              </div>
+            </div>`;
+        }
         const pct = Math.min(gastado / presu * 100, 100);
         const color = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
         return `
@@ -347,7 +357,7 @@
         <div class="viaje-card" onclick="abrirDetalle(${v.id})">
           <div class="viaje-card-nombre">${v.nombre}</div>
           <div class="viaje-card-fechas">${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}</div>
-          ${barras || '<div style="font-size:12px;color:var(--muted)">Sin presupuesto asignado</div>'}
+          ${filas || '<div style="font-size:12px;color:var(--muted)">Sin gastos registrados todavía</div>'}
         </div>`;
     }).join("");
   }
