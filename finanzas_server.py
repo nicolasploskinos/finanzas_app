@@ -758,13 +758,17 @@ def stats():
     inicio_mes = date(anio, mes, 1).isoformat()
     inicio_mes_ant = date(anio if mes > 1 else anio - 1, mes - 1 if mes > 1 else 12, 1).isoformat()
     fin_mes = date(anio if mes < 12 else anio + 1, mes + 1 if mes < 12 else 1, 1).isoformat()
-    res_act = db.table("transacciones").select("tipo,monto,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
-    res_ant = db.table("transacciones").select("tipo,monto").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
+    res_act = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
+    res_ant = db.table("transacciones").select("tipo,monto,moneda").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
+    cotiz = _obtener_cotizaciones()
+    def _ars(t):
+        conv = _convertir_moneda(float(t["monto"]), t.get("moneda") or "ARS", "ARS", cotiz)
+        return conv if conv is not None else 0.0
     cats_total = defaultdict(float)
     cats_label = {}
     gas_act = ing_act = 0.0
     for t in res_act.data:
-        m = float(t["monto"])
+        m = _ars(t)
         if t["tipo"] == "Gasto":
             key = _norm(t.get("categoria"))
             cats_total[key] += m
@@ -773,8 +777,8 @@ def stats():
             gas_act += m
         else:
             ing_act += m
-    gas_ant = sum(float(t["monto"]) for t in res_ant.data if t["tipo"] == "Gasto")
-    ing_ant  = sum(float(t["monto"]) for t in res_ant.data if t["tipo"] == "Ingreso")
+    gas_ant = sum(_ars(t) for t in res_ant.data if t["tipo"] == "Gasto")
+    ing_ant  = sum(_ars(t) for t in res_ant.data if t["tipo"] == "Ingreso")
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     return jsonify({
         "categorias": [{"nombre": cats_label[k], "total": v} for k, v in sorted(cats_total.items(), key=lambda x: -x[1])],
