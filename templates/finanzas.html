@@ -275,7 +275,7 @@
     <p id="fecha-hoy"></p>
   </div>
   <div class="header-right">
-    <div class="header-username">Hola, {{ username }}</div>
+    <div class="header-username" data-en="Hi, {{ username }}">Hola, {{ username }}</div>
     <div class="header-actions">
       {% if not is_pro %}
       <button onclick="abrirModalPro()" style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;white-space:nowrap;">⭐ Pro</button>
@@ -283,16 +283,17 @@
       <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
       <a href="/finanzas/viajes" title="Viajes" style="font-size:15px;text-decoration:none;padding:2px;">✈️</a>
+      <button onclick="toggleLang()" id="btn-lang" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:2px 4px;" title="Switch language">EN</button>
       <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
-      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;">Salir</a>
+      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;" data-en="Log out">Salir</a>
     </div>
   </div>
 </header>
 
 {% if is_trial %}
 <div class="trial-banner">
-  <span>🎉 <strong>Prueba Pro</strong> activa — te {{ 'queda' if trial_dias == 1 else 'quedan' }} <strong>{{ trial_dias }} día{{ '' if trial_dias == 1 else 's' }}</strong></span>
-  <a href="/api/finanzas/suscribir" style="font-size:11px;color:var(--blue);font-weight:700;text-decoration:none">Suscribirme →</a>
+  <span data-en='🎉 <strong>Pro trial</strong> active — you have <strong>{{ trial_dias }} day{{ "" if trial_dias == 1 else "s" }}</strong> left'>🎉 <strong>Prueba Pro</strong> activa — te {{ 'queda' if trial_dias == 1 else 'quedan' }} <strong>{{ trial_dias }} día{{ '' if trial_dias == 1 else 's' }}</strong></span>
+  <a href="/api/finanzas/suscribir" style="font-size:11px;color:var(--blue);font-weight:700;text-decoration:none" data-en="Subscribe →">Suscribirme →</a>
 </div>
 {% endif %}
 
@@ -301,7 +302,7 @@
   <!-- Total consolidado -->
   <div class="cons-section">
     <div class="cons-header">
-      <span class="cons-title">🔄 Total consolidado en:</span>
+      <span class="cons-title" data-en="🔄 Total consolidated in:">🔄 Total consolidado en:</span>
       <div class="cons-toggle">
         <button class="cons-btn active" id="cbtn-ARS" onclick="setConsolidado('ARS')">$ ARS</button>
         <button class="cons-btn"        id="cbtn-USD" onclick="setConsolidado('USD')">USD</button>
@@ -310,15 +311,15 @@
     </div>
     <div class="cons-cards">
       <div class="cons-card">
-        <div class="cons-card-label">Ingresos</div>
+        <div class="cons-card-label" data-en="Income">Ingresos</div>
         <div class="cons-card-value green" id="cons-ing">—</div>
       </div>
       <div class="cons-card">
-        <div class="cons-card-label">Gastos</div>
+        <div class="cons-card-label" data-en="Expenses">Gastos</div>
         <div class="cons-card-value red" id="cons-gas">—</div>
       </div>
       <div class="cons-card">
-        <div class="cons-card-label">Balance</div>
+        <div class="cons-card-label" data-en="Balance">Balance</div>
         <div class="cons-card-value" id="cons-net">—</div>
       </div>
     </div>
@@ -328,8 +329,8 @@
   <!-- Presupuestos -->
   <div class="presup-section" id="presup-section">
     <div class="presup-header">
-      <span class="presup-title">Presupuestos del mes</span>
-      <button class="presup-add-btn" onclick="abrirModalPresup()">+ Agregar</button>
+      <span class="presup-title" data-en="This month's budgets">Presupuestos del mes</span>
+      <button class="presup-add-btn" onclick="abrirModalPresup()" data-en="+ Add">+ Agregar</button>
     </div>
     <div id="presup-bars"></div>
   </div>
@@ -340,31 +341,31 @@
   <!-- Estadísticas del mes -->
   <div class="cot-wrap">
     <div class="cot-header" onclick="toggleStats()">
-      <span>📊 Resumen del mes</span>
+      <span data-en="📊 Monthly summary">📊 Resumen del mes</span>
       <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
     <div id="stats-body" style="display:none;padding:0 14px 14px">
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <select id="stats-mes" onchange="cargarStats()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none">
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+          <option value="1" data-en="January">Enero</option><option value="2" data-en="February">Febrero</option><option value="3" data-en="March">Marzo</option>
+          <option value="4" data-en="April">Abril</option><option value="5" data-en="May">Mayo</option><option value="6" data-en="June">Junio</option>
+          <option value="7" data-en="July">Julio</option><option value="8" data-en="August">Agosto</option><option value="9" data-en="September">Septiembre</option>
+          <option value="10" data-en="October">Octubre</option><option value="11" data-en="November">Noviembre</option><option value="12" data-en="December">Diciembre</option>
         </select>
         <select id="stats-anio" onchange="cargarStats()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none"></select>
       </div>
       <div class="stats-grid" id="resumen-mes"></div>
       <div id="inflacion-strip"></div>
-      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Gastos por categoría · ARS</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px" data-en="Expenses by category · ARS">Gastos por categoría · ARS</div>
       <canvas id="cat-chart"></canvas>
-      <div id="cat-vacio" style="display:none;text-align:center;color:var(--muted);font-size:13px;padding:16px 0">Sin gastos este mes</div>
+      <div id="cat-vacio" style="display:none;text-align:center;color:var(--muted);font-size:13px;padding:16px 0" data-en="No expenses this month">Sin gastos este mes</div>
     </div>
   </div>
 
   <!-- Recurrentes -->
   <div class="cot-wrap">
     <div class="cot-header" onclick="toggleRecur()">
-      <span>📅 Recurrentes activos</span>
+      <span data-en="📅 Active recurring">📅 Recurrentes activos</span>
       <div style="display:flex;gap:8px;align-items:center">
         <span id="recur-count" style="font-size:11px;color:var(--muted)"></span>
         <span id="recur-chev" style="font-size:11px;color:var(--muted)">▼</span>
@@ -378,24 +379,24 @@
   <!-- WhatsApp -->
   <div class="cot-wrap">
     <div class="cot-header" onclick="toggleWhatsapp()">
-      <span>📱 Cargar gastos por WhatsApp</span>
+      <span data-en="📱 Log expenses via WhatsApp">📱 Cargar gastos por WhatsApp</span>
       <span id="wa-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
     <div id="wa-body" style="display:none;padding:0 14px 14px">
       <div id="wa-desvinculado" style="display:none">
-        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px" data-en='Link your WhatsApp and log expenses by writing, for example: <em>"spent 500 on groceries"</em>.'>
           Vinculá tu WhatsApp y cargá gastos escribiendo, por ejemplo: <em>"gasté 500 en supermercado"</em>.
         </p>
-        <button class="btn-guardar" style="margin:0" onclick="generarCodigoWhatsapp()">Vincular WhatsApp</button>
+        <button class="btn-guardar" style="margin:0" onclick="generarCodigoWhatsapp()" data-en="Link WhatsApp">Vincular WhatsApp</button>
         <div id="wa-codigo-box" style="display:none;margin-top:12px;text-align:center">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Tocá para abrir WhatsApp con el código ya cargado:</div>
-          <a id="wa-link" href="#" target="_blank" rel="noopener" style="display:inline-block;background:#25D366;color:#fff;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:10px;font-size:14px">Abrir WhatsApp →</a>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px">Código <strong id="wa-codigo-txt"></strong> · vence en 15 minutos</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px" data-en="Tap to open WhatsApp with the code already filled in:">Tocá para abrir WhatsApp con el código ya cargado:</div>
+          <a id="wa-link" href="#" target="_blank" rel="noopener" style="display:inline-block;background:#25D366;color:#fff;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:10px;font-size:14px" data-en="Open WhatsApp →">Abrir WhatsApp →</a>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px" data-en='Code <strong id="wa-codigo-txt"></strong> · expires in 15 minutes'>Código <strong id="wa-codigo-txt"></strong> · vence en 15 minutos</div>
         </div>
       </div>
       <div id="wa-vinculado" style="display:none">
-        <p style="font-size:13px;margin:0 0 10px">✅ Vinculado a <strong id="wa-telefono"></strong></p>
-        <button class="btn-guardar" style="margin:0;background:var(--surface2);color:var(--text)" onclick="desvincularWhatsapp()">Desvincular</button>
+        <p style="font-size:13px;margin:0 0 10px" data-en='✅ Linked to <strong id="wa-telefono"></strong>'>✅ Vinculado a <strong id="wa-telefono"></strong></p>
+        <button class="btn-guardar" style="margin:0;background:var(--surface2);color:var(--text)" onclick="desvincularWhatsapp()" data-en="Unlink">Desvincular</button>
       </div>
     </div>
   </div>
@@ -403,13 +404,13 @@
   <!-- Cotizaciones + Conversor -->
   <div class="cot-card">
     <div class="cot-header" onclick="toggleCot()">
-      <span class="cot-title">💱 Cotizaciones oficiales</span>
+      <span class="cot-title" data-en="💱 Official exchange rates">💱 Cotizaciones oficiales</span>
       <span class="cot-rates" id="cot-rates">cargando...</span>
     </div>
     <div class="cot-body" id="cot-body">
       <div style="height:12px"></div>
       <div class="conv-row">
-        <input type="text" id="conv-monto" placeholder="Monto" inputmode="decimal" oninput="convertir()">
+        <input type="text" id="conv-monto" placeholder="Monto" data-en-placeholder="Amount" inputmode="decimal" oninput="convertir()">
         <select id="conv-from" onchange="convertir()">
           <option value="ARS">ARS $</option>
           <option value="USD">USD</option>
@@ -429,61 +430,61 @@
 
   {% if not is_pro %}
   <div style="margin:0 12px 8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:9px 14px;font-size:12px;color:#fbbf24;display:flex;justify-content:space-between;align-items:center">
-    <span>📅 Mostrando últimos 3 meses</span>
-    <button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer;padding:0">Ver todo →</button>
+    <span data-en="📅 Showing last 3 months">📅 Mostrando últimos 3 meses</span>
+    <button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer;padding:0" data-en="See all →">Ver todo →</button>
   </div>
   {% endif %}
 
   <!-- Búsqueda -->
   <div style="padding:0 12px 6px;position:relative">
-    <input type="text" id="busqueda" placeholder="Buscar..." oninput="onBusquedaInput()" autocomplete="off"
+    <input type="text" id="busqueda" placeholder="Buscar..." data-en-placeholder="Search..." oninput="onBusquedaInput()" autocomplete="off"
       style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:100px;color:var(--text);padding:9px 38px 9px 16px;font-size:13px;outline:none;transition:border-color .2s">
     <button id="btn-clear-busq" onclick="limpiarBusqueda()" style="display:none;position:absolute;right:22px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
   </div>
 
   <!-- Filtros de periodo -->
   <div class="periodo-pills">
-    <button class="periodo-btn active" data-p="1m"  onclick="setPeriodo('1m')">Este mes</button>
-    <button class="periodo-btn"        data-p="3m"  onclick="setPeriodo('3m')">3 meses</button>
-    <button class="periodo-btn"        data-p="6m"  onclick="setPeriodo('6m')">6 meses</button>
-    <button class="periodo-btn"        data-p="1a"  onclick="setPeriodo('1a')">Este año</button>
-    <button class="periodo-btn"        data-p="todo" onclick="setPeriodo('todo')">Todo</button>
+    <button class="periodo-btn active" data-p="1m"  onclick="setPeriodo('1m')" data-en="This month">Este mes</button>
+    <button class="periodo-btn"        data-p="3m"  onclick="setPeriodo('3m')" data-en="3 months">3 meses</button>
+    <button class="periodo-btn"        data-p="6m"  onclick="setPeriodo('6m')" data-en="6 months">6 meses</button>
+    <button class="periodo-btn"        data-p="1a"  onclick="setPeriodo('1a')" data-en="This year">Este año</button>
+    <button class="periodo-btn"        data-p="todo" onclick="setPeriodo('todo')" data-en="All">Todo</button>
   </div>
 
   <!-- Filtros -->
   <div class="filtros">
     <select id="f-tipo" onchange="render()">
-      <option value="">Todo</option>
-      <option>Gasto</option>
-      <option>Ingreso</option>
+      <option value="" data-en="All">Todo</option>
+      <option value="Gasto" data-en="Expense">Gasto</option>
+      <option value="Ingreso" data-en="Income">Ingreso</option>
     </select>
     <select id="f-moneda" onchange="render()">
-      <option value="">Todas</option>
+      <option value="" data-en="All">Todas</option>
       <option value="ARS">ARS</option>
       <option value="USD">USD</option>
       <option value="EUR">EUR</option>
     </select>
     <select id="f-cat" onchange="render()">
-      <option value="">Todas las categorías</option>
+      <option value="" data-en="All categories">Todas las categorías</option>
     </select>
   </div>
 
   <!-- Rango de días específico -->
   <div style="padding:0 12px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0">📅 Ver días puntuales:</span>
+    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
     <input type="date" id="f-dia-desde" onchange="filtrarPorDia()" title="Desde qué día"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <span style="color:var(--muted);font-size:12px">a</span>
+    <span style="color:var(--muted);font-size:12px" data-en="to">a</span>
     <input type="date" id="f-dia-hasta" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para ver un rango)"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0">Limpiar ×</button>
+    <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
   </div>
 
   <div id="dia-resultado" style="display:none;padding:0 12px 8px;font-size:13px;color:var(--muted)"></div>
 
   <div style="margin:8px 12px 0;display:flex;justify-content:flex-end;align-items:center;gap:16px;position:relative">
-    <button onclick="triggerImport()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">⬆️ Importar</button>
-    <button onclick="toggleExportMenu(event)" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0">⬇️ Exportar</button>
+    <button onclick="triggerImport()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0" data-en="⬆️ Import">⬆️ Importar</button>
+    <button onclick="toggleExportMenu(event)" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0" data-en="⬇️ Export">⬇️ Exportar</button>
     <div id="export-menu" style="display:none;position:absolute;top:22px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);overflow:hidden;z-index:50;min-width:160px">
       <a href="#" onclick="exportar('excel');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none">📊 Excel (.xlsx)</a>
       <a href="#" onclick="exportar('pdf');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none;border-top:1px solid var(--border)">📄 PDF</a>
@@ -502,8 +503,8 @@
     <h2 id="modal-title">Nueva transacción</h2>
 
     <div class="tipo-toggle">
-      <button class="tipo-btn gasto-active" id="btn-gasto"   onclick="setTipo('Gasto')">Gasto</button>
-      <button class="tipo-btn inactive"     id="btn-ingreso" onclick="setTipo('Ingreso')">Ingreso</button>
+      <button class="tipo-btn gasto-active" id="btn-gasto"   onclick="setTipo('Gasto')" data-en="Expense">Gasto</button>
+      <button class="tipo-btn inactive"     id="btn-ingreso" onclick="setTipo('Ingreso')" data-en="Income">Ingreso</button>
     </div>
 
     <div class="moneda-toggle">
@@ -517,36 +518,36 @@
       <input type="text" id="inp-monto" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
     <div class="campo">
-      <label>FECHA</label>
+      <label data-en="DATE">FECHA</label>
       <input type="date" id="inp-fecha">
     </div>
     <div class="campo">
-      <label>CATEGORÍA</label>
-      <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo..." list="cat-suggestions" autocomplete="off">
+      <label data-en="CATEGORY">CATEGORÍA</label>
+      <input type="text" id="inp-cat" placeholder="Ej: Supermercado, Sueldo..." data-en-placeholder="E.g.: Groceries, Salary..." list="cat-suggestions" autocomplete="off">
       <datalist id="cat-suggestions"></datalist>
     </div>
     {% if is_pro %}
     <div class="campo" id="viaje-campo">
-      <label>VIAJE (opcional)</label>
+      <label data-en="TRIP (optional)">VIAJE (opcional)</label>
       <select id="inp-viaje">
-        <option value="">Ninguno</option>
+        <option value="" data-en="None">Ninguno</option>
       </select>
     </div>
     {% endif %}
     <div class="campo">
-      <label>DESCRIPCIÓN</label>
-      <input type="text" id="inp-desc" placeholder="Descripción opcional">
+      <label data-en="DESCRIPTION">DESCRIPCIÓN</label>
+      <input type="text" id="inp-desc" placeholder="Descripción opcional" data-en-placeholder="Optional description">
     </div>
     <div class="campo" id="recur-campo">
-      <label>REPETICIÓN</label>
+      <label data-en="REPEAT">REPETICIÓN</label>
       <div class="moneda-toggle" style="margin-top:4px">
-        <button class="moneda-btn active" id="rbtn-no"      onclick="setRecur('no')">Sin repetir</button>
-        <button class="moneda-btn"        id="rbtn-semanal" onclick="setRecur('semanal')">Semanal</button>
-        <button class="moneda-btn"        id="rbtn-mensual" onclick="setRecur('mensual')">Mensual</button>
+        <button class="moneda-btn active" id="rbtn-no"      onclick="setRecur('no')" data-en="Don't repeat">Sin repetir</button>
+        <button class="moneda-btn"        id="rbtn-semanal" onclick="setRecur('semanal')" data-en="Weekly">Semanal</button>
+        <button class="moneda-btn"        id="rbtn-mensual" onclick="setRecur('mensual')" data-en="Monthly">Mensual</button>
       </div>
     </div>
 
-    <button class="btn-guardar" onclick="guardar()">Guardar</button>
+    <button class="btn-guardar" onclick="guardar()" data-en="Save">Guardar</button>
   </div>
 </div>
 
@@ -557,43 +558,43 @@
   <div class="pro-modal">
     <div class="pro-modal-handle"></div>
     <div class="pro-titulo">⭐ Finanzas Pro</div>
-    <p class="pro-precio">por solo <strong>$1.999</strong>/mes</p>
+    <p class="pro-precio" data-en='for just <strong>$1,999</strong>/mo'>por solo <strong>$1.999</strong>/mes</p>
 
     <div class="pro-beneficios">
       <div class="pro-fila">
         <div class="pro-fila-icono">♾️</div>
         <div class="pro-fila-texto">
-          <h4>Transacciones ilimitadas</h4>
-          <p>La cuenta gratis tiene un límite de <span>50 transacciones por mes</span>. Con Pro podés registrar todo sin límite.</p>
+          <h4 data-en="Unlimited transactions">Transacciones ilimitadas</h4>
+          <p data-en="The free plan has a limit of <span>50 transactions per month</span>. With Pro you can log everything with no limit.">La cuenta gratis tiene un límite de <span>50 transacciones por mes</span>. Con Pro podés registrar todo sin límite.</p>
         </div>
       </div>
       <div class="pro-fila">
         <div class="pro-fila-icono">📅</div>
         <div class="pro-fila-texto">
-          <h4>Historial completo</h4>
-          <p>La cuenta gratis muestra solo los <span>últimos 3 meses</span>. Con Pro accedés a todo tu historial.</p>
+          <h4 data-en="Full history">Historial completo</h4>
+          <p data-en="The free plan only shows the <span>last 3 months</span>. With Pro you get access to your whole history.">La cuenta gratis muestra solo los <span>últimos 3 meses</span>. Con Pro accedés a todo tu historial.</p>
         </div>
       </div>
       <div class="pro-fila">
         <div class="pro-fila-icono">🔄</div>
         <div class="pro-fila-texto">
-          <h4>Gastos recurrentes</h4>
-          <p>Configurá el alquiler, suscripciones y otros gastos fijos para que se agreguen solos cada semana o mes.</p>
+          <h4 data-en="Recurring expenses">Gastos recurrentes</h4>
+          <p data-en="Set up rent, subscriptions, and other fixed expenses so they get added by themselves every week or month.">Configurá el alquiler, suscripciones y otros gastos fijos para que se agreguen solos cada semana o mes.</p>
         </div>
       </div>
       <div class="pro-fila">
         <div class="pro-fila-icono">📊</div>
         <div class="pro-fila-texto">
-          <h4>Exportar a Excel / CSV</h4>
-          <p>Descargá todas tus transacciones para analizarlas en Excel o Google Sheets.</p>
+          <h4 data-en="Export to Excel / CSV">Exportar a Excel / CSV</h4>
+          <p data-en="Download all your transactions to analyze them in Excel or Google Sheets.">Descargá todas tus transacciones para analizarlas en Excel o Google Sheets.</p>
         </div>
       </div>
     </div>
 
-    <button class="btn-pro-pagar" onclick="window.location.href='/api/finanzas/suscribir'">
+    <button class="btn-pro-pagar" onclick="window.location.href='/api/finanzas/suscribir'" data-en="Subscribe — $1,999/mo →">
       Suscribirme — $1.999/mes →
     </button>
-    <button class="btn-pro-cancel" onclick="cerrarModalPro()">Ahora no</button>
+    <button class="btn-pro-cancel" onclick="cerrarModalPro()" data-en="Not now">Ahora no</button>
   </div>
 </div>
 
@@ -601,14 +602,14 @@
 <div class="overlay" id="presup-overlay" onclick="cerrarModalPresupFondo(event)">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2>Presupuestos mensuales</h2>
+    <h2 data-en="Monthly budgets">Presupuestos mensuales</h2>
     <div id="presup-modal-lista" style="margin-bottom:14px"></div>
     <div class="campo">
-      <label>CATEGORÍA</label>
-      <input type="text" id="presup-inp-cat" list="cat-suggestions" placeholder="Ej: Supermercado" autocomplete="off">
+      <label data-en="CATEGORY">CATEGORÍA</label>
+      <input type="text" id="presup-inp-cat" list="cat-suggestions" placeholder="Ej: Supermercado" data-en-placeholder="E.g.: Groceries" autocomplete="off">
     </div>
     <div class="campo">
-      <label>MONEDA</label>
+      <label data-en="CURRENCY">MONEDA</label>
       <div class="moneda-toggle" style="margin-top:4px">
         <button class="moneda-btn active" id="presup-mon-ARS" onclick="setPresupMoneda('ARS')">$ ARS</button>
         <button class="moneda-btn"        id="presup-mon-USD" onclick="setPresupMoneda('USD')">USD</button>
@@ -616,10 +617,10 @@
       </div>
     </div>
     <div class="campo">
-      <label>LÍMITE MENSUAL</label>
+      <label data-en="MONTHLY LIMIT">LÍMITE MENSUAL</label>
       <input type="number" id="presup-inp-monto" placeholder="0" min="1">
     </div>
-    <button class="btn-guardar" onclick="guardarPresup()">Guardar presupuesto</button>
+    <button class="btn-guardar" onclick="guardarPresup()" data-en="Save budget">Guardar presupuesto</button>
   </div>
 </div>
 
@@ -627,14 +628,14 @@
 <div class="overlay" id="import-overlay" onclick="cerrarModalImportFondo(event)">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2>Importar movimientos</h2>
+    <h2 data-en="Import transactions">Importar movimientos</h2>
     <p id="import-resumen" style="font-size:13px;color:var(--muted);margin:-10px 0 14px"></p>
     <div class="campo">
-      <label>CATEGORÍA (opcional, se aplica a todos los seleccionados)</label>
-      <input type="text" id="import-cat" placeholder="Ej: Importado" autocomplete="off">
+      <label data-en="CATEGORY (optional, applies to all selected)">CATEGORÍA (opcional, se aplica a todos los seleccionados)</label>
+      <input type="text" id="import-cat" placeholder="Ej: Importado" data-en-placeholder="E.g.: Imported" autocomplete="off">
     </div>
     <div id="import-lista" style="max-height:280px;overflow-y:auto;margin:10px 0"></div>
-    <button class="btn-guardar" onclick="confirmarImport()">Importar seleccionados</button>
+    <button class="btn-guardar" onclick="confirmarImport()" data-en="Import selected">Importar seleccionados</button>
   </div>
 </div>
 
@@ -1335,6 +1336,27 @@
   if (localStorage.getItem("modo") === "light") {
     document.body.classList.add("light");
     document.getElementById("btn-modo").textContent = "☀️";
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll("[data-en]").forEach(el => {
+      if (!el.dataset.es) el.dataset.es = el.innerHTML;
+      el.innerHTML = lang === "en" ? el.dataset.en : el.dataset.es;
+    });
+    document.querySelectorAll("[data-en-placeholder]").forEach(el => {
+      if (!el.dataset.esPlaceholder) el.dataset.esPlaceholder = el.placeholder;
+      el.placeholder = lang === "en" ? el.dataset.enPlaceholder : el.dataset.esPlaceholder;
+    });
+    document.documentElement.lang = lang;
+    document.getElementById("btn-lang").textContent = lang === "en" ? "ES" : "EN";
+  }
+  function toggleLang() {
+    const lang = document.documentElement.lang === "en" ? "es" : "en";
+    localStorage.setItem("lang", lang);
+    applyLang(lang);
+  }
+  if (localStorage.getItem("lang") === "en") {
+    applyLang("en");
   }
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/finanzas/sw.js");

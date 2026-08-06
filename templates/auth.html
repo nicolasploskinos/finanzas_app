@@ -58,14 +58,15 @@
   </style>
 </head>
 <body>
+<button id="btn-lang" onclick="toggleLang()" style="position:absolute;top:16px;right:16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:800;padding:6px 10px;cursor:pointer;" title="Switch language">EN</button>
 <div class="card">
   <div class="logo">💰</div>
-  <h1>Control de Finanzas</h1>
-  <p class="subtitle">Administrá tus ingresos y gastos</p>
+  <h1 data-en="Finance Control">Control de Finanzas</h1>
+  <p class="subtitle" data-en="Manage your income and expenses">Administrá tus ingresos y gastos</p>
 
   <div class="tabs">
-    <div class="tab active" id="tab-login" onclick="setTab('login')">Ingresar</div>
-    <div class="tab" id="tab-register" onclick="setTab('register')">Registrarse</div>
+    <div class="tab active" id="tab-login" onclick="setTab('login')" data-en="Sign in">Ingresar</div>
+    <div class="tab" id="tab-register" onclick="setTab('register')" data-en="Sign up">Registrarse</div>
   </div>
 
   <div id="error-msg" class="error"></div>
@@ -73,31 +74,48 @@
   <!-- Login -->
   <div id="form-login">
     <div class="campo">
-      <label>USUARIO</label>
+      <label data-en="USERNAME">USUARIO</label>
       <input type="text" id="l-user" placeholder="ej: nico123" autocomplete="username">
     </div>
     <div class="campo">
-      <label>CONTRASEÑA</label>
+      <label data-en="PASSWORD">CONTRASEÑA</label>
       <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="btn" onclick="login()">Ingresar</button>
+    <button class="btn" onclick="login()" data-en="Sign in">Ingresar</button>
   </div>
 
   <!-- Register -->
   <div id="form-register" style="display:none">
     <div class="campo">
-      <label>USUARIO</label>
+      <label data-en="USERNAME">USUARIO</label>
       <input type="text" id="r-user" placeholder="ej: nico123" autocomplete="username">
     </div>
     <div class="campo">
-      <label>CONTRASEÑA</label>
+      <label data-en="PASSWORD">CONTRASEÑA</label>
       <input type="password" id="r-pass" placeholder="••••••••" autocomplete="new-password">
     </div>
-    <button class="btn" onclick="register()">Crear cuenta</button>
+    <button class="btn" onclick="register()" data-en="Create account">Crear cuenta</button>
   </div>
 </div>
 
 <script>
+  function applyLang(lang) {
+    document.querySelectorAll("[data-en]").forEach(el => {
+      if (!el.dataset.es) el.dataset.es = el.innerHTML;
+      el.innerHTML = lang === "en" ? el.dataset.en : el.dataset.es;
+    });
+    document.documentElement.lang = lang;
+    document.getElementById("btn-lang").textContent = lang === "en" ? "ES" : "EN";
+  }
+  function toggleLang() {
+    const lang = document.documentElement.lang === "en" ? "es" : "en";
+    localStorage.setItem("lang", lang);
+    applyLang(lang);
+  }
+  if (localStorage.getItem("lang") === "en") {
+    applyLang("en");
+  }
+
   function setTab(t) {
     document.getElementById("tab-login").classList.toggle("active", t === "login");
     document.getElementById("tab-register").classList.toggle("active", t === "register");

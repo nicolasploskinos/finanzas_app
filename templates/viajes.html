@@ -140,15 +140,16 @@
 <header>
   <h1><button onclick="volverAtras()" class="back-btn">←</button>✈️ Viajes</h1>
   <div class="header-actions">
+    <button onclick="toggleLang()" id="btn-lang" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:2px 4px;" title="Switch language">EN</button>
     <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
   </div>
 </header>
 
 {% if not is_pro %}
 <div class="locked">
-  <h2>⭐ Viajes es una función Pro</h2>
-  <p>Organizá tus viajes y mirá cuánto gastaste en cada uno, por día. Necesitás una cuenta Pro para usar esta sección.</p>
-  <a href="/finanzas">Volver a Finanzas</a>
+  <h2 data-en="⭐ Trips is a Pro feature">⭐ Viajes es una función Pro</h2>
+  <p data-en="Organize your trips and see how much you spent on each one, per day. You need a Pro account to use this section.">Organizá tus viajes y mirá cuánto gastaste en cada uno, por día. Necesitás una cuenta Pro para usar esta sección.</p>
+  <a href="/finanzas" data-en="Back to Finanzas">Volver a Finanzas</a>
 </div>
 {% else %}
 
@@ -164,33 +165,33 @@
     <div class="detalle-nombre" id="det-nombre"></div>
     <div class="detalle-fechas" id="det-fechas"></div>
     <div class="detalle-acciones">
-      <button onclick="abrirModalViaje(viajeActual)">Editar</button>
-      <button class="borrar" onclick="borrarViajeActual()">Eliminar</button>
+      <button onclick="abrirModalViaje(viajeActual)" data-en="Edit">Editar</button>
+      <button class="borrar" onclick="borrarViajeActual()" data-en="Delete">Eliminar</button>
     </div>
   </div>
 
   <div class="cons-cards" id="det-totales"></div>
 
   <div class="chart-wrap">
-    <div class="chart-title">Gasto por categoría (USD)</div>
+    <div class="chart-title" data-en="Spend by category (USD)">Gasto por categoría (USD)</div>
     <canvas id="det-chart-cat" height="180"></canvas>
-    <div class="chart-empty" id="det-chart-cat-empty" style="display:none">Sin gastos registrados</div>
+    <div class="chart-empty" id="det-chart-cat-empty" style="display:none" data-en="No expenses recorded">Sin gastos registrados</div>
   </div>
 
   <div class="det-filtros">
     <select id="det-f-cat" onchange="renderTxLista()">
-      <option value="">Todas las categorías</option>
+      <option value="" data-en="All categories">Todas las categorías</option>
     </select>
   </div>
 
   <div style="padding:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0">📅 Ver días puntuales:</span>
+    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
     <input type="date" id="det-f-dia-desde" onchange="renderTxLista()" title="Desde qué día"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <span style="color:var(--muted);font-size:12px">a</span>
+    <span style="color:var(--muted);font-size:12px" data-en="to">a</span>
     <input type="date" id="det-f-dia-hasta" onchange="renderTxLista()" title="Hasta qué día (opcional, para ver un rango)"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <button id="det-btn-clear-dia" onclick="limpiarDetDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0">Limpiar ×</button>
+    <button id="det-btn-clear-dia" onclick="limpiarDetDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
   </div>
 
   <div id="det-tx-lista"></div>
@@ -202,20 +203,20 @@
     <div class="modal-handle"></div>
     <h2 id="viaje-modal-title">Nuevo viaje</h2>
     <div class="campo">
-      <label>NOMBRE</label>
-      <input type="text" id="viaje-inp-nombre" placeholder="Ej: Brasil 2026">
+      <label data-en="NAME">NOMBRE</label>
+      <input type="text" id="viaje-inp-nombre" placeholder="Ej: Brasil 2026" data-en-placeholder="E.g.: Brazil 2026">
     </div>
     <div class="campo-row">
       <div class="campo">
-        <label>DESDE</label>
+        <label data-en="FROM">DESDE</label>
         <input type="date" id="viaje-inp-desde">
       </div>
       <div class="campo">
-        <label>HASTA</label>
+        <label data-en="TO">HASTA</label>
         <input type="date" id="viaje-inp-hasta">
       </div>
     </div>
-    <button class="btn-guardar" onclick="guardarViaje()">Guardar viaje</button>
+    <button class="btn-guardar" onclick="guardarViaje()" data-en="Save trip">Guardar viaje</button>
   </div>
 </div>
 
@@ -242,6 +243,27 @@
   if (localStorage.getItem("modo") === "light") {
     document.body.classList.add("light");
     document.getElementById("btn-modo").textContent = "☀️";
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll("[data-en]").forEach(el => {
+      if (!el.dataset.es) el.dataset.es = el.innerHTML;
+      el.innerHTML = lang === "en" ? el.dataset.en : el.dataset.es;
+    });
+    document.querySelectorAll("[data-en-placeholder]").forEach(el => {
+      if (!el.dataset.esPlaceholder) el.dataset.esPlaceholder = el.placeholder;
+      el.placeholder = lang === "en" ? el.dataset.enPlaceholder : el.dataset.esPlaceholder;
+    });
+    document.documentElement.lang = lang;
+    document.getElementById("btn-lang").textContent = lang === "en" ? "ES" : "EN";
+  }
+  function toggleLang() {
+    const lang = document.documentElement.lang === "en" ? "es" : "en";
+    localStorage.setItem("lang", lang);
+    applyLang(lang);
+  }
+  if (localStorage.getItem("lang") === "en") {
+    applyLang("en");
   }
 
   const ES_PRO = {{ is_pro | tojson }};
