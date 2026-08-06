@@ -342,18 +342,19 @@
 <nav>
   <div class="nav-logo">💰 <span>Finanzas</span></div>
   <div style="display:flex;align-items:center;gap:12px">
+    <button id="btn-lang" onclick="toggleLang()" style="background:none;border:none;cursor:pointer;font-size:13px;font-weight:800;line-height:1;padding:6px 10px;color:var(--muted);border:1px solid var(--border);border-radius:8px;" title="Switch language">EN</button>
     <button id="btn-modo" onclick="toggleModo()" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;padding:4px;" title="Cambiar modo">🌙</button>
-    <a href="/finanzas/login" class="nav-cta">Empezar gratis →</a>
+    <a href="/finanzas/login" class="nav-cta" data-en="Start free →">Empezar gratis →</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <h1>Controlá tus finanzas en <em>pesos, dólares y euros</em>, sin complicaciones</h1>
-  <p>Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
+  <h1 data-en="Take control of your finances in <em>pesos, dollars, and euros</em>, without the hassle">Controlá tus finanzas en <em>pesos, dólares y euros</em>, sin complicaciones</h1>
+  <p data-en="Track income and expenses in ARS, USD, and EUR. The official BNA exchange rate updates itself.">Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
   <div class="hero-btns">
-    <a href="/finanzas/login" class="btn-primary">Quiero acceso gratis →</a>
-    <a href="#features" class="btn-secondary">Ver cómo funciona</a>
+    <a href="/finanzas/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
+    <a href="#features" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
   </div>
 </section>
 
@@ -362,42 +363,42 @@
   <!-- Mockup 2: formulario -->
   <div class="mockup" style="align-self:center">
     <div class="mock-header">
-      <div class="mock-title">+ Nueva transacción</div>
+      <div class="mock-title" data-en="+ New transaction">+ Nueva transacción</div>
     </div>
     <div>
-      <div class="mock-form-label">TIPO</div>
+      <div class="mock-form-label" data-en="TYPE">TIPO</div>
       <div class="mock-tipo-btns">
-        <div class="mock-tipo-btn gasto">Gasto</div>
-        <div class="mock-tipo-btn">Ingreso</div>
+        <div class="mock-tipo-btn gasto" data-en="Expense">Gasto</div>
+        <div class="mock-tipo-btn" data-en="Income">Ingreso</div>
       </div>
 
-      <div class="mock-form-label">MONEDA</div>
+      <div class="mock-form-label" data-en="CURRENCY">MONEDA</div>
       <div class="mock-tipo-btns" style="margin-bottom:10px">
         <div class="mock-tipo-btn active">ARS $</div>
         <div class="mock-tipo-btn">USD</div>
         <div class="mock-tipo-btn">EUR €</div>
       </div>
 
-      <div class="mock-form-label">MONTO</div>
+      <div class="mock-form-label" data-en="AMOUNT">MONTO</div>
       <div class="mock-form-input">$ 15.000</div>
 
-      <div class="mock-form-label">CATEGORÍA</div>
-      <div class="mock-form-input">Supermercado</div>
+      <div class="mock-form-label" data-en="CATEGORY">CATEGORÍA</div>
+      <div class="mock-form-input" data-en="Groceries">Supermercado</div>
 
-      <div class="mock-form-label">DESCRIPCIÓN</div>
-      <div class="mock-form-input" style="color:var(--muted)">Compra semanal...</div>
+      <div class="mock-form-label" data-en="DESCRIPTION">DESCRIPCIÓN</div>
+      <div class="mock-form-input" style="color:var(--muted)" data-en="Weekly shopping...">Compra semanal...</div>
 
-      <div class="mock-form-label">FECHA</div>
+      <div class="mock-form-label" data-en="DATE">FECHA</div>
       <div class="mock-form-input">2026-06-28</div>
 
-      <div class="mock-form-label">REPETICIÓN</div>
+      <div class="mock-form-label" data-en="REPEAT">REPETICIÓN</div>
       <div class="mock-tipo-btns">
-        <div class="mock-tipo-btn active">Sin repetir</div>
-        <div class="mock-tipo-btn">Semanal</div>
-        <div class="mock-tipo-btn">Mensual</div>
+        <div class="mock-tipo-btn active" data-en="Don't repeat">Sin repetir</div>
+        <div class="mock-tipo-btn" data-en="Weekly">Semanal</div>
+        <div class="mock-tipo-btn" data-en="Monthly">Mensual</div>
       </div>
 
-      <div class="mock-guardar">Guardar</div>
+      <div class="mock-guardar" data-en="Save">Guardar</div>
     </div>
   </div>
 
@@ -405,13 +406,13 @@
   <div class="mockup">
     <div class="mock-header">
       <div>
-        <div class="mock-title">💰 Mis Finanzas</div>
-        <div class="mock-user" style="color:var(--muted);font-size:12px;">Hola, nico 👋</div>
+        <div class="mock-title" data-en="💰 My Finances">💰 Mis Finanzas</div>
+        <div class="mock-user" style="color:var(--muted);font-size:12px;" data-en="Hi, nico 👋">Hola, nico 👋</div>
       </div>
-      <div style="font-size:11px;color:var(--muted)">Jun 2026</div>
+      <div style="font-size:11px;color:var(--muted)" data-en="Jun 2026">Jun 2026</div>
     </div>
     <div class="mock-consol">
-      <div class="mock-consol-label">TOTAL CONSOLIDADO EN</div>
+      <div class="mock-consol-label" data-en="TOTAL CONSOLIDATED IN">TOTAL CONSOLIDADO EN</div>
       <div class="mock-consol-btns">
         <div class="mock-cbtn active">ARS $</div>
         <div class="mock-cbtn">USD</div>
@@ -419,15 +420,15 @@
       </div>
       <div class="mock-consol-row">
         <div class="mock-val-card">
-          <div class="mock-val-label">Ingresos</div>
+          <div class="mock-val-label" data-en="Income">Ingresos</div>
           <div class="mock-val green">$842.500</div>
         </div>
         <div class="mock-val-card">
-          <div class="mock-val-label">Gastos</div>
+          <div class="mock-val-label" data-en="Expenses">Gastos</div>
           <div class="mock-val red">$613.200</div>
         </div>
         <div class="mock-val-card">
-          <div class="mock-val-label">Saldo</div>
+          <div class="mock-val-label" data-en="Balance">Saldo</div>
           <div class="mock-val blue">$229.300</div>
         </div>
       </div>
@@ -436,16 +437,16 @@
       <div class="mock-tx mock-ingreso">
         <div class="mock-tx-icon i">↑</div>
         <div class="mock-tx-info">
-          <div class="mock-tx-desc">Sueldo</div>
-          <div class="mock-tx-cat">Ingreso · ARS</div>
+          <div class="mock-tx-desc" data-en="Salary">Sueldo</div>
+          <div class="mock-tx-cat" data-en="Income · ARS">Ingreso · ARS</div>
         </div>
         <div class="mock-tx-monto green">+$750.000</div>
       </div>
       <div class="mock-tx mock-gasto">
         <div class="mock-tx-icon g">↓</div>
         <div class="mock-tx-info">
-          <div class="mock-tx-desc">Alquiler</div>
-          <div class="mock-tx-cat">Vivienda · ARS · 🔄</div>
+          <div class="mock-tx-desc" data-en="Rent">Alquiler</div>
+          <div class="mock-tx-cat" data-en="Housing · ARS · 🔄">Vivienda · ARS · 🔄</div>
         </div>
         <div class="mock-tx-monto red">-$400.000</div>
       </div>
@@ -453,7 +454,7 @@
         <div class="mock-tx-icon g">↓</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Netflix</div>
-          <div class="mock-tx-cat">Suscripciones · USD · 🔄</div>
+          <div class="mock-tx-cat" data-en="Subscriptions · USD · 🔄">Suscripciones · USD · 🔄</div>
         </div>
         <div class="mock-tx-monto red">-USD 7,99</div>
       </div>
@@ -461,7 +462,7 @@
         <div class="mock-tx-icon i">↑</div>
         <div class="mock-tx-info">
           <div class="mock-tx-desc">Freelance</div>
-          <div class="mock-tx-cat">Ingreso · USD</div>
+          <div class="mock-tx-cat" data-en="Income · USD">Ingreso · USD</div>
         </div>
         <div class="mock-tx-monto green">+USD 150</div>
       </div>
@@ -472,64 +473,64 @@
 <!-- FEATURES -->
 <div class="divider"></div>
 <section class="section" id="features">
-  <div class="section-label">Por qué Finanzas</div>
-  <h2>Todo lo que necesitás, nada que no</h2>
-  <p class="section-sub">Diseñado para argentinos que manejan más de una moneda y no quieren complicarse.</p>
+  <div class="section-label" data-en="Why Finanzas">Por qué Finanzas</div>
+  <h2 data-en="Everything you need, nothing you don't">Todo lo que necesitás, nada que no</h2>
+  <p class="section-sub" data-en="Built for people juggling more than one currency who don't want to overcomplicate it.">Diseñado para argentinos que manejan más de una moneda y no quieren complicarse.</p>
   <div class="features-grid">
     <div class="feat-card">
       <div class="feat-icon">💵</div>
-      <h3>Multi-moneda real</h3>
-      <p>Registrá gastos e ingresos en ARS, USD o EUR. Ves todo convertido a la moneda que prefieras, con cotización oficial BNA actualizada automáticamente.</p>
+      <h3 data-en="Real multi-currency">Multi-moneda real</h3>
+      <p data-en="Log expenses and income in ARS, USD, or EUR. See everything converted to whichever currency you prefer, with the official BNA exchange rate updated automatically.">Registrá gastos e ingresos en ARS, USD o EUR. Ves todo convertido a la moneda que prefieras, con cotización oficial BNA actualizada automáticamente.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">✈️</div>
-      <h3>Viajes aparte, en dólares</h3>
-      <p>Armá un viaje y etiquetá los gastos que le correspondan, sin importar en qué moneda los cargaste. Vas a ver el total gastado convertido a dólares, con gráfico por categoría y filtro por fecha.</p>
+      <h3 data-en="Trips tracked separately, in dollars">Viajes aparte, en dólares</h3>
+      <p data-en="Create a trip and tag the expenses that belong to it, no matter what currency you logged them in. You'll see the total spent converted to dollars, with a category chart and a date filter.">Armá un viaje y etiquetá los gastos que le correspondan, sin importar en qué moneda los cargaste. Vas a ver el total gastado convertido a dólares, con gráfico por categoría y filtro por fecha.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🎯</div>
-      <h3>Presupuestos por categoría</h3>
-      <p>Definí cuánto querés gastar por mes en supermercado, salidas o lo que sea. Una barra de progreso te avisa cuando te vas acercando o ya te pasaste.</p>
+      <h3 data-en="Budgets by category">Presupuestos por categoría</h3>
+      <p data-en="Set how much you want to spend per month on groceries, going out, or anything else. A progress bar warns you as you get close or go over.">Definí cuánto querés gastar por mes en supermercado, salidas o lo que sea. Una barra de progreso te avisa cuando te vas acercando o ya te pasaste.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🔄</div>
-      <h3>Gastos recurrentes</h3>
-      <p>El alquiler, las suscripciones, la cuota del gimnasio. Configurás una vez y se agregan solos cada semana o cada mes.</p>
+      <h3 data-en="Recurring expenses">Gastos recurrentes</h3>
+      <p data-en="Rent, subscriptions, the gym membership. Set it up once and they get added by themselves every week or every month.">El alquiler, las suscripciones, la cuota del gimnasio. Configurás una vez y se agregan solos cada semana o cada mes.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">📊</div>
-      <h3>Saldo consolidado</h3>
-      <p>Un solo número que te dice cuánto tenés. Sin importar si ganás en dólares y gastás en pesos: ves el total en la moneda que elijas.</p>
+      <h3 data-en="Consolidated balance">Saldo consolidado</h3>
+      <p data-en="One single number that tells you how much you have. Doesn't matter if you earn in dollars and spend in pesos — see the total in whichever currency you pick.">Un solo número que te dice cuánto tenés. Sin importar si ganás en dólares y gastás en pesos: ves el total en la moneda que elijas.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">📥</div>
-      <h3>Importá tus movimientos</h3>
-      <p>Subí el resumen CSV de tu banco o billetera virtual y la app reconoce fechas, montos y descripciones sola. Revisás y confirmás antes de cargar nada.</p>
+      <h3 data-en="Import your transactions">Importá tus movimientos</h3>
+      <p data-en="Upload the CSV statement from your bank or digital wallet and the app recognizes dates, amounts, and descriptions on its own. You review and confirm before anything gets loaded.">Subí el resumen CSV de tu banco o billetera virtual y la app reconoce fechas, montos y descripciones sola. Revisás y confirmás antes de cargar nada.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">📤</div>
-      <h3>Exportá a Excel o PDF</h3>
-      <p>Descargá todo tu historial en un archivo .xlsx prolijo o en un PDF con el resumen de ingresos y gastos, listo para guardar o compartir.</p>
+      <h3 data-en="Export to Excel or PDF">Exportá a Excel o PDF</h3>
+      <p data-en="Download your whole history as a clean .xlsx file or a PDF with the income and expense summary, ready to save or share.">Descargá todo tu historial en un archivo .xlsx prolijo o en un PDF con el resumen de ingresos y gastos, listo para guardar o compartir.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🔍</div>
-      <h3>Buscá y filtrá rápido</h3>
-      <p>Autocompletado de categorías según tu propio historial, búsqueda de texto libre y filtro por un día puntual o un rango de fechas para encontrar cualquier transacción en segundos.</p>
+      <h3 data-en="Search and filter fast">Buscá y filtrá rápido</h3>
+      <p data-en="Category autocomplete based on your own history, free-text search, and a filter for a single day or a date range to find any transaction in seconds.">Autocompletado de categorías según tu propio historial, búsqueda de texto libre y filtro por un día puntual o un rango de fechas para encontrar cualquier transacción en segundos.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">✏️</div>
-      <h3>Editable y simple</h3>
-      <p>Metiste mal un monto? Editás cualquier transacción en dos toques. Sin formularios complicados, sin pasos innecesarios.</p>
+      <h3 data-en="Editable and simple">Editable y simple</h3>
+      <p data-en="Typed in the wrong amount? Edit any transaction in two taps. No complicated forms, no unnecessary steps.">Metiste mal un monto? Editás cualquier transacción en dos toques. Sin formularios complicados, sin pasos innecesarios.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">📈</div>
-      <h3>Análisis mensual + inflación real</h3>
-      <p>Gráfico de gastos por categoría y comparación automática con el mes anterior. Sumamos el índice de inflación del INDEC para que veas si tu gasto subió más o menos que los precios.</p>
+      <h3 data-en="Monthly analysis + real inflation">Análisis mensual + inflación real</h3>
+      <p data-en="A category spending chart and automatic comparison against last month. We add INDEC's inflation index so you can see if your spending grew more or less than prices did.">Gráfico de gastos por categoría y comparación automática con el mes anterior. Sumamos el índice de inflación del INDEC para que veas si tu gasto subió más o menos que los precios.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🔐</div>
-      <h3>Tus datos, solo tuyos</h3>
-      <p>No compartimos tu información con nadie. No vendemos datos. Si borrás tu cuenta, se eliminan todos tus registros. Acceso protegido con contraseña.</p>
+      <h3 data-en="Your data, only yours">Tus datos, solo tuyos</h3>
+      <p data-en="We don't share your information with anyone. We don't sell data. If you delete your account, all your records are erased. Password-protected access.">No compartimos tu información con nadie. No vendemos datos. Si borrás tu cuenta, se eliminan todos tus registros. Acceso protegido con contraseña.</p>
     </div>
   </div>
 </section>
@@ -539,15 +540,15 @@
   <div class="section">
     <div class="two-col">
       <div>
-        <div class="section-label">Para quién es</div>
-        <h2 style="text-align:left">¿Esto es para vos?</h2>
-        <p style="color:var(--muted);font-size:16px;margin-bottom:28px;">Si alguno de estos te suena familiar, sí.</p>
+        <div class="section-label" data-en="Who it's for">Para quién es</div>
+        <h2 style="text-align:left" data-en="Is this for you?">¿Esto es para vos?</h2>
+        <p style="color:var(--muted);font-size:16px;margin-bottom:28px;" data-en="If any of these sound familiar, yes.">Si alguno de estos te suena familiar, sí.</p>
         <ul class="check-list">
-          <li>Trabajás en relación de dependencia y también en freelance en dólares</li>
-          <li>Querés saber cuánto gastás por mes, pero en pesos y dólares juntos</li>
-          <li>Tenés gastos fijos que se repiten y te olvidás de anotarlos</li>
-          <li>Probaste Excel o Google Sheets pero se volvió demasiado complejo</li>
-          <li>Querés una app que entienda que en Argentina la moneda es complicada</li>
+          <li data-en="You have a regular job and also freelance in dollars">Trabajás en relación de dependencia y también en freelance en dólares</li>
+          <li data-en="You want to know how much you spend per month, in pesos and dollars together">Querés saber cuánto gastás por mes, pero en pesos y dólares juntos</li>
+          <li data-en="You have fixed expenses that repeat and you forget to log them">Tenés gastos fijos que se repiten y te olvidás de anotarlos</li>
+          <li data-en="You tried Excel or Google Sheets but it got too complicated">Probaste Excel o Google Sheets pero se volvió demasiado complejo</li>
+          <li data-en="You want an app that understands currency is complicated in Argentina">Querés una app que entienda que en Argentina la moneda es complicada</li>
         </ul>
       </div>
       <div class="big-emoji">💸</div>
@@ -558,49 +559,49 @@
 <!-- PRECIO -->
 <div class="divider"></div>
 <section class="section" id="precio">
-  <div class="section-label">Precio</div>
-  <h2>Empezá gratis, sin tarjeta</h2>
-  <p class="section-sub">La app es gratuita para siempre. Pro desbloquea funciones avanzadas si las necesitás.</p>
+  <div class="section-label" data-en="Pricing">Precio</div>
+  <h2 data-en="Start free, no card required">Empezá gratis, sin tarjeta</h2>
+  <p class="section-sub" data-en="The app is free forever. Pro unlocks advanced features if you need them.">La app es gratuita para siempre. Pro desbloquea funciones avanzadas si las necesitás.</p>
   <div class="precios-grid">
 
     <!-- FREE -->
     <div class="precio-card">
-      <div class="precio-badge">GRATIS</div>
+      <div class="precio-badge" data-en="FREE">GRATIS</div>
       <div class="precio-num">$0</div>
-      <p class="precio-sub">Para siempre · <strong style="color:var(--green)">7 días Pro incluidos</strong></p>
+      <p class="precio-sub" data-en='Forever · <strong style="color:var(--green)">7-day Pro trial included</strong>'>Para siempre · <strong style="color:var(--green)">7 días Pro incluidos</strong></p>
       <ul class="precio-features">
-        <li>50 transacciones por mes <span style="font-size:11px;color:var(--muted)">(la app te avisa cuando te acercás)</span></li>
-        <li>Multi-moneda (ARS, USD, EUR)</li>
-        <li>Cotización BNA automática</li>
-        <li>Presupuestos por categoría</li>
-        <li>Historial últimos 3 meses</li>
-        <li class="no">Viajes con seguimiento en dólares</li>
-        <li class="no">Gastos recurrentes</li>
-        <li class="no">Gráfico y resumen mensual</li>
-        <li class="no">Exportar a Excel / PDF</li>
-        <li class="no">Importar movimientos bancarios</li>
+        <li data-en='50 transactions per month <span style="font-size:11px;color:var(--muted)">(the app warns you as you get close)</span>'>50 transacciones por mes <span style="font-size:11px;color:var(--muted)">(la app te avisa cuando te acercás)</span></li>
+        <li data-en="Multi-currency (ARS, USD, EUR)">Multi-moneda (ARS, USD, EUR)</li>
+        <li data-en="Automatic BNA exchange rate">Cotización BNA automática</li>
+        <li data-en="Budgets by category">Presupuestos por categoría</li>
+        <li data-en="Last 3 months of history">Historial últimos 3 meses</li>
+        <li class="no" data-en="Trips tracked in dollars">Viajes con seguimiento en dólares</li>
+        <li class="no" data-en="Recurring expenses">Gastos recurrentes</li>
+        <li class="no" data-en="Chart and monthly summary">Gráfico y resumen mensual</li>
+        <li class="no" data-en="Export to Excel / PDF">Exportar a Excel / PDF</li>
+        <li class="no" data-en="Import bank statements">Importar movimientos bancarios</li>
       </ul>
-      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;">Probá 7 días gratis →</a>
+      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;" data-en="Try 7 days free →">Probá 7 días gratis →</a>
     </div>
 
     <!-- PRO -->
     <div class="precio-card pro">
       <div class="precio-badge pro">⭐ PRO</div>
-      <div class="precio-num pro">$1.999<span style="font-size:18px;font-weight:600">/mes</span></div>
-      <p class="precio-sub">Pagos seguros con Mercado Pago</p>
+      <div class="precio-num pro">$1.999<span style="font-size:18px;font-weight:600" data-en="/mo">/mes</span></div>
+      <p class="precio-sub" data-en="Secure payments with Mercado Pago">Pagos seguros con Mercado Pago</p>
       <ul class="precio-features">
-        <li>Transacciones ilimitadas</li>
-        <li>Multi-moneda (ARS, USD, EUR)</li>
-        <li>Cotización BNA automática</li>
-        <li>Presupuestos por categoría</li>
-        <li>Viajes con seguimiento en dólares</li>
-        <li>Gráfico y resumen mensual</li>
-        <li>Historial completo</li>
-        <li>Gastos recurrentes automáticos</li>
-        <li>Exportar a Excel, PDF o CSV</li>
-        <li>Importar movimientos bancarios</li>
+        <li data-en="Unlimited transactions">Transacciones ilimitadas</li>
+        <li data-en="Multi-currency (ARS, USD, EUR)">Multi-moneda (ARS, USD, EUR)</li>
+        <li data-en="Automatic BNA exchange rate">Cotización BNA automática</li>
+        <li data-en="Budgets by category">Presupuestos por categoría</li>
+        <li data-en="Trips tracked in dollars">Viajes con seguimiento en dólares</li>
+        <li data-en="Chart and monthly summary">Gráfico y resumen mensual</li>
+        <li data-en="Full history">Historial completo</li>
+        <li data-en="Automatic recurring expenses">Gastos recurrentes automáticos</li>
+        <li data-en="Export to Excel, PDF, or CSV">Exportar a Excel, PDF o CSV</li>
+        <li data-en="Import bank statements">Importar movimientos bancarios</li>
       </ul>
-      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;background:#d97706;">Empezar con Pro →</a>
+      <a href="/finanzas/login" class="btn-primary" style="display:block;text-align:center;background:#d97706;" data-en="Start with Pro →">Empezar con Pro →</a>
     </div>
 
   </div>
@@ -610,42 +611,42 @@
 <div class="divider"></div>
 <section class="section" id="faq">
   <div class="section-label">FAQ</div>
-  <h2>Preguntas frecuentes</h2>
+  <h2 data-en="Frequently asked questions">Preguntas frecuentes</h2>
   <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        ¿Es seguro cargar mis gastos acá? <span class="faq-chev">▼</span>
+        <span data-en="Is it safe to log my expenses here?">¿Es seguro cargar mis gastos acá?</span> <span class="faq-chev">▼</span>
       </div>
-      <div class="faq-a">Sí. No guardamos datos bancarios ni contraseñas de tus cuentas — solo los montos y categorías que vos ingresás. La base de datos está cifrada y tu información no se comparte con nadie.</div>
+      <div class="faq-a" data-en="Yes. We don't store bank data or your account passwords — only the amounts and categories you enter. The database is encrypted and your information isn't shared with anyone.">Sí. No guardamos datos bancarios ni contraseñas de tus cuentas — solo los montos y categorías que vos ingresás. La base de datos está cifrada y tu información no se comparte con nadie.</div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        ¿Puedo cancelar Pro cuando quiera? <span class="faq-chev">▼</span>
+        <span data-en="Can I cancel Pro whenever I want?">¿Puedo cancelar Pro cuando quiera?</span> <span class="faq-chev">▼</span>
       </div>
-      <div class="faq-a">Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.</div>
+      <div class="faq-a" data-en="Yes, you can cancel anytime from Mercado Pago. No contracts or minimum periods. When you cancel, your account goes back to the free plan and you keep your data.">Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.</div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        ¿Cómo se actualiza la cotización del dólar? <span class="faq-chev">▼</span>
+        <span data-en="How does the dollar exchange rate get updated?">¿Cómo se actualiza la cotización del dólar?</span> <span class="faq-chev">▼</span>
       </div>
-      <div class="faq-a">Automáticamente cada vez que abrís la app. Usamos la cotización oficial del Banco Nación (BNA) vía la API de bluelytics.com.ar.</div>
+      <div class="faq-a" data-en="Automatically every time you open the app. We use the official Banco Nación (BNA) rate via the bluelytics.com.ar API.">Automáticamente cada vez que abrís la app. Usamos la cotización oficial del Banco Nación (BNA) vía la API de bluelytics.com.ar.</div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        ¿Qué pasa si borro mi cuenta? <span class="faq-chev">▼</span>
+        <span data-en="What happens if I delete my account?">¿Qué pasa si borro mi cuenta?</span> <span class="faq-chev">▼</span>
       </div>
-      <div class="faq-a">Se eliminan todos tus datos permanentemente. No guardamos copias ni hacemos backups de cuentas borradas.</div>
+      <div class="faq-a" data-en="All your data is permanently deleted. We don't keep copies or backups of deleted accounts.">Se eliminan todos tus datos permanentemente. No guardamos copias ni hacemos backups de cuentas borradas.</div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        ¿Funciona en el celular? <span class="faq-chev">▼</span>
+        <span data-en="Does it work on my phone?">¿Funciona en el celular?</span> <span class="faq-chev">▼</span>
       </div>
-      <div class="faq-a">Sí, está diseñada primero para móvil. Funciona en cualquier navegador (Chrome, Safari, etc.) sin necesidad de instalar nada. También tiene versión de escritorio para Windows.</div>
+      <div class="faq-a" data-en="Yes, it's designed mobile-first. It works in any browser (Chrome, Safari, etc.) with nothing to install. There's also a desktop version for Windows.">Sí, está diseñada primero para móvil. Funciona en cualquier navegador (Chrome, Safari, etc.) sin necesidad de instalar nada. También tiene versión de escritorio para Windows.</div>
     </div>
 
   </div>
@@ -653,7 +654,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <p>💰 Finanzas &nbsp;·&nbsp; <a href="/finanzas">Acceder</a> &nbsp;·&nbsp; Hecho en Argentina 🇦🇷</p>
+  <p>💰 Finanzas &nbsp;·&nbsp; <a href="/finanzas" data-en="Sign in">Acceder</a> &nbsp;·&nbsp; <span data-en="Made in Argentina 🇦🇷">Hecho en Argentina 🇦🇷</span></p>
 </footer>
 
 <script>
@@ -671,6 +672,23 @@
   if (localStorage.getItem("modo-landing") === "light") {
     document.body.classList.add("light");
     document.getElementById("btn-modo").textContent = "☀️";
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll("[data-en]").forEach(el => {
+      if (!el.dataset.es) el.dataset.es = el.innerHTML;
+      el.innerHTML = lang === "en" ? el.dataset.en : el.dataset.es;
+    });
+    document.documentElement.lang = lang;
+    document.getElementById("btn-lang").textContent = lang === "en" ? "ES" : "EN";
+  }
+  function toggleLang() {
+    const lang = document.documentElement.lang === "en" ? "es" : "en";
+    localStorage.setItem("lang-landing", lang);
+    applyLang(lang);
+  }
+  if (localStorage.getItem("lang-landing") === "en") {
+    applyLang("en");
   }
 </script>
 </body>
