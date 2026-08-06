@@ -514,7 +514,7 @@
     </div>
 
     <div class="campo">
-      <label id="lbl-monto">MONTO (ARS)</label>
+      <label id="lbl-monto" data-en="AMOUNT (ARS $)">MONTO (ARS $)</label>
       <input type="text" id="inp-monto" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
     <div class="campo">
@@ -643,6 +643,15 @@
   const ES_PRO = {{ is_pro | tojson }};
   const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
                  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const MESES_EN = ["January","February","March","April","May","June",
+                     "July","August","September","October","November","December"];
+  function mesNombre(idx) {
+    return (document.documentElement.lang === "en" ? MESES_EN : MESES)[idx];
+  }
+  function mesTraducido(nombreEs) {
+    const idx = MESES.indexOf(nombreEs);
+    return idx >= 0 ? mesNombre(idx) : nombreEs;
+  }
 
   const SIM = { ARS: '$', USD: 'USD ', EUR: '€' };
 
@@ -667,8 +676,13 @@
 
   // Fecha de hoy
   const hoy = new Date();
-  document.getElementById("fecha-hoy").textContent =
-    `${hoy.getDate()} de ${MESES[hoy.getMonth()]} de ${hoy.getFullYear()}`;
+  function actualizarFechaHoy() {
+    document.getElementById("fecha-hoy").textContent =
+      document.documentElement.lang === "en"
+        ? `${mesNombre(hoy.getMonth())} ${hoy.getDate()}, ${hoy.getFullYear()}`
+        : `${hoy.getDate()} de ${mesNombre(hoy.getMonth())} de ${hoy.getFullYear()}`;
+  }
+  actualizarFechaHoy();
   document.getElementById("inp-fecha").value = hoy.toISOString().split("T")[0];
 
   // Periodo seleccionado
@@ -713,7 +727,9 @@
 
   function fechaCorta(iso) {
     const [, mo, d] = iso.split("-").map(Number);
-    return `${d} de ${MESES[mo - 1]}`;
+    return document.documentElement.lang === "en"
+      ? `${mesNombre(mo - 1)} ${d}`
+      : `${d} de ${mesNombre(mo - 1)}`;
   }
 
   function actualizarDiaResultado() {
@@ -760,7 +776,7 @@
       document.getElementById("cot-rates").textContent = `USD ${usdStr} | EUR ${eurStr}`;
       actualizarConsolidado();
     } catch {
-      document.getElementById("cot-rates").textContent = "sin conexión";
+      document.getElementById("cot-rates").textContent = tr("sin_conexion");
     }
   }
 
@@ -800,9 +816,9 @@
 
     if (sinCot && monedaConsol !== "ARS") {
       ["cons-ing","cons-gas","cons-net"].forEach(id =>
-        document.getElementById(id).textContent = "Sin cotización"
+        document.getElementById(id).textContent = tr("sin_cotizacion")
       );
-      document.getElementById("cons-nota").textContent = "Cargando cotización...";
+      document.getElementById("cons-nota").textContent = tr("cargando_cotizacion");
       return;
     }
 
@@ -816,7 +832,7 @@
     netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(Math.abs(net), monedaConsol);
     netEl.className = "cons-card-value " + (net >= 0 ? "green" : "red");
     document.getElementById("cons-nota").textContent =
-      monedaConsol === "ARS" ? "Suma directa en ARS" : "Al tipo de cambio oficial BNA";
+      monedaConsol === "ARS" ? tr("suma_directa_ars") : tr("tipo_cambio_oficial");
   }
 
   function toggleCot() {
@@ -830,7 +846,7 @@
     const to    = document.getElementById("conv-to").value;
 
     if (!monto || isNaN(monto)) { document.getElementById("conv-result").textContent = "—"; return; }
-    if (!cotiz.USD || !cotiz.EUR) { document.getElementById("conv-result").textContent = "Sin cotización"; return; }
+    if (!cotiz.USD || !cotiz.EUR) { document.getElementById("conv-result").textContent = tr("sin_cotizacion"); return; }
 
     let enARS;
     if      (from === 'ARS') enARS = monto;
@@ -937,14 +953,14 @@
     // Lista de transacciones
     const el = document.getElementById("lista");
     if (!lista.length) {
-      el.innerHTML = '<div class="empty">Sin movimientos</div>';
+      el.innerHTML = `<div class="empty">${tr("sin_movimientos")}</div>`;
       return;
     }
 
     const grupos = {};
     lista.forEach(t => {
       const f = new Date(t.fecha + "T00:00:00");
-      const k = `${MESES[f.getMonth()]} ${f.getFullYear()}`;
+      const k = `${mesNombre(f.getMonth())} ${f.getFullYear()}`;
       if (!grupos[k]) grupos[k] = [];
       grupos[k].push(t);
     });
@@ -960,7 +976,7 @@
           <div class="tx ${t.tipo.toLowerCase()}-tx" data-id="${t.id}">
             <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
             <div class="tx-info">
-              <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+              <div class="tx-cat">${t.categoria || tr("sin_categoria")}</div>
               ${t.descripcion ? `<div class="tx-desc">${t.descripcion}</div>` : ""}
               <div class="tx-fecha">${formatFecha(t.fecha)}</div>
             </div>
@@ -977,7 +993,9 @@
 
   function formatFecha(iso) {
     const f = new Date(iso + "T00:00:00");
-    return `${f.getDate()} ${MESES[f.getMonth()].slice(0,3)}. ${f.getFullYear()}`;
+    return document.documentElement.lang === "en"
+      ? `${mesNombre(f.getMonth()).slice(0,3)} ${f.getDate()}, ${f.getFullYear()}`
+      : `${f.getDate()} ${mesNombre(f.getMonth()).slice(0,3)}. ${f.getFullYear()}`;
   }
 
   function setTipo(t) {
@@ -996,8 +1014,8 @@
     ["ARS","USD","EUR"].forEach(k => {
       document.getElementById("btn-mon-" + k).classList.toggle("active", k === m);
     });
-    const labels = { ARS: "MONTO (ARS $)", USD: "MONTO (USD)", EUR: "MONTO (EUR €)" };
-    document.getElementById("lbl-monto").textContent = labels[m];
+    const suf = { ARS: "(ARS $)", USD: "(USD)", EUR: "(EUR €)" };
+    document.getElementById("lbl-monto").textContent = tr("monto_lbl") + " " + suf[m];
   }
 
   function setRecur(r) {
@@ -1027,7 +1045,7 @@
     const cnt = document.getElementById("recur-count");
     cnt.textContent = recurrentes.length ? `(${recurrentes.length})` : "";
     if (!recurrentes.length) {
-      el.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0">No hay recurrentes activos</div>`;
+      el.innerHTML = `<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0">${tr("no_recurrentes_activos")}</div>`;
       return;
     }
     el.innerHTML = recurrentes.map(r => `
@@ -1035,10 +1053,10 @@
         <div>
           <div style="font-size:13px;font-weight:700">
             ${r.tipo === "Ingreso" ? "💚" : "🔴"} ${fmtMon(r.monto, r.moneda)}
-            <span style="font-size:11px;color:var(--muted);font-weight:500;margin-left:4px">${r.frecuencia}</span>
+            <span style="font-size:11px;color:var(--muted);font-weight:500;margin-left:4px">${tr("frecuencia_" + r.frecuencia)}</span>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">
-            ${r.categoria || "Sin categoría"}${r.descripcion ? " · " + r.descripcion : ""} · Próximo: ${formatFecha(r.proxima_fecha)}
+            ${r.categoria || tr("sin_categoria")}${r.descripcion ? " · " + r.descripcion : ""} · ${tr("proximo")}: ${formatFecha(r.proxima_fecha)}
           </div>
         </div>
         <button onclick="eliminarRecurrente(${r.id})" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0">×</button>
@@ -1046,11 +1064,11 @@
   }
 
   async function eliminarRecurrente(id) {
-    if (!confirm("¿Eliminar este recurrente? No se borrarán las transacciones ya creadas.")) return;
+    if (!confirm(tr("confirm_borrar_recurrente"))) return;
     await fetch(`/api/finanzas/recurrentes/${id}`, { method: "DELETE" });
     recurrentes = recurrentes.filter(r => r.id !== id);
     renderRecurrentes();
-    toast("Recurrente eliminado");
+    toast(tr("recurrente_eliminado"));
   }
 
   // ── WhatsApp ───────────────────────────────────────────────────────────────
@@ -1071,30 +1089,30 @@
       document.getElementById("wa-desvinculado").style.display = data.vinculado ? "none" : "";
       if (data.vinculado) document.getElementById("wa-telefono").textContent = data.telefono_oculto;
       document.getElementById("wa-codigo-box").style.display = "none";
-    } catch { toast("No se pudo cargar el estado de WhatsApp"); }
+    } catch { toast(tr("wa_estado_error")); }
   }
 
   async function generarCodigoWhatsapp() {
     try {
       const r = await fetch("/api/finanzas/whatsapp/codigo", { method: "POST" });
       const data = await r.json();
-      if (!data.ok) { toast("No se pudo generar el código"); return; }
+      if (!data.ok) { toast(tr("wa_codigo_error")); return; }
       document.getElementById("wa-codigo-txt").textContent = data.codigo;
       document.getElementById("wa-link").href = data.wa_link;
       document.getElementById("wa-codigo-box").style.display = "";
-    } catch { toast("No se pudo generar el código"); }
+    } catch { toast(tr("wa_codigo_error")); }
   }
 
   async function desvincularWhatsapp() {
-    if (!confirm("¿Desvincular tu WhatsApp de esta cuenta?")) return;
+    if (!confirm(tr("confirm_desvincular_wa"))) return;
     await fetch("/api/finanzas/whatsapp/desvincular", { method: "DELETE" });
     cargarEstadoWhatsapp();
-    toast("WhatsApp desvinculado");
+    toast(tr("wa_desvinculado"));
   }
 
   function abrirModal() {
     editandoId = null;
-    document.getElementById("modal-title").textContent = "Nueva transacción";
+    document.getElementById("modal-title").textContent = tr("nueva_transaccion");
     document.getElementById("recur-campo").style.display = "";
     setTipo("Gasto");
     setRecur("no");
@@ -1108,7 +1126,7 @@
     editandoId = null;
     setRecur("no");
     document.getElementById("recur-campo").style.display = "";
-    document.getElementById("modal-title").textContent = "Nueva transacción";
+    document.getElementById("modal-title").textContent = tr("nueva_transaccion");
   }
   function cerrarSiFondo(e) { if (e.target === document.getElementById("overlay")) cerrarModal(); }
 
@@ -1116,7 +1134,7 @@
     const t = datos.find(x => x.id === id);
     if (!t) return;
     editandoId = id;
-    document.getElementById("modal-title").textContent = "Editar transacción";
+    document.getElementById("modal-title").textContent = tr("editar_transaccion");
     document.getElementById("recur-campo").style.display = "none";
     setTipo(t.tipo);
     setMonedaForm(t.moneda || "ARS");
@@ -1136,8 +1154,8 @@
     const cat   = document.getElementById("inp-cat").value.trim();
     const desc  = document.getElementById("inp-desc").value.trim();
 
-    if (!monto || monto <= 0) { toast("Ingresá un monto válido"); return; }
-    if (!fecha)               { toast("Elegí una fecha"); return; }
+    if (!monto || monto <= 0) { toast(tr("monto_invalido")); return; }
+    if (!fecha)               { toast(tr("fecha_requerida")); return; }
 
     const viajeSel = document.getElementById("inp-viaje");
     const viajeId  = tipoActual === "Gasto" && viajeSel && viajeSel.value ? +viajeSel.value : null;
@@ -1153,7 +1171,7 @@
         datos = datos.map(t => t.id === editandoId ? actualizado : t);
         cerrarModal();
         render();
-        toast("✓ Transacción actualizada");
+        toast(tr("tx_actualizada"));
       } else if (recurrenciaActual !== "no") {
         const rr = await fetch("/api/finanzas/recurrentes", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -1162,13 +1180,13 @@
         if (!rr.ok) {
           const err = await rr.json().catch(() => ({}));
           if (rr.status === 403) { abrirModalPro(); return; }
-          toast("Error: " + (err.error || `código ${rr.status}`));
+          toast(tr("error_con_codigo", { detalle: err.error || tr("codigo_http", { n: rr.status }) }));
           return;
         }
         await cargar();
         cerrarModal();
         if (recurOpen) cargarRecurrentes();
-        toast(`✓ Recurrente ${recurrenciaActual} creado`);
+        toast(tr("recurrente_creado", { frecuencia: tr("frecuencia_" + recurrenciaActual) }));
       } else {
         const r = await fetch("/api/finanzas", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -1177,9 +1195,9 @@
         if (r.status === 403) {
           const err = await r.json().catch(() => ({}));
           if (err.error === "limite_pro") {
-            toast("Límite de 50 transacciones/mes. Upgrade a ⭐ Pro para agregar más.");
+            toast(tr("limite_transacciones"));
           } else {
-            toast("Sin permiso");
+            toast(tr("sin_permiso"));
           }
           return;
         }
@@ -1192,9 +1210,87 @@
         document.getElementById("inp-fecha").value = new Date().toISOString().split("T")[0];
         render();
         if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
-        toast(tipoActual === "Ingreso" ? "✓ Ingreso guardado" : "✓ Gasto guardado");
+        toast(tipoActual === "Ingreso" ? tr("ingreso_guardado") : tr("gasto_guardado"));
       }
-    } catch { toast("Error al guardar"); }
+    } catch { toast(tr("error_guardar")); }
+  }
+
+  const MSG = {
+    recurrente_eliminado:        { es: "Recurrente eliminado", en: "Recurring expense deleted" },
+    wa_estado_error:             { es: "No se pudo cargar el estado de WhatsApp", en: "Couldn't load WhatsApp status" },
+    wa_codigo_error:             { es: "No se pudo generar el código", en: "Couldn't generate the code" },
+    wa_desvinculado:             { es: "WhatsApp desvinculado", en: "WhatsApp unlinked" },
+    monto_invalido:              { es: "Ingresá un monto válido", en: "Enter a valid amount" },
+    fecha_requerida:             { es: "Elegí una fecha", en: "Pick a date" },
+    tx_actualizada:              { es: "✓ Transacción actualizada", en: "✓ Transaction updated" },
+    error_con_codigo:            { es: "Error: {detalle}", en: "Error: {detalle}" },
+    codigo_http:                 { es: "código {n}", en: "code {n}" },
+    recurrente_creado:           { es: "✓ Recurrente {frecuencia} creado", en: "✓ {frecuencia} recurring expense created" },
+    frecuencia_semanal:          { es: "semanal", en: "weekly" },
+    frecuencia_mensual:          { es: "mensual", en: "monthly" },
+    limite_transacciones:        { es: "Límite de 50 transacciones/mes. Upgrade a ⭐ Pro para agregar más.", en: "Limit of 50 transactions/month. Upgrade to ⭐ Pro to add more." },
+    sin_permiso:                 { es: "Sin permiso", en: "Not allowed" },
+    ingreso_guardado:            { es: "✓ Ingreso guardado", en: "✓ Income saved" },
+    gasto_guardado:              { es: "✓ Gasto guardado", en: "✓ Expense saved" },
+    error_guardar:               { es: "Error al guardar", en: "Error saving" },
+    no_pudo_exportar:            { es: "No se pudo exportar", en: "Couldn't export" },
+    leyendo_archivo:             { es: "Leyendo archivo…", en: "Reading file…" },
+    no_se_pudo_leer_archivo:     { es: "no se pudo leer el archivo", en: "couldn't read the file" },
+    no_encontraron_movimientos:  { es: "No se encontraron movimientos para importar", en: "No transactions found to import" },
+    error_leer_archivo:          { es: "Error al leer el archivo", en: "Error reading the file" },
+    elegi_movimiento:            { es: "Elegí al menos un movimiento", en: "Pick at least one transaction" },
+    no_pudo_importar:            { es: "no se pudo importar", en: "couldn't import" },
+    movimientos_importados:      { es: "✓ {n} movimientos importados", en: "✓ {n} transactions imported" },
+    error_importar:              { es: "Error al importar", en: "Error importing" },
+    completa_cat_monto:          { es: "Completá categoría y monto", en: "Fill in category and amount" },
+    presupuesto_guardado:        { es: "✓ Presupuesto guardado", en: "✓ Budget saved" },
+    presupuesto_eliminado:       { es: "Presupuesto eliminado", en: "Budget deleted" },
+    tx_eliminada:                { es: "Transacción eliminada", en: "Transaction deleted" },
+    invalid_file_type:           { es: "Subí un archivo .csv", en: "Upload a .csv file" },
+    cant_read_file:              { es: "No se pudo leer el archivo", en: "Couldn't read the file" },
+    empty_file:                  { es: "El archivo está vacío", en: "The file is empty" },
+    unrecognized_columns:        { es: "No reconocemos las columnas del archivo. Verificá que tenga fecha, monto y descripción.", en: "We don't recognize the file's columns. Make sure it has date, amount, and description." },
+    nothing_to_import:           { es: "Nada para importar", en: "Nothing to import" },
+    too_many_transactions:       { es: "Demasiadas transacciones (máx. 1000)", en: "Too many transactions (max. 1000)" },
+    nothing_valid_to_import:     { es: "Nada válido para importar", en: "Nothing valid to import" },
+    confirm_borrar_recurrente:   { es: "¿Eliminar este recurrente? No se borrarán las transacciones ya creadas.", en: "Delete this recurring expense? Transactions already created won't be deleted." },
+    confirm_desvincular_wa:      { es: "¿Desvincular tu WhatsApp de esta cuenta?", en: "Unlink your WhatsApp from this account?" },
+    confirm_cerrar_sesion:       { es: "¿Estás seguro que querés cerrar sesión?", en: "Are you sure you want to log out?" },
+    confirm_borrar_tx:           { es: "¿Eliminar esta transacción?", en: "Delete this transaction?" },
+    movimientos_encontrados:     { es: "{n} movimientos encontrados", en: "{n} transactions found" },
+    filas_no_reconocidas:        { es: "{n} filas no reconocidas", en: "{n} rows not recognized" },
+    sin_movimientos:             { es: "Sin movimientos", en: "No transactions" },
+    sin_categoria:               { es: "Sin categoría", en: "No category" },
+    proximo:                     { es: "Próximo", en: "Next" },
+    no_recurrentes_activos:      { es: "No hay recurrentes activos", en: "No active recurring expenses" },
+    lbl_gastos:                  { es: "Gastos", en: "Expenses" },
+    lbl_ingresos:                { es: "Ingresos", en: "Income" },
+    gastos_reales:               { es: "Gastos reales", en: "Real spending" },
+    sin_conexion:                { es: "sin conexión", en: "no connection" },
+    sin_cotizacion:              { es: "Sin cotización", en: "No exchange rate" },
+    inflacion_indec:             { es: "Inflación INDEC", en: "INDEC inflation" },
+    cargando_cotizacion:         { es: "Cargando cotización...", en: "Loading exchange rate..." },
+    suma_directa_ars:            { es: "Suma directa en ARS", en: "Direct sum in ARS" },
+    tipo_cambio_oficial:         { es: "Al tipo de cambio oficial BNA", en: "At the official BNA exchange rate" },
+    limite_alcanzado:            { es: "⛔ Límite alcanzado — ", en: "⛔ Limit reached — " },
+    upgrade_a_pro:                { es: "Upgrade a Pro", en: "Upgrade to Pro" },
+    para_seguir:                  { es: " para seguir", en: " to keep going" },
+    te_quedan_tx:                  { es: "⚠️ Te quedan <strong>{n}</strong> transacciones este mes · ", en: "⚠️ You have <strong>{n}</strong> transactions left this month · " },
+    upgrade_flecha:                { es: "Upgrade →", en: "Upgrade →" },
+    usaste_tx:                     { es: "📊 Usaste {n} de 50 transacciones este mes · ", en: "📊 You used {n} of 50 transactions this month · " },
+    ver_pro_flecha:                { es: "Ver Pro →", en: "See Pro →" },
+    sin_presupuestos:              { es: "Sin presupuestos. Agregá uno para ver el progreso.", en: "No budgets. Add one to see your progress." },
+    nueva_transaccion:            { es: "Nueva transacción", en: "New transaction" },
+    editar_transaccion:           { es: "Editar transacción", en: "Edit transaction" },
+    por_mes:                      { es: "/mes", en: "/mo" },
+    monto_lbl:                    { es: "MONTO", en: "AMOUNT" },
+  };
+  function tr(code, params) {
+    const lang = document.documentElement.lang === "en" ? "en" : "es";
+    const entry = MSG[code];
+    let str = entry ? entry[lang] : code;
+    if (params) for (const k in params) str = str.replace(`{${k}}`, params[k]);
+    return str;
   }
 
   function toast(msg) {
@@ -1229,7 +1325,7 @@
       const r = await fetch(`/api/finanzas/export/${formato}`);
       if (!r.ok) {
         if (r.status === 403) { abrirModalPro(); return; }
-        toast("No se pudo exportar");
+        toast(tr("no_pudo_exportar"));
         return;
       }
       const blob = await r.blob();
@@ -1241,7 +1337,7 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-    } catch { toast("No se pudo exportar"); }
+    } catch { toast(tr("no_pudo_exportar")); }
   }
 
   // ── Importar ───────────────────────────────────────────────────────────────
@@ -1259,24 +1355,24 @@
     if (!file) return;
     const fd = new FormData();
     fd.append("archivo", file);
-    toast("Leyendo archivo…");
+    toast(tr("leyendo_archivo"));
     try {
       const r = await fetch("/api/finanzas/import/preview", { method: "POST", body: fd });
       const data = await r.json();
       if (!r.ok || !data.ok) {
         if (r.status === 403) { abrirModalPro(); return; }
-        toast("Error: " + (data.error || "no se pudo leer el archivo"));
+        toast(tr("error_con_codigo", { detalle: tr(data.error || "no_se_pudo_leer_archivo") }));
         return;
       }
-      if (!data.transacciones.length) { toast("No se encontraron movimientos para importar"); return; }
+      if (!data.transacciones.length) { toast(tr("no_encontraron_movimientos")); return; }
       importPendientes = data.transacciones;
       abrirModalImport(data.errores);
-    } catch { toast("Error al leer el archivo"); }
+    } catch { toast(tr("error_leer_archivo")); }
   }
 
   function abrirModalImport(errores) {
     document.getElementById("import-resumen").textContent =
-      `${importPendientes.length} movimientos encontrados` + (errores ? ` · ${errores} filas no reconocidas` : "");
+      tr("movimientos_encontrados", { n: importPendientes.length }) + (errores ? " · " + tr("filas_no_reconocidas", { n: errores }) : "");
     document.getElementById("import-cat").value = "";
     document.getElementById("import-lista").innerHTML = importPendientes.map((t, i) => `
       <label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
@@ -1306,24 +1402,24 @@
         seleccion.push({ ...t, categoria: cat || t.categoria });
       }
     });
-    if (!seleccion.length) { toast("Elegí al menos un movimiento"); return; }
+    if (!seleccion.length) { toast(tr("elegi_movimiento")); return; }
     try {
       const r = await fetch("/api/finanzas/import/confirm", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transacciones: seleccion })
       });
       const data = await r.json();
-      if (!r.ok || !data.ok) { toast("Error: " + (data.error || "no se pudo importar")); return; }
+      if (!r.ok || !data.ok) { toast(tr("error_con_codigo", { detalle: tr(data.error || "no_pudo_importar") })); return; }
       cerrarModalImport();
       await cargar();
       render();
       if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
-      toast(`✓ ${data.insertados} movimientos importados`);
-    } catch { toast("Error al importar"); }
+      toast(tr("movimientos_importados", { n: data.insertados }));
+    } catch { toast(tr("error_importar")); }
   }
 
   function cerrarSesion() {
-    if (confirm("¿Estás seguro que querés cerrar sesión?")) {
+    if (confirm(tr("confirm_cerrar_sesion"))) {
       window.location.href = "/finanzas/logout";
     }
   }
@@ -1354,6 +1450,12 @@
     const lang = document.documentElement.lang === "en" ? "es" : "en";
     localStorage.setItem("lang", lang);
     applyLang(lang);
+    // Refresca lo que ya se había renderizado con textos en el idioma anterior.
+    actualizarFechaHoy();
+    render();
+    if (typeof renderPresup === "function") renderPresup();
+    if (typeof renderRecurrentes === "function" && recurrentes.length) renderRecurrentes();
+    if (ES_PRO && statsOpen) cargarStats();
   }
   if (localStorage.getItem("lang") === "en") {
     applyLang("en");
@@ -1413,13 +1515,13 @@
     const restantes = 50 - count;
     if (count >= 50) {
       el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);color:#f87171";
-      el.innerHTML = `⛔ Límite alcanzado — <button onclick="abrirModalPro()" style="background:none;border:none;color:#f87171;font-weight:800;cursor:pointer;text-decoration:underline">Upgrade a Pro</button> para seguir`;
+      el.innerHTML = `${tr("limite_alcanzado")}<button onclick="abrirModalPro()" style="background:none;border:none;color:#f87171;font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_a_pro")}</button>${tr("para_seguir")}`;
     } else if (count >= 45) {
       el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.4);color:#fb923c";
-      el.innerHTML = `⚠️ Te quedan <strong>${restantes}</strong> transacciones este mes · <button onclick="abrirModalPro()" style="background:none;border:none;color:#fb923c;font-weight:800;cursor:pointer;text-decoration:underline">Upgrade →</button>`;
+      el.innerHTML = `${tr("te_quedan_tx", { n: restantes })}<button onclick="abrirModalPro()" style="background:none;border:none;color:#fb923c;font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_flecha")}</button>`;
     } else {
       el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24";
-      el.innerHTML = `📊 Usaste ${count} de 50 transacciones este mes · <button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer">Ver Pro →</button>`;
+      el.innerHTML = `${tr("usaste_tx", { n: count })}<button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer">${tr("ver_pro_flecha")}</button>`;
     }
   }
 
@@ -1431,16 +1533,16 @@
       const sube = act > ant;
       const bueno = buenoCuandoBaja ? !sube : sube;
       return `<div class="stats-diff" style="color:${bueno ? 'var(--green)' : 'var(--red)'}">
-        ${sube ? '▲' : '▼'} ${Math.abs(pct)}% vs ${r.mes_anterior}</div>`;
+        ${sube ? '▲' : '▼'} ${Math.abs(pct)}% vs ${mesTraducido(r.mes_anterior)}</div>`;
     };
     document.getElementById("resumen-mes").innerHTML = `
       <div class="stats-card">
-        <div class="stats-card-label">Gastos ${r.mes_actual}</div>
+        <div class="stats-card-label">${tr("lbl_gastos")} ${mesTraducido(r.mes_actual)}</div>
         <div class="stats-card-value red">${fmt(r.gastos_actual)}</div>
         ${diff(r.gastos_actual, r.gastos_anterior, true)}
       </div>
       <div class="stats-card">
-        <div class="stats-card-label">Ingresos ${r.mes_actual}</div>
+        <div class="stats-card-label">${tr("lbl_ingresos")} ${mesTraducido(r.mes_actual)}</div>
         <div class="stats-card-value green">${fmt(r.ingresos_actual)}</div>
         ${diff(r.ingresos_actual, r.ingresos_anterior, false)}
       </div>`;
@@ -1461,10 +1563,10 @@
         const nomPct  = (r.gastos_actual - r.gastos_anterior) / r.gastos_anterior * 100;
         const realPct = ((1 + nomPct / 100) / (1 + inflPct / 100) - 1) * 100;
         const col = realPct > 0 ? "#f87171" : "#4ade80";
-        realHtml = ` &nbsp;·&nbsp; Gastos reales: <strong style="color:${col}">${realPct > 0 ? "▲" : "▼"} ${Math.abs(realPct).toFixed(1)}%</strong>`;
+        realHtml = ` &nbsp;·&nbsp; ${tr("gastos_reales")}: <strong style="color:${col}">${realPct > 0 ? "▲" : "▼"} ${Math.abs(realPct).toFixed(1)}%</strong>`;
       }
       strip.innerHTML = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted);margin-bottom:12px">
-        📊 Inflación INDEC ${r.mes_actual}: <strong style="color:#fbbf24">+${inflPct.toFixed(1)}%</strong>${realHtml}
+        📊 ${tr("inflacion_indec")} ${mesTraducido(r.mes_actual)}: <strong style="color:#fbbf24">+${inflPct.toFixed(1)}%</strong>${realHtml}
       </div>`;
     } else {
       strip.innerHTML = "";
@@ -1540,7 +1642,7 @@
   function renderPresup() {
     const el = document.getElementById("presup-bars");
     if (!presupuestos.length) {
-      el.innerHTML = '<div class="presup-empty">Sin presupuestos. Agregá uno para ver el progreso.</div>';
+      el.innerHTML = `<div class="presup-empty">${tr("sin_presupuestos")}</div>`;
       return;
     }
     const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -1598,7 +1700,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
           <div>
             <span style="font-size:13px;font-weight:600">${p.categoria}</span>
-            <span style="font-size:12px;color:var(--muted);margin-left:8px">${fmtMon(p.monto, p.moneda || "ARS")}/mes${(p.moneda && p.moneda !== "ARS") ? ` · ${p.moneda}` : ""}</span>
+            <span style="font-size:12px;color:var(--muted);margin-left:8px">${fmtMon(p.monto, p.moneda || "ARS")}${tr("por_mes")}${(p.moneda && p.moneda !== "ARS") ? ` · ${p.moneda}` : ""}</span>
           </div>
           <button onclick="eliminarPresup(${p.id})" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
         </div>`).join("") +
@@ -1609,13 +1711,13 @@
     const cat    = document.getElementById("presup-inp-cat").value.trim();
     const monto  = parseFloat(document.getElementById("presup-inp-monto").value);
     const moneda = presupMonedaActual;
-    if (!cat || !monto || monto <= 0) { toast("Completá categoría y monto"); return; }
+    if (!cat || !monto || monto <= 0) { toast(tr("completa_cat_monto")); return; }
     const r = await fetch("/api/finanzas/presupuestos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ categoria: cat, monto, moneda })
     });
-    if (!r.ok) { toast("Error al guardar"); return; }
+    if (!r.ok) { toast(tr("error_guardar")); return; }
     const nuevo = await r.json();
     const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat) && (p.moneda || "ARS") === moneda);
     if (idx >= 0) presupuestos[idx] = nuevo; else presupuestos.push(nuevo);
@@ -1623,7 +1725,7 @@
     document.getElementById("presup-inp-monto").value = "";
     renderPresupModalLista();
     renderPresup();
-    toast("✓ Presupuesto guardado");
+    toast(tr("presupuesto_guardado"));
   }
 
   async function eliminarPresup(id) {
@@ -1631,7 +1733,7 @@
     presupuestos = presupuestos.filter(p => p.id !== id);
     renderPresupModalLista();
     renderPresup();
-    toast("Presupuesto eliminado");
+    toast(tr("presupuesto_eliminado"));
   }
 
   // ── Swipe para eliminar ─────────────────────────────────────────────────────
@@ -1667,7 +1769,7 @@
     swipeEl = null;
     el.classList.remove("swiping");
     if (swipeDx > SWIPE_DELETE_PX) {
-      if (!confirm("¿Eliminar esta transacción?")) {
+      if (!confirm(tr("confirm_borrar_tx"))) {
         el.style.transition = "transform .2s";
         el.style.transform  = "translateX(0)";
         return;
@@ -1682,7 +1784,7 @@
         render();
         renderPresup();
         if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
-        toast("Transacción eliminada");
+        toast(tr("tx_eliminada"));
       }, 180);
     } else {
       el.style.transition = "transform .2s";

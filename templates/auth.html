@@ -124,9 +124,20 @@
     ocultarError();
   }
 
-  function mostrarError(msg) {
+  const ERRORS = {
+    invalid_credentials: { es: "Usuario o contraseña incorrectos", en: "Incorrect username or password" },
+    missing_fields:      { es: "Completá todos los campos",        en: "Fill in all fields" },
+    username_taken:      { es: "Ese nombre de usuario ya está en uso", en: "That username is already taken" },
+  };
+  function t(code) {
+    const lang = document.documentElement.lang === "en" ? "en" : "es";
+    const entry = ERRORS[code];
+    return entry ? entry[lang] : code;
+  }
+
+  function mostrarError(code) {
     const el = document.getElementById("error-msg");
-    el.textContent = msg; el.classList.add("show");
+    el.textContent = t(code); el.classList.add("show");
   }
   function ocultarError() {
     document.getElementById("error-msg").classList.remove("show");
@@ -135,7 +146,7 @@
   async function login() {
     const username = document.getElementById("l-user").value.trim();
     const pass     = document.getElementById("l-pass").value;
-    if (!username || !pass) { mostrarError("Completá todos los campos"); return; }
+    if (!username || !pass) { mostrarError("missing_fields"); return; }
 
     const r = await fetch("/api/finanzas/login", {
       method: "POST", headers: {"Content-Type": "application/json"},
@@ -149,7 +160,7 @@
   async function register() {
     const username = document.getElementById("r-user").value.trim();
     const pass     = document.getElementById("r-pass").value;
-    if (!username || !pass) { mostrarError("Completá todos los campos"); return; }
+    if (!username || !pass) { mostrarError("missing_fields"); return; }
 
     const r = await fetch("/api/finanzas/register", {
       method: "POST", headers: {"Content-Type": "application/json"},

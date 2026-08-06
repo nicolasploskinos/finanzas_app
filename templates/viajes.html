@@ -230,6 +230,36 @@
     const sym = SIM[moneda || 'ARS'] || '$';
     return sym + Math.abs(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
+  const MSG = {
+    missing_trip_fields:  { es: "Completá nombre y fechas", en: "Fill in name and dates" },
+    fecha_hasta_invalida: { es: "La fecha 'hasta' no puede ser anterior a 'desde'", en: "The 'to' date can't be before 'from'" },
+    error_guardar_viaje:  { es: "Error al guardar el viaje", en: "Error saving the trip" },
+    viaje_guardado:       { es: "✓ Viaje guardado", en: "✓ Trip saved" },
+    confirm_borrar_viaje: { es: "¿Eliminar este viaje? Las transacciones no se borran, solo se desvinculan.", en: "Delete this trip? The transactions won't be deleted, just unlinked." },
+    no_pudo_cargar_viaje: { es: "No se pudo cargar el viaje", en: "Couldn't load the trip" },
+    error_mostrando_viaje:{ es: "Hubo un error mostrando el viaje (revisá la consola)", en: "There was an error showing the trip (check the console)" },
+    quitado_del_viaje:    { es: "Quitado del viaje", en: "Removed from the trip" },
+    sin_viajes:           { es: 'Todavía no armaste ningún viaje.<br>Tocá + para crear el primero.', en: "You haven't created any trips yet.<br>Tap + to create the first one." },
+    sin_categoria:        { es: "Sin categoría", en: "No category" },
+    sin_gastos_filtro:    { es: "No hay gastos con ese filtro.", en: "No expenses match that filter." },
+    sin_tx_viaje:         { es: 'Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.', en: "No transactions tagged to this trip yet.<br>Tag them from the entry form in Finanzas." },
+    chart_no_cargo:       { es: "No se pudo cargar el gráfico", en: "Couldn't load the chart" },
+    sin_gastos_reg_todavia: { es: "Sin gastos registrados todavía", en: "No expenses recorded yet" },
+    sin_gastos_registrados: { es: "Sin gastos registrados", en: "No expenses recorded" },
+    gastado:              { es: "Gastado", en: "Spent" },
+    total_gastado:        { es: "Total gastado", en: "Total spent" },
+    todavia_no_cargaste:  { es: "Todavía no cargaste gastos de este viaje.", en: "You haven't logged any expenses for this trip yet." },
+    nuevo_viaje:          { es: "Nuevo viaje", en: "New trip" },
+    editar_viaje:         { es: "Editar viaje", en: "Edit trip" },
+  };
+  function tr(code, params) {
+    const lang = document.documentElement.lang === "en" ? "en" : "es";
+    const entry = MSG[code];
+    let str = entry ? entry[lang] : code;
+    if (params) for (const k in params) str = str.replace(`{${k}}`, params[k]);
+    return str;
+  }
+
   function toast(msg) {
     const el = document.getElementById("toast");
     el.textContent = msg; el.classList.add("show");
@@ -261,6 +291,12 @@
     const lang = document.documentElement.lang === "en" ? "es" : "en";
     localStorage.setItem("lang", lang);
     applyLang(lang);
+    // Refresca lo que ya se había renderizado con textos en el idioma anterior.
+    if (document.getElementById("vista-detalle").style.display !== "none" && viajeActual) {
+      cargarDetalle(viajeActual);
+    } else if (viajes.length) {
+      renderViajes();
+    }
   }
   if (localStorage.getItem("lang") === "en") {
     applyLang("en");
@@ -338,7 +374,7 @@
   function renderViajes() {
     const el = document.getElementById("viajes-lista");
     if (!viajes.length) {
-      el.innerHTML = '<div class="empty-state">Todavía no armaste ningún viaje.<br>Tocá + para crear el primero.</div>';
+      el.innerHTML = `<div class="empty-state">${tr("sin_viajes")}</div>`;
       return;
     }
     el.innerHTML = viajes.map(v => {
@@ -346,11 +382,11 @@
       const fila = gastado
         ? `<div class="presup-bar-row">
              <div class="presup-bar-labels">
-               <span class="presup-bar-name">Gastado</span>
+               <span class="presup-bar-name">${tr("gastado")}</span>
                <span class="presup-bar-amt">${fmtMon(gastado, "USD")}</span>
              </div>
            </div>`
-        : '<div style="font-size:12px;color:var(--muted)">Sin gastos registrados todavía</div>';
+        : `<div style="font-size:12px;color:var(--muted)">${tr("sin_gastos_reg_todavia")}</div>`;
       return `
         <div class="viaje-card" onclick="abrirDetalle(${v.id})">
           <div class="viaje-card-nombre">${v.nombre}</div>
@@ -362,12 +398,13 @@
 
   function formatFecha(f) {
     const d = new Date(f + "T00:00:00");
-    return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" });
+    const locale = document.documentElement.lang === "en" ? "en-US" : "es-AR";
+    return d.toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
   }
 
   function abrirModalViaje(id) {
     const v = id ? viajes.find(x => x.id === id) || detData?.viaje : null;
-    document.getElementById("viaje-modal-title").textContent = v ? "Editar viaje" : "Nuevo viaje";
+    document.getElementById("viaje-modal-title").textContent = v ? tr("editar_viaje") : tr("nuevo_viaje");
     document.getElementById("viaje-inp-nombre").value = v ? v.nombre : "";
     document.getElementById("viaje-inp-desde").value  = v ? v.fecha_inicio : "";
     document.getElementById("viaje-inp-hasta").value  = v ? v.fecha_fin : "";
@@ -385,8 +422,8 @@
     const nombre = document.getElementById("viaje-inp-nombre").value.trim();
     const desde  = document.getElementById("viaje-inp-desde").value;
     const hasta  = document.getElementById("viaje-inp-hasta").value;
-    if (!nombre || !desde || !hasta) { toast("Completá nombre y fechas"); return; }
-    if (hasta < desde) { toast("La fecha 'hasta' no puede ser anterior a 'desde'"); return; }
+    if (!nombre || !desde || !hasta) { toast(tr("missing_trip_fields")); return; }
+    if (hasta < desde) { toast(tr("fecha_hasta_invalida")); return; }
     const body = { nombre, fecha_inicio: desde, fecha_fin: hasta };
     const editId = document.getElementById("viaje-overlay").dataset.editId;
     const r = await fetch(editId ? `/api/finanzas/viajes/${editId}` : "/api/finanzas/viajes", {
@@ -394,15 +431,15 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!r.ok) { toast("Error al guardar el viaje"); return; }
+    if (!r.ok) { toast(tr("error_guardar_viaje")); return; }
     cerrarModalViaje();
-    toast("✓ Viaje guardado");
+    toast(tr("viaje_guardado"));
     if (editId) { await cargarDetalle(+editId); } else { mostrarLista(); }
   }
 
   async function borrarViajeActual() {
     if (!viajeActual) return;
-    if (!confirm("¿Eliminar este viaje? Las transacciones no se borran, solo se desvinculan.")) return;
+    if (!confirm(tr("confirm_borrar_viaje"))) return;
     await fetch(`/api/finanzas/viajes/${viajeActual}`, { method: "DELETE" });
     volverALista();
   }
@@ -410,11 +447,11 @@
   async function cargarDetalle(id) {
     try {
       const r = await fetch(`/api/finanzas/viajes/${id}`);
-      if (!r.ok) { toast("No se pudo cargar el viaje"); volverALista(); return; }
+      if (!r.ok) { toast(tr("no_pudo_cargar_viaje")); volverALista(); return; }
       detData = await r.json();
     } catch (e) {
       console.error("Error al pedir el viaje:", e);
-      toast("No se pudo cargar el viaje");
+      toast(tr("no_pudo_cargar_viaje"));
       return;
     }
 
@@ -426,10 +463,10 @@
       const totalUSD = detData.totales.USD || 0;
       document.getElementById("det-totales").innerHTML = totalUSD
         ? `<div class="cons-card">
-             <div class="cons-card-label">Total gastado</div>
+             <div class="cons-card-label">${tr("total_gastado")}</div>
              <div class="cons-card-value">${fmtMon(totalUSD, "USD")}</div>
            </div>`
-        : '<div style="font-size:13px;color:var(--muted)">Todavía no cargaste gastos de este viaje.</div>';
+        : `<div style="font-size:13px;color:var(--muted)">${tr("todavia_no_cargaste")}</div>`;
 
       renderChartCategoria();
 
@@ -437,7 +474,7 @@
       limpiarDetDia();
     } catch (e) {
       console.error("Error al renderizar el detalle del viaje:", e);
-      toast("Hubo un error mostrando el viaje (revisá la consola)");
+      toast(tr("error_mostrando_viaje"));
     }
   }
 
@@ -492,7 +529,7 @@
             <div class="tx">
               <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
               <div class="tx-info">
-                <div class="tx-cat">${t.categoria || "Sin categoría"}</div>
+                <div class="tx-cat">${t.categoria || tr("sin_categoria")}</div>
                 <div class="tx-fecha">${formatFecha(t.fecha)}${(t.moneda || "ARS") !== "USD" ? ` · ${fmtMon(t.monto, t.moneda)}` : ""}</div>
               </div>
               <div class="tx-right">
@@ -502,8 +539,8 @@
             </div>
           </div>`).join("")
       : (detData.transacciones && detData.transacciones.length
-          ? '<div class="empty-state">No hay gastos con ese filtro.</div>'
-          : '<div class="empty-state">Sin transacciones etiquetadas a este viaje todavía.<br>Etiquetalas desde el formulario de carga en Finanzas.</div>');
+          ? `<div class="empty-state">${tr("sin_gastos_filtro")}</div>`
+          : `<div class="empty-state">${tr("sin_tx_viaje")}</div>`);
   }
 
   function renderChartCategoria() {
@@ -516,14 +553,14 @@
     if (!cats.length) {
       canvas.style.display = "none";
       vacio.style.display = "block";
-      vacio.textContent = "Sin gastos registrados";
+      vacio.textContent = tr("sin_gastos_registrados");
       return;
     }
     if (typeof Chart === "undefined") {
       console.error("Chart.js no cargó (¿bloqueado por la red?)");
       canvas.style.display = "none";
       vacio.style.display = "block";
-      vacio.textContent = "No se pudo cargar el gráfico";
+      vacio.textContent = tr("chart_no_cargo");
       return;
     }
     canvas.style.display = "";
@@ -560,7 +597,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...t, viaje_id: null }),
     });
-    toast("Quitado del viaje");
+    toast(tr("quitado_del_viaje"));
     await cargarDetalle(viajeActual);
   }
 

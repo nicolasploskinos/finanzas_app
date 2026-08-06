@@ -110,7 +110,7 @@ def login():
 
     res = db.table("usuarios").select("*").eq("username", username).execute()
     if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
-        return jsonify({"ok": False, "error": "Usuario o contraseña incorrectos"}), 401
+        return jsonify({"ok": False, "error": "invalid_credentials"}), 401
 
     user = res.data[0]
     session.permanent = True
@@ -125,10 +125,10 @@ def register():
     password =  data.get("password") or ""
 
     if not username or not password:
-        return jsonify({"ok": False, "error": "Completá todos los campos"}), 400
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
 
     if db.table("usuarios").select("id").eq("username", username).execute().data:
-        return jsonify({"ok": False, "error": "Ese nombre de usuario ya está en uso"}), 400
+        return jsonify({"ok": False, "error": "username_taken"}), 400
 
     res = db.table("usuarios").insert({
         "username":      username,
@@ -264,7 +264,7 @@ def agregar():
 @login_required
 def exportar():
     if not _es_pro(session["user_id"]):
-        return jsonify({"error": "Pro requerido"}), 403
+        return jsonify({"error": "pro_requerido"}), 403
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
     output = io.StringIO()
     output.write("sep=;\n")
@@ -283,7 +283,7 @@ def exportar():
 @login_required
 def exportar_excel():
     if not _es_pro(session["user_id"]):
-        return jsonify({"error": "Pro requerido"}), 403
+        return jsonify({"error": "pro_requerido"}), 403
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
 
     from openpyxl import Workbook
@@ -319,7 +319,7 @@ def exportar_excel():
 @login_required
 def exportar_pdf():
     if not _es_pro(session["user_id"]):
-        return jsonify({"error": "Pro requerido"}), 403
+        return jsonify({"error": "pro_requerido"}), 403
     res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
 
     from fpdf import FPDF
@@ -422,7 +422,7 @@ def import_preview():
 
     archivo = request.files.get("archivo")
     if not archivo or not archivo.filename.lower().endswith(".csv"):
-        return jsonify({"ok": False, "error": "Subí un archivo .csv"}), 400
+        return jsonify({"ok": False, "error": "invalid_file_type"}), 400
 
     raw = archivo.read(2_000_000)
     texto = None
@@ -433,7 +433,7 @@ def import_preview():
         except UnicodeDecodeError:
             continue
     if texto is None:
-        return jsonify({"ok": False, "error": "No se pudo leer el archivo"}), 400
+        return jsonify({"ok": False, "error": "cant_read_file"}), 400
 
     muestra = texto[:2000]
     try:
@@ -443,7 +443,7 @@ def import_preview():
 
     filas = list(csv.reader(io.StringIO(texto), delimiter=delim))
     if len(filas) < 2:
-        return jsonify({"ok": False, "error": "El archivo está vacío"}), 400
+        return jsonify({"ok": False, "error": "empty_file"}), 400
 
     headers = [_norm_header(h) for h in filas[0]]
     idx_fecha = _buscar_col(headers, ["fecha", "date"])
@@ -455,7 +455,7 @@ def import_preview():
     if idx_fecha is None or (idx_monto is None and (idx_debe is None or idx_haber is None)):
         return jsonify({
             "ok": False,
-            "error": "No reconocemos las columnas del archivo. Verificá que tenga fecha, monto y descripción.",
+            "error": "unrecognized_columns",
         }), 400
 
     transacciones = []
@@ -509,9 +509,9 @@ def import_confirm():
     data = request.get_json() or {}
     filas = data.get("transacciones") or []
     if not isinstance(filas, list) or not filas:
-        return jsonify({"ok": False, "error": "Nada para importar"}), 400
+        return jsonify({"ok": False, "error": "nothing_to_import"}), 400
     if len(filas) > 1000:
-        return jsonify({"ok": False, "error": "Demasiadas transacciones (máx. 1000)"}), 400
+        return jsonify({"ok": False, "error": "too_many_transactions"}), 400
 
     payload = []
     for t in filas:
@@ -529,7 +529,7 @@ def import_confirm():
             continue
 
     if not payload:
-        return jsonify({"ok": False, "error": "Nada válido para importar"}), 400
+        return jsonify({"ok": False, "error": "nothing_valid_to_import"}), 400
 
     insertados = 0
     for i in range(0, len(payload), 500):
@@ -925,7 +925,7 @@ def crear_viaje():
     d = request.get_json()
     payload = _payload_viaje(d)
     if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
-        return jsonify({"ok": False, "error": "Completá nombre y fechas"}), 400
+        return jsonify({"ok": False, "error": "missing_trip_fields"}), 400
     payload["user_id"] = session["user_id"]
     res = db.table("viajes").insert(payload).execute()
     return jsonify(res.data[0]), 201
@@ -938,7 +938,7 @@ def editar_viaje(vid):
     d = request.get_json()
     payload = _payload_viaje(d)
     if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
-        return jsonify({"ok": False, "error": "Completá nombre y fechas"}), 400
+        return jsonify({"ok": False, "error": "missing_trip_fields"}), 400
     res = db.table("viajes").update(payload).eq("id", vid).eq("user_id", session["user_id"]).execute()
     if not res.data:
         return jsonify({"ok": False, "error": "no encontrado"}), 404
