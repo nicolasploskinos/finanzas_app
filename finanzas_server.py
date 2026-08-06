@@ -130,9 +130,7 @@ def register():
     if db.table("usuarios").select("id").eq("username", username).execute().data:
         return jsonify({"ok": False, "error": "Ese nombre de usuario ya está en uso"}), 400
 
-    email = f"{username}@finanzas.local"
     res = db.table("usuarios").insert({
-        "email":         email,
         "username":      username,
         "password_hash": generate_password_hash(password),
         "verificado":    True,
