@@ -150,6 +150,12 @@
       font-size: 12px; font-weight: 700; color: var(--muted);
     }
     .mock-cbtn.active { background: var(--blue-dark); color: #fff; }
+    .mock-presup { background: var(--surface2); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+    .mock-presup-row { margin-top: 10px; }
+    .mock-presup-labels { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+    .mock-presup-amt { color: var(--yellow); font-weight: 700; }
+    .mock-presup-track { background: var(--surface3); border-radius: 100px; height: 6px; overflow: hidden; }
+    .mock-presup-fill { height: 100%; border-radius: 100px; background: var(--yellow); }
     .mock-consol-row {
       display: grid; grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
@@ -385,6 +391,9 @@
       <div class="mock-form-label" data-en="CATEGORY">CATEGORÍA</div>
       <div class="mock-form-input" data-en="Groceries">Supermercado</div>
 
+      <div class="mock-form-label" data-en="TRIP (optional)">VIAJE (opcional)</div>
+      <div class="mock-form-input" data-en="✈️ Brazil 2026">✈️ Brasil 2026</div>
+
       <div class="mock-form-label" data-en="DESCRIPTION">DESCRIPCIÓN</div>
       <div class="mock-form-input" style="color:var(--muted)" data-en="Weekly shopping...">Compra semanal...</div>
 
@@ -431,6 +440,16 @@
           <div class="mock-val-label" data-en="Balance">Saldo</div>
           <div class="mock-val blue">$229.300</div>
         </div>
+      </div>
+    </div>
+    <div class="mock-presup">
+      <div class="mock-consol-label" data-en="THIS MONTH'S BUDGETS">PRESUPUESTOS DEL MES</div>
+      <div class="mock-presup-row">
+        <div class="mock-presup-labels">
+          <span data-en="Groceries">Supermercado</span>
+          <span class="mock-presup-amt" data-en="$45,000 / $60,000">$45.000 / $60.000</span>
+        </div>
+        <div class="mock-presup-track"><div class="mock-presup-fill" style="width:75%"></div></div>
       </div>
     </div>
     <div class="mock-tx-list">
