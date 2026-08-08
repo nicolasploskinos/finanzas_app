@@ -186,6 +186,22 @@
     .mock-tx-cat  { font-size: 11px; color: var(--muted); margin-top: 1px; }
     .mock-tx-monto { font-size: 14px; font-weight: 800; }
 
+    .mock-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+    .mock-stats-card { background: var(--surface2); border-radius: 12px; padding: 12px 14px; }
+    .mock-stats-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+    .mock-stats-value { font-size: 17px; font-weight: 800; margin-top: 5px; }
+    .mock-stats-diff { font-size: 11px; font-weight: 700; margin-top: 4px; }
+    .mock-donut-wrap { display: flex; align-items: center; gap: 18px; }
+    .mock-donut {
+      width: 96px; height: 96px; border-radius: 50%; flex-shrink: 0; position: relative;
+      background: conic-gradient(#60a5fa 0% 34%, #f87171 34% 55%, #4ade80 55% 71%, #fbbf24 71% 84%, #a78bfa 84% 100%);
+    }
+    .mock-donut::after { content: ""; position: absolute; inset: 20px; background: var(--surface); border-radius: 50%; }
+    .mock-legend { display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+    .mock-legend-item { display: flex; align-items: center; gap: 7px; }
+    .mock-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .mock-inflacion { margin-top: 16px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.2); border-radius: 10px; padding: 9px 12px; font-size: 12px; color: var(--muted); }
+
     .mock-form-label { font-size: 10px; color: var(--muted); font-weight: 800; margin-bottom: 5px; letter-spacing: .4px; text-transform: uppercase; }
     .mock-form-input {
       background: var(--surface2); border: 1px solid var(--border);
@@ -485,6 +501,39 @@
         </div>
         <div class="mock-tx-monto green">+USD 150</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Mockup 3: resumen y gráficos -->
+  <div class="mockup" style="align-self:center">
+    <div class="mock-header">
+      <div class="mock-title" data-en="📊 Monthly summary">📊 Resumen del mes</div>
+    </div>
+    <div class="mock-stats-grid">
+      <div class="mock-stats-card">
+        <div class="mock-stats-label" data-en="Expenses July">Gastos Julio</div>
+        <div class="mock-stats-value" style="color:var(--red)">$613.200</div>
+        <div class="mock-stats-diff" style="color:var(--red)">▲ 12% <span data-en="vs June">vs Junio</span></div>
+      </div>
+      <div class="mock-stats-card">
+        <div class="mock-stats-label" data-en="Income July">Ingresos Julio</div>
+        <div class="mock-stats-value" style="color:var(--green)">$842.500</div>
+        <div class="mock-stats-diff" style="color:var(--green)">▲ 8% <span data-en="vs June">vs Junio</span></div>
+      </div>
+    </div>
+    <div class="mock-donut-wrap">
+      <div class="mock-donut"></div>
+      <div class="mock-legend">
+        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#60a5fa"></span><span data-en="Housing">Vivienda</span></div>
+        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#f87171"></span><span data-en="Groceries">Supermercado</span></div>
+        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#4ade80"></span><span data-en="Transport">Transporte</span></div>
+        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#fbbf24"></span><span data-en="Subscriptions">Suscripciones</span></div>
+        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#a78bfa"></span><span data-en="Other">Otros</span></div>
+      </div>
+    </div>
+    <div class="mock-inflacion">
+      📊 <span data-en="INDEC inflation July:">Inflación INDEC Julio:</span> <strong style="color:#fbbf24">+6,5%</strong>
+      &nbsp;·&nbsp; <span data-en="Real spending:">Gastos reales:</span> <strong style="color:var(--green)">▼ 2,1%</strong>
     </div>
   </div>
 </div>
