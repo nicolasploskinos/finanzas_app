@@ -664,6 +664,16 @@
     return sym + Math.abs(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
 
+  // Achica el font-size de a 1px hasta que el texto entre en una línea sin desbordar.
+  function ajustarTexto(el, min = 8) {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth && size > min) {
+      size -= 1;
+      el.style.fontSize = size + "px";
+    }
+  }
+
   let datos = [];
   let tipoActual       = "Gasto";
   let monedaActual     = "ARS";
@@ -826,11 +836,14 @@
     const gas = fromARS(gasARS, monedaConsol);
     const net = ing - gas;
 
-    document.getElementById("cons-ing").textContent = fmtMon(ing, monedaConsol);
-    document.getElementById("cons-gas").textContent = fmtMon(gas, monedaConsol);
+    const ingEl = document.getElementById("cons-ing");
+    const gasEl = document.getElementById("cons-gas");
     const netEl = document.getElementById("cons-net");
+    ingEl.textContent = fmtMon(ing, monedaConsol);
+    gasEl.textContent = fmtMon(gas, monedaConsol);
     netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(Math.abs(net), monedaConsol);
     netEl.className = "cons-card-value " + (net >= 0 ? "green" : "red");
+    [ingEl, gasEl, netEl].forEach(ajustarTexto);
     document.getElementById("cons-nota").textContent =
       monedaConsol === "ARS" ? tr("suma_directa_ars") : tr("tipo_cambio_oficial");
   }
@@ -1546,6 +1559,7 @@
         <div class="stats-card-value green">${fmt(r.ingresos_actual)}</div>
         ${diff(r.ingresos_actual, r.ingresos_anterior, false)}
       </div>`;
+    document.querySelectorAll("#resumen-mes .stats-card-value").forEach(el => ajustarTexto(el));
 
     // Inflation strip
     const mesNum  = parseInt(document.getElementById("stats-mes").value);
