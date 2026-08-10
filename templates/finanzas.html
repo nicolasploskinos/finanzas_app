@@ -222,7 +222,7 @@
     .cons-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .cons-card { background: var(--surface2); border-radius: 12px; padding: 10px 8px; min-width: 0; }
     .cons-card-label { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
-    .cons-card-value { font-size: clamp(9px, 3.2vw, 15px); font-weight: 800; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cons-card-value { font-size: clamp(9px, 3.2vw, 15px); font-weight: 800; margin-top: 4px; white-space: nowrap; overflow: hidden; }
     .cons-nota { font-size: 10px; color: var(--muted); text-align: right; margin-top: 8px; }
 
     /* Recurrentes */
@@ -262,7 +262,7 @@
     .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
     .stats-card { background: var(--surface2); border-radius: 12px; padding: 12px; min-width: 0; }
     .stats-card-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
-    .stats-card-value { font-size: clamp(13px, 4.5vw, 20px); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stats-card-value { font-size: clamp(13px, 4.5vw, 20px); font-weight: 800; white-space: nowrap; overflow: hidden; }
     .stats-diff { font-size: 11px; margin-top: 3px; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -664,14 +664,18 @@
     return sym + Math.abs(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
 
-  // Achica el font-size de a 1px hasta que el texto entre en una línea sin desbordar.
-  function ajustarTexto(el, min = 8) {
+  // Achica el font-size de a 1px hasta que el texto entre completo en una línea.
+  function ajustarTextoAhora(el, min) {
     el.style.fontSize = "";
-    let size = parseFloat(getComputedStyle(el).fontSize);
+    let size = Math.ceil(parseFloat(getComputedStyle(el).fontSize));
     while (el.scrollWidth > el.clientWidth && size > min) {
       size -= 1;
       el.style.fontSize = size + "px";
     }
+  }
+  // Se ejecuta después del próximo repintado, para medir sobre el layout ya definitivo.
+  function ajustarTexto(el, min = 6) {
+    requestAnimationFrame(() => ajustarTextoAhora(el, min));
   }
 
   let datos = [];
@@ -843,7 +847,7 @@
     gasEl.textContent = fmtMon(gas, monedaConsol);
     netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(Math.abs(net), monedaConsol);
     netEl.className = "cons-card-value " + (net >= 0 ? "green" : "red");
-    [ingEl, gasEl, netEl].forEach(ajustarTexto);
+    [ingEl, gasEl, netEl].forEach(el => ajustarTexto(el));
     document.getElementById("cons-nota").textContent =
       monedaConsol === "ARS" ? tr("suma_directa_ars") : tr("tipo_cambio_oficial");
   }
