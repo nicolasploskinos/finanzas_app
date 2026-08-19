@@ -36,6 +36,11 @@
     #busqueda { font-size: 13px; }
     #import-resumen { font-size: 13px; }
     .import-item { font-size: 13px; }
+    .dia-label { font-size: 12px; }
+    .dia-input { font-size: 12px; }
+    #dia-resultado { font-size: 13px; }
+    .import-export-btn { font-size: 12px; }
+    .export-menu-item { font-size: 13px; }
 
     /* Header */
     header {
@@ -301,13 +306,24 @@
       .stats-card-label { font-size: 11px; }
       .stats-card-value { font-size: 24px; }
       .stats-diff { font-size: 12px; }
-      #busqueda { font-size: 14px; }
-      .periodo-btn { font-size: 13px; }
-      .filtros select { font-size: 13px; }
-      .mes-header { font-size: 13px; }
-      .tx-cat  { font-size: 15px; }
-      .tx-desc { font-size: 13px; }
-      .tx-monto { font-size: 17px; }
+      #busqueda { font-size: 17px; padding: 13px 44px 13px 20px; }
+      #btn-clear-busq { font-size: 24px; }
+      .periodo-btn { font-size: 15px; padding: 9px 18px; }
+      .filtros select { font-size: 15px; padding: 9px 18px; }
+      .dia-label { font-size: 14px; }
+      .dia-input { font-size: 14px; padding: 9px 16px; }
+      #dia-resultado { font-size: 15px; }
+      .import-export-btn { font-size: 14px; }
+      .export-menu-item { font-size: 14px; }
+      .mes-header { font-size: 15px; }
+      .tx-wrap { margin-bottom: 10px; }
+      .tx { padding: 16px 18px; gap: 14px; }
+      .tx-icon { width: 46px; height: 46px; font-size: 21px; }
+      .tx-cat  { font-size: 17px; }
+      .tx-desc { font-size: 14px; }
+      .tx-fecha { font-size: 13px; }
+      .tx-monto { font-size: 19px; }
+      .tx-edit { font-size: 17px; padding: 6px; }
 
       /* Modales: centrados y más grandes en vez de la hoja pegada abajo. */
       .overlay, .pro-overlay { align-items: center; }
@@ -541,23 +557,23 @@
 
   <!-- Rango de días específico -->
   <div style="padding:0 12px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
-    <input type="date" id="f-dia-desde" onchange="filtrarPorDia()" title="Desde qué día"
-      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <span style="color:var(--muted);font-size:12px" data-en="to">a</span>
-    <input type="date" id="f-dia-hasta" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para ver un rango)"
-      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <button id="btn-clear-dia" onclick="limpiarDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
+    <span class="dia-label" style="color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
+    <input type="date" id="f-dia-desde" class="dia-input" onchange="filtrarPorDia()" title="Desde qué día"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-weight:600">
+    <span class="dia-label" style="color:var(--muted)" data-en="to">a</span>
+    <input type="date" id="f-dia-hasta" class="dia-input" onchange="filtrarPorDia()" title="Hasta qué día (opcional, para ver un rango)"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-weight:600">
+    <button id="btn-clear-dia" class="dia-label" onclick="limpiarDia()" style="display:none;background:none;border:none;color:var(--muted);font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
   </div>
 
-  <div id="dia-resultado" style="display:none;padding:0 12px 8px;font-size:13px;color:var(--muted)"></div>
+  <div id="dia-resultado" style="display:none;padding:0 12px 8px;color:var(--muted)"></div>
 
   <div style="margin:8px 12px 0;display:flex;justify-content:flex-end;align-items:center;gap:16px;position:relative">
-    <button onclick="triggerImport()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0" data-en="⬆️ Import">⬆️ Importar</button>
-    <button onclick="toggleExportMenu(event)" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0" data-en="⬇️ Export">⬇️ Exportar</button>
+    <button class="import-export-btn" onclick="triggerImport()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:0" data-en="⬆️ Import">⬆️ Importar</button>
+    <button class="import-export-btn" onclick="toggleExportMenu(event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:0" data-en="⬇️ Export">⬇️ Exportar</button>
     <div id="export-menu" style="display:none;position:absolute;top:22px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);overflow:hidden;z-index:50;min-width:160px">
-      <a href="#" onclick="exportar('excel');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none">📊 Excel (.xlsx)</a>
-      <a href="#" onclick="exportar('pdf');return false;" style="display:block;padding:10px 14px;font-size:13px;color:var(--text);text-decoration:none;border-top:1px solid var(--border)">📄 PDF</a>
+      <a href="#" class="export-menu-item" onclick="exportar('excel');return false;" style="display:block;padding:10px 14px;color:var(--text);text-decoration:none">📊 Excel (.xlsx)</a>
+      <a href="#" class="export-menu-item" onclick="exportar('pdf');return false;" style="display:block;padding:10px 14px;color:var(--text);text-decoration:none;border-top:1px solid var(--border)">📄 PDF</a>
     </div>
   </div>
   <input type="file" id="import-file" accept=".csv" style="display:none" onchange="onImportFile(event)">
