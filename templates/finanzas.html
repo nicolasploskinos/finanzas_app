@@ -100,9 +100,9 @@
     .conv-nota { text-align: center; font-size: 11px; color: var(--muted); margin-top: 2px; }
 
     /* Filtros */
-    .filtros { padding: 0 12px 10px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .filtros { padding: 4px 12px 16px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     .filtros::-webkit-scrollbar { display: none; }
-    .periodo-pills { padding: 0 12px 6px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .periodo-pills { padding: 4px 12px 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     .periodo-pills::-webkit-scrollbar { display: none; }
     .periodo-btn {
       background: var(--surface); color: var(--muted);
@@ -522,7 +522,7 @@
   {% endif %}
 
   <!-- Búsqueda -->
-  <div style="padding:0 12px 6px;position:relative">
+  <div class="busqueda-wrap" style="padding:8px 12px 12px;position:relative">
     <input type="text" id="busqueda" placeholder="Buscar..." data-en-placeholder="Search..." oninput="onBusquedaInput()" autocomplete="off"
       style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:100px;color:var(--text);padding:9px 38px 9px 16px;outline:none;transition:border-color .2s">
     <button id="btn-clear-busq" onclick="limpiarBusqueda()" style="display:none;position:absolute;right:22px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0">×</button>
@@ -556,7 +556,7 @@
   </div>
 
   <!-- Rango de días específico -->
-  <div style="padding:0 12px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+  <div class="dia-range-wrap" style="padding:6px 12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="dia-label" style="color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
     <input type="date" id="f-dia-desde" class="dia-input" onchange="filtrarPorDia()" title="Desde qué día"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-weight:600">
@@ -1037,7 +1037,7 @@
     const cats = [...seen.values()].sort((a, b) => normalizar(a).localeCompare(normalizar(b)));
     const sel = document.getElementById("f-cat");
     const val = sel.value;
-    sel.innerHTML = '<option value="">Todas las categorías</option>';
+    sel.innerHTML = `<option value="">${tr("all_categories")}</option>`;
     cats.forEach(c => {
       const o = document.createElement("option");
       o.value = c; o.textContent = c;
@@ -1386,6 +1386,7 @@
     ver_pro_flecha:                { es: "Ver Pro →", en: "See Pro →" },
     sin_presupuestos:              { es: "Sin presupuestos. Agregá uno para ver el progreso.", en: "No budgets. Add one to see your progress." },
     nueva_transaccion:            { es: "Nueva transacción", en: "New transaction" },
+    all_categories:               { es: "Todas las categorías", en: "All categories" },
     editar_transaccion:           { es: "Editar transacción", en: "Edit transaction" },
     por_mes:                      { es: "/mes", en: "/mo" },
     monto_lbl:                    { es: "MONTO", en: "AMOUNT" },

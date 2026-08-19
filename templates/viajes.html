@@ -277,6 +277,7 @@
     total_gastado:        { es: "Total gastado", en: "Total spent" },
     todavia_no_cargaste:  { es: "Todavía no cargaste gastos de este viaje.", en: "You haven't logged any expenses for this trip yet." },
     nuevo_viaje:          { es: "Nuevo viaje", en: "New trip" },
+    all_categories:       { es: "Todas las categorías", en: "All categories" },
     editar_viaje:         { es: "Editar viaje", en: "Edit trip" },
   };
   function tr(code, params) {
@@ -513,7 +514,7 @@
     const cats = [...seen.values()].sort((a, b) => a.localeCompare(b));
     const sel = document.getElementById("det-f-cat");
     const val = sel.value;
-    sel.innerHTML = '<option value="">Todas las categorías</option>';
+    sel.innerHTML = `<option value="">${tr("all_categories")}</option>`;
     cats.forEach(c => {
       const o = document.createElement("option");
       o.value = c; o.textContent = c;
