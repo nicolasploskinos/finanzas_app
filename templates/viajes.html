@@ -86,7 +86,7 @@
     .cons-card-value { font-size: 21px; font-weight: 800; margin-top: 5px; }
 
     .chart-wrap { background: var(--surface); border-radius: 16px; padding: 14px; margin-bottom: 18px; }
-    .chart-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; }
+    .chart-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
     .chart-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
 
     .det-filtros { margin-bottom: 10px; }
@@ -200,9 +200,14 @@
   <div class="cons-cards" id="det-totales"></div>
 
   <div class="chart-wrap">
-    <div class="chart-title" data-en="Spend by category (USD)">Gasto por categoría (USD)</div>
-    <canvas id="det-chart-cat" height="180"></canvas>
-    <div class="chart-empty" id="det-chart-cat-empty" style="display:none" data-en="No expenses recorded">Sin gastos registrados</div>
+    <div class="chart-title" onclick="toggleChartCat()">
+      <span data-en="Spend by category (USD)">Gasto por categoría (USD)</span>
+      <span id="chart-cat-chev">▼</span>
+    </div>
+    <div id="chart-cat-body" style="display:none;padding-top:10px">
+      <canvas id="det-chart-cat" height="180"></canvas>
+      <div class="chart-empty" id="det-chart-cat-empty" style="display:none" data-en="No expenses recorded">Sin gastos registrados</div>
+    </div>
   </div>
 
   <div class="det-filtros">
@@ -334,6 +339,7 @@
   let viajes = [];
   let viajeActual = null;
   let detChartCat = null;
+  let chartCatOpen = false;
   // Los viajes se muestran siempre en dólares; los gastos en otras monedas
   // ya vienen convertidos desde el backend al cambio oficial.
   const detMonedaActual = "USD";
@@ -496,7 +502,10 @@
            </div>`
         : `<div style="font-size:13px;color:var(--muted)">${tr("todavia_no_cargaste")}</div>`;
 
-      renderChartCategoria();
+      // El gráfico arranca siempre escondido; se renderiza recién al abrirlo.
+      chartCatOpen = false;
+      document.getElementById("chart-cat-body").style.display = "none";
+      document.getElementById("chart-cat-chev").textContent = "▼";
 
       actualizarDetCatFiltro();
       limpiarDetDia();
@@ -569,6 +578,13 @@
       : (detData.transacciones && detData.transacciones.length
           ? `<div class="empty-state">${tr("sin_gastos_filtro")}</div>`
           : `<div class="empty-state">${tr("sin_tx_viaje")}</div>`);
+  }
+
+  function toggleChartCat() {
+    chartCatOpen = !chartCatOpen;
+    document.getElementById("chart-cat-body").style.display = chartCatOpen ? "" : "none";
+    document.getElementById("chart-cat-chev").textContent = chartCatOpen ? "▲" : "▼";
+    if (chartCatOpen) renderChartCategoria();
   }
 
   function renderChartCategoria() {
