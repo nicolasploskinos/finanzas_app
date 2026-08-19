@@ -34,6 +34,8 @@
     .col-izq, .col-der { display: contents; }
 
     #busqueda { font-size: 13px; }
+    #import-resumen { font-size: 13px; }
+    .import-item { font-size: 13px; }
 
     /* Header */
     header {
@@ -306,6 +308,27 @@
       .tx-cat  { font-size: 15px; }
       .tx-desc { font-size: 13px; }
       .tx-monto { font-size: 17px; }
+
+      /* Modales: centrados y más grandes en vez de la hoja pegada abajo. */
+      .overlay, .pro-overlay { align-items: center; }
+      .modal, .pro-modal { max-width: 600px; border-radius: 28px; padding: 36px 40px 40px; }
+      .modal-handle, .pro-modal-handle { display: none; }
+      .modal h2 { font-size: 24px; }
+      .tipo-btn { font-size: 16px; padding: 14px; }
+      .moneda-btn { font-size: 15px; padding: 12px; }
+      .campo label { font-size: 13px; }
+      .campo input, .campo select { font-size: 17px; padding: 15px 16px; }
+      .btn-guardar { font-size: 18px; padding: 18px; }
+      #import-resumen { font-size: 15px; }
+      .import-item { font-size: 15px; }
+      .pro-titulo { font-size: 28px; }
+      .pro-precio { font-size: 15px; }
+      .pro-precio strong { font-size: 24px; }
+      .pro-fila-icono { font-size: 26px; }
+      .pro-fila-texto h4 { font-size: 16px; }
+      .pro-fila-texto p  { font-size: 14px; }
+      .btn-pro-pagar { font-size: 18px; padding: 18px; }
+      .btn-pro-cancel { font-size: 15px; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -678,7 +701,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <h2 data-en="Import transactions">Importar movimientos</h2>
-    <p id="import-resumen" style="font-size:13px;color:var(--muted);margin:-10px 0 14px"></p>
+    <p id="import-resumen" style="color:var(--muted);margin:-10px 0 14px"></p>
     <div class="campo">
       <label data-en="CATEGORY (optional, applies to all selected)">CATEGORÍA (opcional, se aplica a todos los seleccionados)</label>
       <input type="text" id="import-cat" placeholder="Ej: Importado" data-en-placeholder="E.g.: Imported" autocomplete="off">
@@ -1441,7 +1464,7 @@
       tr("movimientos_encontrados", { n: importPendientes.length }) + (errores ? " · " + tr("filas_no_reconocidas", { n: errores }) : "");
     document.getElementById("import-cat").value = "";
     document.getElementById("import-lista").innerHTML = importPendientes.map((t, i) => `
-      <label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <label class="import-item" style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
         <input type="checkbox" checked data-i="${i}" class="import-chk" style="margin-top:3px">
         <span style="flex:1">
           <strong>${t.fecha}</strong> · ${t.tipo === "Gasto" ? "🔴" : "🟢"} ${fmtMon(t.monto, t.moneda)}

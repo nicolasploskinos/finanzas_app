@@ -132,6 +132,33 @@
 
     .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); padding: 11px 22px; border-radius: 100px; font-size: 13px; font-weight: 700; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.3); border: 1px solid var(--border); }
     .toast.show { opacity: 1; }
+
+    /* Escritorio: más ancho y letra más grande (mobile queda igual). */
+    @media (min-width: 900px) {
+      body { max-width: 860px; }
+      header h1 { font-size: 20px; }
+      .viaje-card-nombre { font-size: 19px; }
+      .viaje-card-fechas { font-size: 13px; }
+      .empty-state { font-size: 16px; }
+      .presup-bar-name { font-size: 13px; }
+      .presup-bar-amt { font-size: 19px; }
+      .detalle-nombre { font-size: 24px; }
+      .detalle-fechas { font-size: 14px; }
+      .cons-card-label { font-size: 11px; }
+      .cons-card-value { font-size: 25px; }
+      .chart-title { font-size: 12px; }
+      .tx-cat  { font-size: 16px; }
+      .tx-fecha { font-size: 12px; }
+      .tx-monto { font-size: 17px; }
+
+      .overlay { align-items: center; }
+      .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
+      .modal-handle { display: none; }
+      .modal h2 { font-size: 24px; }
+      .campo label { font-size: 13px; }
+      .campo input { font-size: 17px; padding: 15px 16px; }
+      .btn-guardar { font-size: 18px; padding: 18px; }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
