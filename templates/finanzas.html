@@ -29,6 +29,17 @@
       min-height: 100vh; max-width: 480px; margin: 0 auto;
     }
 
+    /* En mobile los "wrappers" de columna no existen visualmente: sus hijos
+       quedan directamente en el flujo, uno debajo del otro, como siempre. */
+    .col-izq, .col-der { display: contents; }
+
+    @media (min-width: 900px) {
+      body { max-width: 1140px; }
+      #tab-resumen { display: flex; align-items: flex-start; gap: 16px; }
+      .col-izq { display: block; flex: 0 0 400px; position: sticky; top: 76px; }
+      .col-der { display: block; flex: 1; min-width: 0; }
+    }
+
     /* Header */
     header {
       background: var(--surface);
@@ -299,6 +310,7 @@
 {% endif %}
 
 <div id="tab-resumen">
+  <div class="col-izq">
 
   <!-- Total consolidado -->
   <div class="cons-section">
@@ -429,6 +441,9 @@
     </div>
   </div>
 
+  </div>
+  <div class="col-der">
+
   {% if not is_pro %}
   <div style="margin:0 12px 8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:9px 14px;font-size:12px;color:#fbbf24;display:flex;justify-content:space-between;align-items:center">
     <span data-en="📅 Showing last 3 months">📅 Mostrando últimos 3 meses</span>
@@ -494,6 +509,8 @@
   <input type="file" id="import-file" accept=".csv" style="display:none" onchange="onImportFile(event)">
 
   <div id="lista"></div>
+
+  </div>
 </div>
 
 <button class="fab" onclick="abrirModal()">+</button>
