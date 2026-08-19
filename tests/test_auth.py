@@ -5,6 +5,8 @@ import json
 
 from werkzeug.security import generate_password_hash
 
+import finanzas_server as app_module
+
 
 def test_login_usuario_inexistente_no_filtra_informacion(client, fake_db):
     fake_db.tables["usuarios"] = []  # nadie se llama así
@@ -32,6 +34,44 @@ def test_login_contrasena_incorrecta(client, fake_db):
 
     assert r.status_code == 401
     assert r.get_json()["error"] == "invalid_credentials"
+
+
+def test_login_se_bloquea_al_sexto_intento_fallido(client, fake_db):
+    fake_db.tables["usuarios"] = [{
+        "id": "u1", "username": "nico",
+        "password_hash": generate_password_hash("laposta123"),
+    }]
+
+    for _ in range(5):
+        r = client.post("/api/finanzas/login",
+                         json={"username": "nico", "password": "mal"})
+        assert r.status_code == 401
+
+    r = client.post("/api/finanzas/login",
+                     json={"username": "nico", "password": "mal"})
+    assert r.status_code == 429
+    assert r.get_json()["error"] == "too_many_attempts"
+
+    # Ni siquiera con la contraseña correcta se entra mientras dure el bloqueo.
+    r = client.post("/api/finanzas/login",
+                     json={"username": "nico", "password": "laposta123"})
+    assert r.status_code == 429
+
+
+def test_login_exitoso_resetea_el_contador_de_intentos(client, fake_db):
+    fake_db.tables["usuarios"] = [{
+        "id": "u1", "username": "nico",
+        "password_hash": generate_password_hash("laposta123"),
+    }]
+
+    for _ in range(4):
+        client.post("/api/finanzas/login", json={"username": "nico", "password": "mal"})
+
+    r = client.post("/api/finanzas/login",
+                     json={"username": "nico", "password": "laposta123"})
+    assert r.status_code == 200
+
+    assert "nico" not in app_module._login_intentos
 
 
 def test_login_correcto_abre_sesion(client, fake_db):

@@ -33,8 +33,25 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.environ["SECRET_KEY"]
 app.permanent_session_lifetime = timedelta(days=30)
+app.config["SESSION_COOKIE_SECURE"]   = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # tope global de subida (el import de CSV ya recorta a 2MB aparte)
 
 db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+
+_login_intentos = {}           # username -> [timestamps de intentos fallidos]
+_LOGIN_MAX_INTENTOS = 5
+_LOGIN_VENTANA_SEGUNDOS = 15 * 60
+
+def _login_bloqueado(username):
+    ahora = time.time()
+    intentos = [ts for ts in _login_intentos.get(username, []) if ahora - ts < _LOGIN_VENTANA_SEGUNDOS]
+    _login_intentos[username] = intentos
+    return len(intentos) >= _LOGIN_MAX_INTENTOS
+
+def _registrar_intento_fallido(username):
+    _login_intentos.setdefault(username, []).append(time.time())
 
 def login_required(f):
     @wraps(f)
@@ -108,14 +125,19 @@ def login():
     username = (data.get("username") or "").strip()
     password =  data.get("password") or ""
 
+    if _login_bloqueado(username):
+        return jsonify({"ok": False, "error": "too_many_attempts"}), 429
+
     res = db.table("usuarios").select("*").eq("username", username).execute()
     if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
+        _registrar_intento_fallido(username)
         return jsonify({"ok": False, "error": "invalid_credentials"}), 401
 
     user = res.data[0]
     session.permanent = True
     session["user_id"]  = user["id"]
     session["username"] = user["username"]
+    _login_intentos.pop(username, None)
     return jsonify({"ok": True})
 
 @app.route("/api/finanzas/register", methods=["POST"])

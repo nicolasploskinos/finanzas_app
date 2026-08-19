@@ -91,3 +91,13 @@ def fake_db(monkeypatch):
 def client():
     app_module.app.config.update(TESTING=True)
     return app_module.app.test_client()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    # _login_intentos vive a nivel de módulo (así persiste entre requests
+    # reales), así que sin esto un test que agota el límite dejaría a los
+    # siguientes tests con ese username bloqueado.
+    app_module._login_intentos.clear()
+    yield
+    app_module._login_intentos.clear()
