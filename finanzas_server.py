@@ -28,6 +28,12 @@ _cotiz_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
+# La app de Meta está en modo desarrollo (sin Business Verification), así que
+# el bot de WhatsApp solo le puede responder a números que agreguemos a mano
+# a la lista de destinatarios permitidos. Hasta que se verifique el negocio,
+# el bot queda restringido a esta única cuenta.
+_WHATSAPP_USER_ID = "39d80812-6467-4e6e-b557-34e64a135608"  # Nicolas
+
 def _hoy_ar():
     # El servidor corre en UTC; Buenos Aires es UTC-3 todo el año (sin horario de verano).
     return (datetime.now(timezone.utc) - timedelta(hours=3)).date()
@@ -94,7 +100,9 @@ def index():
                 is_pro = True
                 is_trial = True
                 trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
-    return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial, trial_dias=trial_dias)
+    whatsapp_habilitado = session["user_id"] == _WHATSAPP_USER_ID
+    return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
+                            trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
 
 @app.route("/finanzas/viajes")
 @login_required
@@ -786,6 +794,8 @@ def _procesar_mensaje_whatsapp(msg):
         )
         return
     user_id = vinculo.data[0]["user_id"]
+    if user_id != _WHATSAPP_USER_ID:
+        return
 
     ia_disponible, parseado = _wa_interpretar_mensaje_ia(texto)
     if not ia_disponible:
@@ -819,6 +829,8 @@ def _procesar_mensaje_whatsapp(msg):
 @app.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
 @login_required
 def whatsapp_codigo():
+    if session["user_id"] != _WHATSAPP_USER_ID:
+        return jsonify({"ok": False, "error": "whatsapp_no_disponible"}), 403
     codigo = f"{random.randint(0, 999999):06d}"
     _wa_codigos[codigo] = (session["user_id"], time.time() + 900)
     numero = re.sub(r"[^0-9]", "", os.environ.get("WHATSAPP_DISPLAY_NUMBER", ""))

@@ -138,7 +138,7 @@ def test_mensaje_sin_monto_se_trata_como_pregunta(fake_db, monkeypatch):
         "Gastaste poco este mes.",              # 2: respuesta del chat
     ]
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuestas))
-    fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
     fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 100, "moneda": "ARS", "categoria": "Comida", "descripcion": "", "fecha": "2026-08-01"}]
 
     enviados = []
@@ -158,7 +158,7 @@ def test_mensaje_informal_interpretado_como_transaccion_se_carga_sin_preguntar(f
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta, calls))
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
-    fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
 
     enviados = []
     monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
@@ -174,7 +174,7 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     # dejar de funcionar: cae al parser viejo basado en regex.
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
-    fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
 
     enviados = []
     monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))

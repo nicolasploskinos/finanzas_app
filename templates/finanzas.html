@@ -465,6 +465,7 @@
   </div>
 
   <!-- WhatsApp -->
+  {% if whatsapp_habilitado %}
   <div class="cot-wrap">
     <div class="cot-header" onclick="toggleWhatsapp()">
       <span data-en="📱 WhatsApp: log expenses &amp; ask questions">📱 WhatsApp: cargar gastos y preguntar</span>
@@ -489,6 +490,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- Cotizaciones + Conversor -->
   <div class="cot-card">
