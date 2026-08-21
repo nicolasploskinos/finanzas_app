@@ -78,7 +78,7 @@ def test_genera_resumen_de_un_mes_cerrado(client, fake_db, monkeypatch):
     body = r.get_json()
     assert body == {"ok": True, "resumen": "Resumen de prueba"}
     assert len(calls) == 1
-    assert calls[0][0] == "gemini-3.6-flash"
+    assert calls[0][0] == "gemini-3.5-flash-lite"
 
 
 def test_mes_cerrado_se_cachea_no_se_llama_dos_veces(client, fake_db, monkeypatch):

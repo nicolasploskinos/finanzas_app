@@ -107,7 +107,7 @@ def test_con_movimientos_llama_a_gemini_y_devuelve_el_texto(fake_db, monkeypatch
 
     assert r == "Gastaste 100 en comida."
     assert len(calls) == 1
-    assert calls[0][0] == "gemini-3.6-flash"
+    assert calls[0][0] == "gemini-3.5-flash-lite"
     assert "cuánto gasté en comida" in calls[0][1]
     assert "Comida" in calls[0][1]  # los movimientos van en el prompt
 

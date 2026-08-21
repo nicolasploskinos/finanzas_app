@@ -643,7 +643,8 @@ def _wa_interpretar_mensaje_ia(texto):
         "Si el mensaje NO describe un gasto o ingreso con un monto concreto (por ejemplo es una pregunta, un "
         "saludo, o no incluye plata), respondé es_transaccion=false y nada más.\n"
         "Si SÍ es una carga, completá además: tipo (Gasto o Ingreso; asumí Gasto si no queda claro), monto "
-        "(número, convertí jerga como 'lucas'=miles o 'palos'=millones a su valor real, sin separadores), "
+        "(número, convertí jerga como 'lucas'=miles, 'palos'=millones, o abreviaturas tipo '5k'=5000 y "
+        "'37k'=37000 a su valor real, sin separadores), "
         "moneda (ARS por defecto, USD o EUR solo si se menciona explícitamente), categoria (una palabra corta "
         "en español, ej: comida, transporte, sueldo — vacío si no hay ninguna pista), descripcion (detalle breve "
         "opcional, vacío si no aporta nada nuevo)."
@@ -652,7 +653,7 @@ def _wa_interpretar_mensaje_ia(texto):
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
                                http_options=genai_types.HttpOptions(timeout=20000))
         resp = client.models.generate_content(
-            model="gemini-3.6-flash", contents=prompt,
+            model="gemini-3.5-flash-lite", contents=prompt,
             config=genai_types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_json_schema=_WA_SCHEMA_TRANSACCION,
@@ -696,18 +697,25 @@ def _wa_responder_pregunta(user_id, pregunta):
         f"{t.get('categoria') or 'sin categoría'} | {t.get('descripcion') or ''}"
         for t in res.data
     )
+    dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+    hoy_txt = f"{dias[hoy_ar.weekday()]} {hoy_ar.isoformat()}"
     prompt = (
-        "Sos un asistente financiero respondiendo por WhatsApp. Estos son los movimientos del usuario de los "
+        "Sos un asistente financiero respondiendo por WhatsApp. "
+        f"Hoy es {hoy_txt} (formato fecha: AAAA-MM-DD). Estos son los movimientos del usuario de los "
         f"últimos 6 meses (fecha | tipo | monto | moneda | categoría | descripción):\n\n{lineas}\n\n"
         f'El usuario pregunta: "{pregunta}"\n\n'
+        "Si la pregunta menciona una fecha relativa (ej. 'el viernes pasado', 'ayer', 'la semana pasada'), "
+        "calculá la fecha real tomando como referencia la fecha de hoy de arriba, y usá solo los movimientos "
+        "de esa fecha o rango exacto.\n"
         "Respondé en español rioplatense, corto y directo (máximo 3-4 líneas, como un mensaje real de WhatsApp). "
         "Usá solo estos datos, no inventes cifras que no estén ahí. Si no podés responder con esta información, decilo. "
-        "No uses markdown ni bullets."
+        "Envolvé entre asteriscos simples (*así*) cualquier número o monto que menciones en la respuesta, para que "
+        "WhatsApp lo muestre en negrita — es la única marca que podés usar, no uses ningún otro markdown ni bullets."
     )
     try:
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
                                http_options=genai_types.HttpOptions(timeout=15000))
-        resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
+        resp = client.models.generate_content(model="gemini-3.5-flash-lite", contents=prompt)
         return (resp.text or "").strip() or None
     except Exception:
         return None
@@ -798,7 +806,7 @@ def _procesar_mensaje_whatsapp(msg):
     if not ok:
         _wa_enviar_mensaje(
             telefono,
-            "⛔ Llegaste al límite de 50 transacciones gratis este mes. Entrá a la app para hacerte Pro y seguir cargando.",
+            "⛔ Llegaste al límite de *50* transacciones gratis este mes. Entrá a la app para hacerte Pro y seguir cargando.",
         )
         return
 
@@ -806,7 +814,7 @@ def _procesar_mensaje_whatsapp(msg):
     emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"
     cat_txt = f" · {parseado['categoria']}" if parseado["categoria"] else ""
     desc_txt = f" · {parseado['descripcion']}" if parseado["descripcion"] else ""
-    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de {simbolo}{parseado['monto']:,.2f}{cat_txt}{desc_txt} registrado ✓")
+    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de *{simbolo}{parseado['monto']:,.2f}*{cat_txt}{desc_txt} registrado ✓")
 
 @app.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
 @login_required
@@ -968,7 +976,7 @@ def resumen_ia():
     try:
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
                                http_options=genai_types.HttpOptions(timeout=25000))
-        resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
+        resp = client.models.generate_content(model="gemini-3.5-flash-lite", contents=prompt)
         texto = (resp.text or "").strip()
     except Exception:
         return jsonify({"ok": False, "error": "ia_no_disponible"}), 502
