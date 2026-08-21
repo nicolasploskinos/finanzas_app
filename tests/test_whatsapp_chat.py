@@ -1,24 +1,77 @@
-"""Chat de WhatsApp: si el mensaje no se puede parsear como carga de gasto/
-ingreso, se lo mandamos a Gemini junto con los movimientos recientes del
-usuario para que responda la pregunta. Nunca llama a la API real."""
+"""Interpretación de mensajes de WhatsApp con IA (carga de gasto/ingreso en
+lenguaje natural, con jerga y frases sueltas) y el chat de preguntas sobre
+los datos. Si el mensaje no resulta ser una carga, se lo mandamos a Gemini
+junto con los movimientos recientes del usuario para que responda. Nunca
+llama a la API real."""
+import json
 from types import SimpleNamespace
 
 import finanzas_server as app_module
 
 
-def _fake_client_factory(texto="Este mes gastaste más en comida.", calls=None):
+def _fake_client_factory(respuestas, calls=None):
+    """respuestas: un string (siempre la misma respuesta) o una lista de
+    strings (una por llamada sucesiva, en orden)."""
     calls = calls if calls is not None else []
+    cola = list(respuestas) if isinstance(respuestas, list) else None
 
     class FakeModels:
-        def generate_content(self, model, contents):
-            calls.append((model, contents))
-            return SimpleNamespace(text=texto)
+        def generate_content(self, model, contents, config=None):
+            calls.append((model, contents, config))
+            return SimpleNamespace(text=cola.pop(0) if cola is not None else respuestas)
 
     class FakeClient:
         def __init__(self, api_key=None, **kwargs):
             self.models = FakeModels()
 
     return FakeClient
+
+
+# ── _wa_interpretar_mensaje_ia ───────────────────────────────────────────────
+
+def test_interpretar_sin_api_key_no_esta_disponible(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    assert app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco") == (False, None)
+
+
+def test_interpretar_transaccion_en_lenguaje_informal(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    respuesta = json.dumps({
+        "es_transaccion": True, "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
+        "categoria": "comida", "descripcion": "asado con amigos",
+    })
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
+
+    disponible, datos = app_module._wa_interpretar_mensaje_ia("me gasté como 5 lucas en un asado con los pibes")
+
+    assert disponible is True
+    assert datos == {
+        "tipo": "Gasto", "monto": 5000.0, "moneda": "ARS",
+        "categoria": "Comida", "descripcion": "asado con amigos",
+    }
+
+
+def test_interpretar_mensaje_que_no_es_transaccion(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    respuesta = json.dumps({"es_transaccion": False})
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
+
+    assert app_module._wa_interpretar_mensaje_ia("hola como andas") == (True, None)
+
+
+def test_interpretar_sin_monto_valido_se_trata_como_no_transaccion(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    respuesta = json.dumps({"es_transaccion": True, "monto": 0})
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
+
+    assert app_module._wa_interpretar_mensaje_ia("no sé cuánto gasté") == (True, None)
+
+
+def test_interpretar_json_invalido_no_esta_disponible(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory("esto no es json"))
+
+    assert app_module._wa_interpretar_mensaje_ia("gasté 500") == (False, None)
 
 
 # ── _wa_responder_pregunta ───────────────────────────────────────────────────
@@ -33,7 +86,7 @@ def test_sin_api_key_no_responde(fake_db, monkeypatch):
 def test_sin_movimientos_responde_sin_llamar_a_la_api(fake_db, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     calls = []
-    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(calls=calls))
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory("no debería usarse", calls))
     fake_db.tables["transacciones"] = []
 
     r = app_module._wa_responder_pregunta("u1", "cuánto gasté?")
@@ -63,7 +116,7 @@ def test_api_caida_devuelve_none(fake_db, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
 
     class FakeModelsQueRompe:
-        def generate_content(self, model, contents):
+        def generate_content(self, model, contents, config=None):
             raise RuntimeError("caída")
 
     class FakeClientQueRompe:
@@ -80,7 +133,11 @@ def test_api_caida_devuelve_none(fake_db, monkeypatch):
 
 def test_mensaje_sin_monto_se_trata_como_pregunta(fake_db, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
-    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory("Gastaste poco este mes."))
+    respuestas = [
+        json.dumps({"es_transaccion": False}),  # 1: intento de interpretar como carga
+        "Gastaste poco este mes.",              # 2: respuesta del chat
+    ]
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuestas))
     fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
     fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 100, "moneda": "ARS", "categoria": "Comida", "descripcion": "", "fecha": "2026-08-01"}]
 
@@ -92,19 +149,36 @@ def test_mensaje_sin_monto_se_trata_como_pregunta(fake_db, monkeypatch):
     assert enviados == ["Gastaste poco este mes."]
 
 
-def test_mensaje_con_monto_sigue_cargando_transaccion_no_pregunta(fake_db, monkeypatch):
-    # Regresión: un mensaje que sí matchea el parser de carga no debe pasar
-    # nunca por el chat de IA, para no gastar una llamada de más ni confundir
-    # una carga real con una pregunta.
+def test_mensaje_informal_interpretado_como_transaccion_se_carga_sin_preguntar(fake_db, monkeypatch):
     calls = []
-    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(calls=calls))
+    respuesta = json.dumps({
+        "es_transaccion": True, "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
+        "categoria": "comida", "descripcion": "",
+    })
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta, calls))
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
     fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
 
     enviados = []
     monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
 
-    app_module._procesar_mensaje_whatsapp({"id": "wamid2", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
+    app_module._procesar_mensaje_whatsapp({"id": "wamid2", "from": "5491111111111", "text": {"body": "me gasté 5 lucas en un asado"}})
 
-    assert calls == []
+    assert len(calls) == 1  # una sola llamada a Gemini: interpretar. no llega a preguntar.
+    assert "registrado" in enviados[0]
+
+
+def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
+    # Si Gemini no está disponible, la carga de gastos por WhatsApp no debe
+    # dejar de funcionar: cae al parser viejo basado en regex.
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
+    fake_db.tables["whatsapp_users"] = [{"user_id": "u1"}]
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid3", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
+
     assert "registrado" in enviados[0]

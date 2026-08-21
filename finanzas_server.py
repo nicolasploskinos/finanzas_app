@@ -2,6 +2,7 @@ import os
 import csv
 import io
 import re
+import json
 import time
 import random
 import unicodedata
@@ -612,6 +613,74 @@ def _parse_mensaje_whatsapp(texto):
 
     return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria, "descripcion": descripcion}
 
+_WA_SCHEMA_TRANSACCION = {
+    "type": "object",
+    "properties": {
+        "es_transaccion": {"type": "boolean"},
+        "tipo": {"type": "string", "enum": ["Gasto", "Ingreso"]},
+        "monto": {"type": "number"},
+        "moneda": {"type": "string", "enum": ["ARS", "USD", "EUR"]},
+        "categoria": {"type": "string"},
+        "descripcion": {"type": "string"},
+    },
+    "required": ["es_transaccion"],
+}
+
+def _wa_interpretar_mensaje_ia(texto):
+    """Intenta interpretar el mensaje con Gemini, más tolerante que el regex
+    (jerga, montos aproximados, frases sueltas). Devuelve (disponible, dato):
+    - (False, None): la IA no está disponible (sin key, error, timeout) —
+      el llamador debe usar el parser regex como respaldo.
+    - (True, None): la IA respondió pero decidió que no es una carga.
+    - (True, dict): la IA extrajo una transacción."""
+    if not os.environ.get("GEMINI_API_KEY"):
+        return False, None
+    prompt = (
+        "Interpretá este mensaje de WhatsApp de alguien registrando un gasto o ingreso personal, en español "
+        "rioplatense informal: puede usar jerga ('lucas' o 'palos' para miles/millones), montos aproximados, "
+        "abreviaturas, faltas de ortografía, o frases sueltas sin estructura fija.\n\n"
+        f'Mensaje: "{texto}"\n\n'
+        "Si el mensaje NO describe un gasto o ingreso con un monto concreto (por ejemplo es una pregunta, un "
+        "saludo, o no incluye plata), respondé es_transaccion=false y nada más.\n"
+        "Si SÍ es una carga, completá además: tipo (Gasto o Ingreso; asumí Gasto si no queda claro), monto "
+        "(número, convertí jerga como 'lucas'=miles o 'palos'=millones a su valor real, sin separadores), "
+        "moneda (ARS por defecto, USD o EUR solo si se menciona explícitamente), categoria (una palabra corta "
+        "en español, ej: comida, transporte, sueldo — vacío si no hay ninguna pista), descripcion (detalle breve "
+        "opcional, vacío si no aporta nada nuevo)."
+    )
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
+                               http_options=genai_types.HttpOptions(timeout=20000))
+        resp = client.models.generate_content(
+            model="gemini-3.6-flash", contents=prompt,
+            config=genai_types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_json_schema=_WA_SCHEMA_TRANSACCION,
+            ),
+        )
+        data = json.loads(resp.text)
+    except Exception:
+        return False, None
+
+    if not data.get("es_transaccion"):
+        return True, None
+    try:
+        monto = float(data.get("monto") or 0)
+    except (TypeError, ValueError):
+        monto = 0
+    if monto <= 0:
+        return True, None
+
+    tipo = data.get("tipo") if data.get("tipo") in ("Gasto", "Ingreso") else "Gasto"
+    moneda = data.get("moneda") if data.get("moneda") in ("ARS", "USD", "EUR") else "ARS"
+    return True, {
+        "tipo": tipo,
+        "monto": round(monto, 2),
+        "moneda": moneda,
+        "categoria": (data.get("categoria") or "").strip().capitalize(),
+        "descripcion": (data.get("descripcion") or "").strip(),
+    }
+
 def _wa_responder_pregunta(user_id, pregunta):
     if not os.environ.get("GEMINI_API_KEY"):
         return None
@@ -710,7 +779,9 @@ def _procesar_mensaje_whatsapp(msg):
         return
     user_id = vinculo.data[0]["user_id"]
 
-    parseado = _parse_mensaje_whatsapp(texto)
+    ia_disponible, parseado = _wa_interpretar_mensaje_ia(texto)
+    if not ia_disponible:
+        parseado = _parse_mensaje_whatsapp(texto)
     if not parseado:
         respuesta = _wa_responder_pregunta(user_id, texto)
         _wa_enviar_mensaje(telefono, respuesta or (
