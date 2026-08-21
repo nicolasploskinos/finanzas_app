@@ -9,6 +9,7 @@ import calendar
 import hmac
 import hashlib
 import requests as req
+from google import genai
 from urllib.parse import quote
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect, Response
 from flask_cors import CORS
@@ -762,24 +763,16 @@ def inflacion():
     except Exception:
         return jsonify(_inflacion_cache["data"] or []), 200
 
-@app.route("/api/finanzas/stats")
-@login_required
-def stats():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
+def _stats_mes(user_id, mes, anio):
     from collections import defaultdict
     def _norm(s):
         s = (s or "otros").strip().lower()
         return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
-    hoy_ar = _hoy_ar()
-    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
-    anio = request.args.get("anio", type=int, default=hoy_ar.year)
-    mes  = max(1, min(12, mes))
     inicio_mes = date(anio, mes, 1).isoformat()
     inicio_mes_ant = date(anio if mes > 1 else anio - 1, mes - 1 if mes > 1 else 12, 1).isoformat()
     fin_mes = date(anio if mes < 12 else anio + 1, mes + 1 if mes < 12 else 1, 1).isoformat()
-    res_act = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("user_id", session["user_id"]).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
-    res_ant = db.table("transacciones").select("tipo,monto,moneda").eq("user_id", session["user_id"]).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
+    res_act = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("user_id", user_id).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
+    res_ant = db.table("transacciones").select("tipo,monto,moneda").eq("user_id", user_id).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
     cotiz = _obtener_cotizaciones()
     def _ars(t):
         conv = _convertir_moneda(float(t["monto"]), t.get("moneda") or "ARS", "ARS", cotiz)
@@ -800,7 +793,7 @@ def stats():
     gas_ant = sum(_ars(t) for t in res_ant.data if t["tipo"] == "Gasto")
     ing_ant  = sum(_ars(t) for t in res_ant.data if t["tipo"] == "Ingreso")
     meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-    return jsonify({
+    return {
         "categorias": [{"nombre": cats_label[k], "total": v} for k, v in sorted(cats_total.items(), key=lambda x: -x[1])],
         "resumen": {
             "gastos_actual": gas_act, "ingresos_actual": ing_act,
@@ -808,7 +801,67 @@ def stats():
             "mes_actual": meses[mes - 1], "mes_anterior": meses[(mes - 2) % 12],
         },
         "count_mes": len(res_act.data),
-    })
+    }
+
+@app.route("/api/finanzas/stats")
+@login_required
+def stats():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"error": "pro_requerido"}), 403
+    hoy_ar = _hoy_ar()
+    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
+    anio = request.args.get("anio", type=int, default=hoy_ar.year)
+    mes  = max(1, min(12, mes))
+    return jsonify(_stats_mes(session["user_id"], mes, anio))
+
+_resumen_ia_cache = {}  # (user_id, mes, anio) -> texto ya generado (solo meses cerrados, ver abajo)
+
+@app.route("/api/finanzas/resumen-ia")
+@login_required
+def resumen_ia():
+    if not _es_pro(session["user_id"]):
+        return jsonify({"ok": False, "error": "pro_requerido"}), 403
+    if not os.environ.get("GEMINI_API_KEY"):
+        return jsonify({"ok": False, "error": "ia_no_configurada"}), 503
+
+    hoy_ar = _hoy_ar()
+    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
+    anio = request.args.get("anio", type=int, default=hoy_ar.year)
+    mes  = max(1, min(12, mes))
+    es_mes_actual = (mes == hoy_ar.month and anio == hoy_ar.year)
+
+    cache_key = (session["user_id"], mes, anio)
+    if not es_mes_actual and cache_key in _resumen_ia_cache:
+        return jsonify({"ok": True, "resumen": _resumen_ia_cache[cache_key]})
+
+    datos = _stats_mes(session["user_id"], mes, anio)
+    if datos["count_mes"] == 0:
+        return jsonify({"ok": False, "error": "sin_datos"}), 400
+
+    r = datos["resumen"]
+    cats_txt = ", ".join(f"{c['nombre']} ${c['total']:.0f}" for c in datos["categorias"][:6]) or "sin gastos"
+    prompt = (
+        f"Datos financieros de {r['mes_actual']} de un usuario (montos en ARS):\n"
+        f"- Ingresos: ${r['ingresos_actual']:.0f} (mes anterior, {r['mes_anterior']}: ${r['ingresos_anterior']:.0f})\n"
+        f"- Gastos: ${r['gastos_actual']:.0f} (mes anterior: ${r['gastos_anterior']:.0f})\n"
+        f"- Gastos por categoría: {cats_txt}\n\n"
+        "Escribí un resumen breve (3-4 oraciones, español rioplatense, tono cercano y directo) sobre cómo viene "
+        "el mes comparado con el anterior y en qué se concentra el gasto. Interpretá los números, no los repitas "
+        "tal cual. No uses markdown ni bullets, solo texto corrido."
+    )
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
+        texto = (resp.text or "").strip()
+    except Exception:
+        return jsonify({"ok": False, "error": "ia_no_disponible"}), 502
+
+    if not texto:
+        return jsonify({"ok": False, "error": "ia_no_disponible"}), 502
+
+    if not es_mes_actual:
+        _resumen_ia_cache[cache_key] = texto
+    return jsonify({"ok": True, "resumen": texto})
 
 @app.route("/api/finanzas/recurrentes", methods=["GET"])
 @login_required

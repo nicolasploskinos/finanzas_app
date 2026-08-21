@@ -101,3 +101,12 @@ def _reset_rate_limit():
     app_module._login_intentos.clear()
     yield
     app_module._login_intentos.clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_resumen_ia_cache():
+    # Mismo motivo que _reset_rate_limit: _resumen_ia_cache es un dict a
+    # nivel de módulo, y varios tests reutilizan el mismo user_id/mes.
+    app_module._resumen_ia_cache.clear()
+    yield
+    app_module._resumen_ia_cache.clear()

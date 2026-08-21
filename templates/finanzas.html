@@ -442,6 +442,11 @@
       <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px" data-en="Expenses by category · ARS">Gastos por categoría · ARS</div>
       <canvas id="cat-chart"></canvas>
       <div id="cat-vacio" style="display:none;text-align:center;color:var(--muted);font-size:13px;padding:16px 0" data-en="No expenses this month">Sin gastos este mes</div>
+
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+        <button id="ia-resumen-btn" onclick="generarResumenIA()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer" data-en="🤖 Generate summary with AI">🤖 Generar resumen con IA</button>
+        <div id="ia-resumen-texto" style="display:none;margin-top:10px;font-size:13px;line-height:1.5;color:var(--text);background:var(--surface2);border-radius:10px;padding:10px 12px"></div>
+      </div>
     </div>
   </div>
 
@@ -1390,6 +1395,11 @@
     editar_transaccion:           { es: "Editar transacción", en: "Edit transaction" },
     por_mes:                      { es: "/mes", en: "/mo" },
     monto_lbl:                    { es: "MONTO", en: "AMOUNT" },
+    ia_generando:                  { es: "Generando resumen…", en: "Generating summary…" },
+    ia_no_disponible:              { es: "No se pudo generar el resumen, probá de nuevo en un rato", en: "Couldn't generate the summary, try again in a bit" },
+    ia_no_configurada:             { es: "Función no disponible por ahora", en: "Feature not available right now" },
+    sin_datos:                     { es: "No hay transacciones ese mes para resumir", en: "No transactions that month to summarize" },
+    pro_requerido:                 { es: "Función exclusiva de Pro", en: "Pro-only feature" },
   };
   function tr(code, params) {
     const lang = document.documentElement.lang === "en" ? "en" : "es";
@@ -1677,6 +1687,27 @@
       </div>`;
     } else {
       strip.innerHTML = "";
+    }
+  }
+
+  async function generarResumenIA() {
+    const btn = document.getElementById("ia-resumen-btn");
+    const box = document.getElementById("ia-resumen-texto");
+    const mes  = document.getElementById("stats-mes").value  || (hoy.getMonth() + 1);
+    const anio = document.getElementById("stats-anio").value || hoy.getFullYear();
+
+    btn.disabled = true;
+    box.style.display = "";
+    box.textContent = tr("ia_generando");
+
+    try {
+      const r = await fetch(`/api/finanzas/resumen-ia?mes=${mes}&anio=${anio}`);
+      const d = await r.json();
+      box.textContent = d.ok ? d.resumen : tr(d.error || "ia_no_disponible");
+    } catch {
+      box.textContent = tr("ia_no_disponible");
+    } finally {
+      btn.disabled = false;
     }
   }
 

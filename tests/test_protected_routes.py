@@ -15,6 +15,7 @@ RUTAS_PROTEGIDAS = [
     "/api/finanzas/presupuestos",
     "/api/finanzas/recurrentes",
     "/api/finanzas/stats",
+    "/api/finanzas/resumen-ia",
 ]
 
 
