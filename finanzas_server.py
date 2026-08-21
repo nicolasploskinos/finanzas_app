@@ -10,6 +10,7 @@ import hmac
 import hashlib
 import requests as req
 from google import genai
+from google.genai import types as genai_types
 from urllib.parse import quote
 from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect, Response
 from flask_cors import CORS
@@ -635,7 +636,8 @@ def _wa_responder_pregunta(user_id, pregunta):
         "No uses markdown ni bullets."
     )
     try:
-        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
+                               http_options=genai_types.HttpOptions(timeout=15000))
         resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
         return (resp.text or "").strip() or None
     except Exception:
@@ -884,7 +886,8 @@ def resumen_ia():
         "tal cual. No uses markdown ni bullets, solo texto corrido."
     )
     try:
-        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
+                               http_options=genai_types.HttpOptions(timeout=25000))
         resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
         texto = (resp.text or "").strip()
     except Exception:

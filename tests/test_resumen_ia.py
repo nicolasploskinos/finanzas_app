@@ -14,7 +14,7 @@ def _fake_client_factory(texto="Este mes gastaste más que el anterior.", calls=
             return SimpleNamespace(text=texto)
 
     class FakeClient:
-        def __init__(self, api_key=None):
+        def __init__(self, api_key=None, **kwargs):
             self.models = FakeModels()
 
     return FakeClient
@@ -119,7 +119,7 @@ def test_api_caida_devuelve_error_generico(client, fake_db, monkeypatch):
             raise RuntimeError("la API de Gemini está caída")
 
     class FakeClientQueRompe:
-        def __init__(self, api_key=None):
+        def __init__(self, api_key=None, **kwargs):
             self.models = FakeModelsQueRompe()
 
     monkeypatch.setattr(app_module.genai, "Client", FakeClientQueRompe)
