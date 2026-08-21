@@ -643,6 +643,15 @@ def _wa_responder_pregunta(user_id, pregunta):
     except Exception:
         return None
 
+def _wa_a_formato_envio(telefono):
+    # Los mensajes ENTRANTES de números argentinos llegan como 549+área+número
+    # (formato moderno). El endpoint de ENVÍO de Meta, para Argentina, a veces
+    # solo reconoce el formato local viejo 54+área+15+número. Asume área de 2
+    # dígitos (CABA/GBA, el único caso de uso real de esta app por ahora).
+    if telefono.startswith("549") and len(telefono) == 13:
+        return "54" + telefono[3:5] + "15" + telefono[5:]
+    return telefono
+
 def _wa_enviar_mensaje(telefono, texto):
     token = os.environ.get("WHATSAPP_TOKEN", "")
     phone_id = os.environ.get("WHATSAPP_PHONE_ID", "")
@@ -655,7 +664,7 @@ def _wa_enviar_mensaje(telefono, texto):
             headers={"Authorization": f"Bearer {token}"},
             json={
                 "messaging_product": "whatsapp",
-                "to": telefono,
+                "to": _wa_a_formato_envio(telefono),
                 "type": "text",
                 "text": {"body": texto},
             },
