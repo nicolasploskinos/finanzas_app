@@ -611,6 +611,36 @@ def _parse_mensaje_whatsapp(texto):
 
     return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria, "descripcion": descripcion}
 
+def _wa_responder_pregunta(user_id, pregunta):
+    if not os.environ.get("GEMINI_API_KEY"):
+        return None
+    hoy_ar = _hoy_ar()
+    desde = (hoy_ar - timedelta(days=180)).isoformat()
+    res = (db.table("transacciones").select("tipo,monto,moneda,categoria,descripcion,fecha")
+           .eq("user_id", user_id).gte("fecha", desde).order("fecha", desc=True).limit(300).execute())
+    if not res.data:
+        return "Todavía no tenés movimientos cargados para que te pueda contar algo 🤔"
+
+    lineas = "\n".join(
+        f"{t['fecha']} | {t['tipo']} | {t['monto']} {t.get('moneda') or 'ARS'} | "
+        f"{t.get('categoria') or 'sin categoría'} | {t.get('descripcion') or ''}"
+        for t in res.data
+    )
+    prompt = (
+        "Sos un asistente financiero respondiendo por WhatsApp. Estos son los movimientos del usuario de los "
+        f"últimos 6 meses (fecha | tipo | monto | moneda | categoría | descripción):\n\n{lineas}\n\n"
+        f'El usuario pregunta: "{pregunta}"\n\n'
+        "Respondé en español rioplatense, corto y directo (máximo 3-4 líneas, como un mensaje real de WhatsApp). "
+        "Usá solo estos datos, no inventes cifras que no estén ahí. Si no podés responder con esta información, decilo. "
+        "No uses markdown ni bullets."
+    )
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        resp = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
+        return (resp.text or "").strip() or None
+    except Exception:
+        return None
+
 def _wa_enviar_mensaje(telefono, texto):
     token = os.environ.get("WHATSAPP_TOKEN", "")
     phone_id = os.environ.get("WHATSAPP_PHONE_ID", "")
@@ -671,7 +701,11 @@ def _procesar_mensaje_whatsapp(msg):
 
     parseado = _parse_mensaje_whatsapp(texto)
     if not parseado:
-        _wa_enviar_mensaje(telefono, "No entendí 🤔. Probá algo como: *gasté 500 en supermercado* o *ingreso 300000 sueldo*.")
+        respuesta = _wa_responder_pregunta(user_id, texto)
+        _wa_enviar_mensaje(telefono, respuesta or (
+            "No entendí 🤔. Probá algo como: *gasté 500 en supermercado* o *ingreso 300000 sueldo*, "
+            "o preguntame algo como *cuánto gasté en comida este mes*."
+        ))
         return
 
     hoy = _hoy_ar().isoformat()
