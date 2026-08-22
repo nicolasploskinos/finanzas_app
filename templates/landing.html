@@ -80,7 +80,21 @@
       text-align: center;
       padding: 100px 20px 60px;
       background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
+      position: relative; overflow: hidden;
     }
+    .hero::before, .hero::after {
+      content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+      filter: blur(50px);
+    }
+    .hero::before {
+      width: 420px; height: 420px; background: radial-gradient(circle, rgba(167,139,250,.18), transparent 70%);
+      top: -60px; right: -120px;
+    }
+    .hero::after {
+      width: 340px; height: 340px; background: radial-gradient(circle, rgba(74,222,128,.12), transparent 70%);
+      bottom: 20px; left: -100px;
+    }
+    .hero > * { position: relative; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25);
@@ -94,13 +108,22 @@
       max-width: 720px; margin-bottom: 20px;
       letter-spacing: -1.5px;
     }
-    .hero h1 em { color: var(--blue); font-style: normal; }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--blue), #a78bfa);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
     .hero p {
       font-size: clamp(16px, 2.5vw, 20px);
       color: var(--muted); max-width: 520px;
       margin-bottom: 40px;
     }
     .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .trust-strip {
+      display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;
+      margin-top: 32px; font-size: 13px; color: var(--muted); font-weight: 600;
+    }
+    .trust-strip span.item { display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary {
       display: inline-block;
       background: var(--blue-dark); color: #fff;
@@ -251,8 +274,15 @@
       border-radius: 18px; padding: 28px 24px;
       transition: border-color .2s, transform .2s;
     }
-    .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); }
-    .feat-icon { font-size: 32px; margin-bottom: 14px; }
+    .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+    .feat-icon {
+      width: 54px; height: 54px; border-radius: 16px;
+      background: rgba(96,165,250,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 16px;
+      transition: transform .25s;
+    }
+    .feat-card:hover .feat-icon { transform: scale(1.08) rotate(-4deg); }
     .feat-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
     .feat-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
@@ -306,8 +336,19 @@
       font-size: 52px; font-weight: 900; line-height: 1;
       color: var(--green); margin-bottom: 4px;
     }
-    .precio-num.pro { color: var(--yellow); font-size: 38px; }
     .precio-sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .precio-ciclos { display: flex; gap: 10px; margin: 18px 0 22px; }
+    .precio-ciclo-box { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 14px 8px; position: relative; }
+    .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(251,191,36,.08); }
+    .precio-ciclo-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px; }
+    .precio-ciclo-box.destacado .precio-ciclo-label { color: var(--yellow); }
+    .precio-ciclo-monto { font-size: 21px; font-weight: 900; }
+    .precio-ciclo-monto span { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .precio-ciclo-badge {
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      background: var(--green); color: #000; font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 100px; white-space: nowrap;
+    }
     .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
     .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 14px; }
     .precio-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
@@ -356,6 +397,13 @@
 
     /* ── DIVIDER ── */
     .divider { height: 1px; background: var(--border); max-width: 1100px; margin: 0 auto; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -377,6 +425,11 @@
   <div class="hero-btns">
     <a href="/finanzas/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
     <a href="#features" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
+  </div>
+  <div class="trust-strip">
+    <span class="item">🔒 <span data-en="Password-protected access">Acceso protegido con contraseña</span></span>
+    <span class="item">🇦🇷 <span data-en="Official BNA exchange rate">Cotización oficial BNA</span></span>
+    <span class="item">⚡ <span data-en="Nothing to install, ready in 2 minutes">Sin instalar nada, listo en 2 minutos</span></span>
   </div>
 </section>
 
@@ -660,8 +713,18 @@
     <!-- PRO -->
     <div class="precio-card pro">
       <div class="precio-badge pro">⭐ PRO</div>
-      <div class="precio-num pro">$1.999<span style="font-size:18px;font-weight:600" data-en="/mo">/mes</span></div>
-      <p class="precio-sub" data-en="Secure payments with Mercado Pago">Pagos seguros con Mercado Pago</p>
+      <div class="precio-ciclos">
+        <div class="precio-ciclo-box">
+          <div class="precio-ciclo-label" data-en="Monthly">Mensual</div>
+          <div class="precio-ciclo-monto">$6.000<span data-en="/mo">/mes</span></div>
+        </div>
+        <div class="precio-ciclo-box destacado">
+          <div class="precio-ciclo-badge" data-en="2 months free">2 meses gratis</div>
+          <div class="precio-ciclo-label" data-en="Yearly">Anual</div>
+          <div class="precio-ciclo-monto">$60.000<span data-en="/yr">/año</span></div>
+        </div>
+      </div>
+      <p class="precio-sub" data-en="Secure payments with Mercado Pago — choose your billing cycle after signing up">Pagos seguros con Mercado Pago — elegís el ciclo de pago al registrarte</p>
       <ul class="precio-features">
         <li data-en="Unlimited transactions">Transacciones ilimitadas</li>
         <li data-en="Multi-currency (ARS, USD, EUR)">Multi-moneda (ARS, USD, EUR)</li>
@@ -762,6 +825,23 @@
   }
   if (localStorage.getItem("lang-landing") === "en") {
     applyLang("en");
+  }
+
+  // Animación sutil al entrar en pantalla
+  const revealEls = document.querySelectorAll(".feat-card, .precio-card, .faq-item, .check-list li, .mockup");
+  revealEls.forEach(el => el.classList.add("reveal"));
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add("in"));
   }
 </script>
 </body>

@@ -1205,22 +1205,28 @@ def detalle_viaje(vid):
         "por_categoria": por_cat_lista,
     })
 
+_PLANES_PRO = {
+    "mensual": {"frequency": 1,  "monto": 6000,  "etiqueta": "Finanzas Pro (mensual)"},
+    "anual":   {"frequency": 12, "monto": 60000, "etiqueta": "Finanzas Pro (anual)"},
+}
+
 @app.route("/api/finanzas/suscribir")
 @login_required
 def suscribir():
     mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
     base_url = os.environ.get("BASE_URL") or request.host_url.rstrip("/")
+    plan = _PLANES_PRO.get(request.args.get("ciclo"), _PLANES_PRO["mensual"])
     r = req.post(
         "https://api.mercadopago.com/preapproval",
         headers={"Authorization": f"Bearer {mp_token}"},
         json={
-            "reason": "Finanzas Pro",
+            "reason": plan["etiqueta"],
             "external_reference": session["user_id"],
             "payer_email": f"{session['username']}@finanzas.local",
             "auto_recurring": {
-                "frequency": 1,
+                "frequency": plan["frequency"],
                 "frequency_type": "months",
-                "transaction_amount": 1999,
+                "transaction_amount": plan["monto"],
                 "currency_id": "ARS",
             },
             "back_url": f"{base_url}/finanzas",

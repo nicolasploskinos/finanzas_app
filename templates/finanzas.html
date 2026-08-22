@@ -265,6 +265,14 @@
     .pro-fila-texto h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
     .pro-fila-texto p  { font-size: 12px; color: var(--muted); }
     .pro-fila-texto span { color: var(--red); }
+    .pro-ciclos { display: flex; gap: 8px; margin-bottom: 20px; }
+    .pro-ciclo-btn { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 14px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all .15s; position: relative; }
+    .pro-ciclo-btn.active { border-color: var(--yellow); background: rgba(251,191,36,.1); }
+    .pro-ciclo-nombre { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+    .pro-ciclo-btn.active .pro-ciclo-nombre { color: var(--yellow); }
+    .pro-ciclo-precio { font-size: 18px; font-weight: 900; color: var(--text); margin-top: 2px; }
+    .pro-ciclo-precio span { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .pro-ciclo-badge { position: absolute; top: -9px; right: 8px; background: var(--green); color: #000; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 100px; white-space: nowrap; }
     .btn-pro-pagar { width: 100%; background: var(--yellow); color: #000; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
     .btn-pro-pagar:active { opacity: .85; }
     .btn-pro-cancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px; }
@@ -375,7 +383,7 @@
 {% if is_trial %}
 <div class="trial-banner">
   <span data-en='🎉 <strong>Pro trial</strong> active — you have <strong>{{ trial_dias }} day{{ "" if trial_dias == 1 else "s" }}</strong> left'>🎉 <strong>Prueba Pro</strong> activa — te {{ 'queda' if trial_dias == 1 else 'quedan' }} <strong>{{ trial_dias }} día{{ '' if trial_dias == 1 else 's' }}</strong></span>
-  <a href="/api/finanzas/suscribir" style="font-size:11px;color:var(--blue);font-weight:700;text-decoration:none" data-en="Subscribe →">Suscribirme →</a>
+  <a href="#" onclick="abrirModalPro(); return false;" style="font-size:11px;color:var(--blue);font-weight:700;text-decoration:none" data-en="Subscribe →">Suscribirme →</a>
 </div>
 {% endif %}
 
@@ -654,7 +662,19 @@
   <div class="pro-modal">
     <div class="pro-modal-handle"></div>
     <div class="pro-titulo">⭐ Finanzas Pro</div>
-    <p class="pro-precio" data-en='for just <strong>$1,999</strong>/mo'>por solo <strong>$1.999</strong>/mes</p>
+    <p class="pro-precio" data-en="Choose your plan">Elegí tu plan</p>
+
+    <div class="pro-ciclos">
+      <div class="pro-ciclo-btn active" id="ciclo-mensual" onclick="elegirCicloPro('mensual')">
+        <div class="pro-ciclo-nombre" data-en="Monthly">Mensual</div>
+        <div class="pro-ciclo-precio">$6.000<span data-en="/mo">/mes</span></div>
+      </div>
+      <div class="pro-ciclo-btn" id="ciclo-anual" onclick="elegirCicloPro('anual')">
+        <div class="pro-ciclo-badge" data-en="2 months free">2 meses gratis</div>
+        <div class="pro-ciclo-nombre" data-en="Yearly">Anual</div>
+        <div class="pro-ciclo-precio">$60.000<span data-en="/yr">/año</span></div>
+      </div>
+    </div>
 
     <div class="pro-beneficios">
       <div class="pro-fila">
@@ -687,8 +707,8 @@
       </div>
     </div>
 
-    <button class="btn-pro-pagar" onclick="window.location.href='/api/finanzas/suscribir'" data-en="Subscribe — $1,999/mo →">
-      Suscribirme — $1.999/mes →
+    <button class="btn-pro-pagar" id="btn-pro-pagar" onclick="pagarPro()" data-en="Subscribe — $6,000/mo →">
+      Suscribirme — $6.000/mes →
     </button>
     <button class="btn-pro-cancel" onclick="cerrarModalPro()" data-en="Not now">Ahora no</button>
   </div>
@@ -1403,6 +1423,8 @@
     ia_no_configurada:             { es: "Función no disponible por ahora", en: "Feature not available right now" },
     sin_datos:                     { es: "No hay transacciones ese mes para resumir", en: "No transactions that month to summarize" },
     pro_requerido:                 { es: "Función exclusiva de Pro", en: "Pro-only feature" },
+    suscribirme_mensual:           { es: "Suscribirme — $6.000/mes →", en: "Subscribe — $6,000/mo →" },
+    suscribirme_anual:             { es: "Suscribirme — $60.000/año →", en: "Subscribe — $60,000/yr →" },
   };
   function tr(code, params) {
     const lang = document.documentElement.lang === "en" ? "en" : "es";
@@ -1418,7 +1440,19 @@
     setTimeout(() => el.classList.remove("show"), 2500);
   }
 
+  let cicloProElegido = "mensual";
+  function elegirCicloPro(ciclo) {
+    cicloProElegido = ciclo;
+    document.getElementById("ciclo-mensual").classList.toggle("active", ciclo === "mensual");
+    document.getElementById("ciclo-anual").classList.toggle("active", ciclo === "anual");
+    document.getElementById("btn-pro-pagar").textContent = ciclo === "anual" ? tr("suscribirme_anual") : tr("suscribirme_mensual");
+  }
+  function pagarPro() {
+    window.location.href = `/api/finanzas/suscribir?ciclo=${cicloProElegido}`;
+  }
+
   function abrirModalPro() {
+    elegirCicloPro("mensual");
     document.getElementById("pro-overlay").classList.add("open");
   }
   function cerrarModalPro() {
