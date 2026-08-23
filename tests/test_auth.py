@@ -1,8 +1,6 @@
 """Login y registro: son los endpoints donde un bug se traduce directo en
 'cualquiera entra a la cuenta de cualquiera', así que son los que más vale
 la pena tener cubiertos."""
-import json
-
 from werkzeug.security import generate_password_hash
 
 import finanzas_server as app_module

@@ -1,0 +1,10 @@
+line-length = 130
+
+# finanzas.py es la app de escritorio (tkinter), un cliente separado y no
+# forma parte de la app web que vive en finanzas_server.py / routes_*.py.
+exclude = ["finanzas.py"]
+
+[lint]
+# Pyflakes (bugs reales: imports/variables sin usar, nombres indefinidos) +
+# un subconjunto chico de pycodestyle (errores, no opiniones de estilo).
+select = ["E4", "E7", "E9", "F"]
