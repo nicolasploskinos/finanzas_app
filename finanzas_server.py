@@ -1,22 +1,15 @@
 import os
-import csv
-import io
 import re
 import json
 import time
-import random
 import unicodedata
 import calendar
-import hmac
-import hashlib
 import requests as req
 from google import genai
 from google.genai import types as genai_types
-from urllib.parse import quote
-from flask import Flask, jsonify, request, render_template, send_from_directory, session, redirect, Response
+from flask import Flask, session, redirect
 from flask_cors import CORS
 from supabase import create_client
-from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import date, timedelta, datetime, timezone
 from dotenv import load_dotenv
@@ -70,116 +63,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# ── Páginas ───────────────────────────────────────────────────────────────────
-
 @app.after_request
 def _no_cache_html(resp):
     if resp.mimetype == "text/html":
         resp.headers["Cache-Control"] = "no-store"
     return resp
 
-@app.route("/")
-def landing():
-    return render_template("landing.html")
-
-@app.route("/finanzas")
-@login_required
-def index():
-    user = db.table("usuarios").select("plan,trial_expira").eq("id", session["user_id"]).execute().data
-    is_pro = False
-    is_trial = False
-    trial_dias = 0
-    if user:
-        plan = user[0].get("plan")
-        trial_expira = user[0].get("trial_expira")
-        if plan == "pro":
-            is_pro = True
-        elif plan == "trial" and trial_expira:
-            expira = datetime.fromisoformat(trial_expira.replace("Z", "+00:00"))
-            if expira > datetime.now(timezone.utc):
-                is_pro = True
-                is_trial = True
-                trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
-    whatsapp_habilitado = session["user_id"] == _WHATSAPP_USER_ID
-    return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
-                            trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
-
-@app.route("/finanzas/viajes")
-@login_required
-def viajes_page():
-    return render_template("viajes.html", username=session["username"], is_pro=_es_pro(session["user_id"]))
-
-@app.route("/finanzas/login")
-def login_page():
-    if "user_id" in session:
-        return redirect("/finanzas")
-    return render_template("auth.html")
-
-@app.route("/finanzas/logout")
-def logout():
-    session.clear()
-    return redirect("/finanzas/login")
-
-@app.route("/finanzas/manifest.json")
-def manifest():
-    return send_from_directory("static", "finanzas_manifest.json", mimetype="application/manifest+json")
-
-@app.route("/finanzas/sw.js")
-def sw():
-    return send_from_directory("static", "finanzas_sw.js", mimetype="application/javascript")
-
-# ── Auth API ──────────────────────────────────────────────────────────────────
-
-@app.route("/api/finanzas/login", methods=["POST"])
-def login():
-    data     = request.get_json()
-    username = (data.get("username") or "").strip()
-    password =  data.get("password") or ""
-
-    if _login_bloqueado(username):
-        return jsonify({"ok": False, "error": "too_many_attempts"}), 429
-
-    res = db.table("usuarios").select("*").eq("username", username).execute()
-    if not res.data or not check_password_hash(res.data[0]["password_hash"], password):
-        _registrar_intento_fallido(username)
-        return jsonify({"ok": False, "error": "invalid_credentials"}), 401
-
-    user = res.data[0]
-    session.permanent = True
-    session["user_id"]  = user["id"]
-    session["username"] = user["username"]
-    _login_intentos.pop(username, None)
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/register", methods=["POST"])
-def register():
-    data     = request.get_json()
-    username = (data.get("username") or "").strip()
-    password =  data.get("password") or ""
-
-    if not username or not password:
-        return jsonify({"ok": False, "error": "missing_fields"}), 400
-
-    if db.table("usuarios").select("id").eq("username", username).execute().data:
-        return jsonify({"ok": False, "error": "username_taken"}), 400
-
-    res = db.table("usuarios").insert({
-        "username":      username,
-        "password_hash": generate_password_hash(password),
-        "verificado":    True,
-        "plan":          "trial",
-        "trial_expira":  (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
-    }).execute()
-
-    user = res.data[0]
-    db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()
-
-    session.permanent = True
-    session["user_id"]  = user["id"]
-    session["username"] = user["username"]
-    return jsonify({"ok": True}), 201
-
-# ── Cotizaciones API ──────────────────────────────────────────────────────────
+# ── Cotizaciones ──────────────────────────────────────────────────────────────
 
 def _obtener_cotizaciones():
     if _cotiz_cache["data"] and time.time() - _cotiz_cache["ts"] < 600:
@@ -206,10 +96,6 @@ def _convertir_moneda(monto, origen, destino, cotiz):
     if destino == "ARS":
         return ars
     return ars / cotiz[destino] if cotiz.get(destino) else None
-
-@app.route("/api/finanzas/cotizaciones")
-def cotizaciones():
-    return jsonify(_obtener_cotizaciones())
 
 # ── Plan helpers ─────────────────────────────────────────────────────────────
 
@@ -249,23 +135,6 @@ def _procesar_recurrentes(user_id):
             prox = _siguiente_fecha(prox, r["frecuencia"])
         db.table("recurrentes").update({"proxima_fecha": prox}).eq("id", r["id"]).execute()
 
-# ── Transacciones API ─────────────────────────────────────────────────────────
-
-@app.route("/api/finanzas", methods=["GET"])
-@login_required
-def listar():
-    try:
-        _procesar_recurrentes(session["user_id"])
-    except Exception:
-        pass
-    es_pro = _es_pro(session["user_id"])
-    query = db.table("transacciones").select("*").eq("user_id", session["user_id"])
-    if not es_pro:
-        desde = (_hoy_ar() - timedelta(days=90)).isoformat()
-        query = query.gte("fecha", desde)
-    res = query.order("fecha", desc=True).execute()
-    return jsonify(res.data)
-
 def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS", viaje_id=None):
     if not _es_pro(user_id):
         inicio_mes = _hoy_ar().replace(day=1).isoformat()
@@ -279,127 +148,6 @@ def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion
     }
     res = db.table("transacciones").insert(payload).execute()
     return True, res.data[0]
-
-@app.route("/api/finanzas", methods=["POST"])
-@login_required
-def agregar():
-    t = request.get_json()
-    ok, resultado = _insertar_transaccion(
-        session["user_id"], t["tipo"], t["monto"], t["fecha"],
-        t.get("categoria", ""), t.get("descripcion", ""), t.get("moneda", "ARS"),
-        t.get("viaje_id"),
-    )
-    if not ok:
-        return jsonify({"ok": False, "error": resultado}), 403
-    return jsonify(resultado), 201
-
-@app.route("/api/finanzas/export", methods=["GET"])
-@login_required
-def exportar():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
-    output = io.StringIO()
-    output.write("sep=;\n")
-    writer = csv.writer(output, delimiter=";")
-    writer.writerow(["Fecha", "Tipo", "Monto", "Moneda", "Categoria", "Descripcion"])
-    for t in res.data:
-        writer.writerow([
-            t["fecha"], t["tipo"], t["monto"],
-            t.get("moneda","ARS"), t.get("categoria",""), t.get("descripcion",""),
-        ])
-    encoded = output.getvalue().encode("utf-8-sig")
-    return Response(encoded, mimetype="text/csv; charset=utf-8",
-                    headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
-
-@app.route("/api/finanzas/export/excel", methods=["GET"])
-@login_required
-def exportar_excel():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
-
-    from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Transacciones"
-    headers = ["Fecha", "Tipo", "Monto", "Moneda", "Categoría", "Descripción"]
-    ws.append(headers)
-    for cell in ws[1]:
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill(start_color="16A34A", end_color="16A34A", fill_type="solid")
-        cell.alignment = Alignment(horizontal="center")
-    for t in res.data:
-        ws.append([
-            t["fecha"], t["tipo"], float(t["monto"]),
-            t.get("moneda", "ARS"), t.get("categoria", ""), t.get("descripcion", ""),
-        ])
-    for col, width in zip("ABCDEF", (12, 10, 14, 8, 20, 34)):
-        ws.column_dimensions[col].width = width
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    buf.seek(0)
-    return Response(
-        buf.read(),
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=finanzas.xlsx"},
-    )
-
-@app.route("/api/finanzas/export/pdf", methods=["GET"])
-@login_required
-def exportar_pdf():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    res = db.table("transacciones").select("*").eq("user_id", session["user_id"]).order("fecha", desc=True).execute()
-
-    from fpdf import FPDF
-
-    def _safe(s):
-        return (s or "").encode("latin-1", "replace").decode("latin-1")
-
-    total_gastos = sum(float(t["monto"]) for t in res.data if t["tipo"] == "Gasto")
-    total_ingresos = sum(float(t["monto"]) for t in res.data if t["tipo"] == "Ingreso")
-
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, _safe("Finanzas - Historial de transacciones"), ln=1)
-    pdf.set_font("Helvetica", "", 9)
-    pdf.cell(0, 6, _safe(f"Generado el {_hoy_ar().isoformat()} - Usuario: {session['username']}"), ln=1)
-    pdf.ln(2)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(0, 6, _safe(f"Total ingresos: {total_ingresos:,.2f}   Total gastos: {total_gastos:,.2f}"), ln=1)
-    pdf.ln(4)
-
-    col_widths = [22, 18, 26, 14, 40, 68]
-    headers = ["Fecha", "Tipo", "Monto", "Moneda", "Categoria", "Descripcion"]
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.set_fill_color(22, 163, 74)
-    pdf.set_text_color(255, 255, 255)
-    for w, h in zip(col_widths, headers):
-        pdf.cell(w, 7, h, border=1, fill=True)
-    pdf.ln()
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Helvetica", "", 8)
-    for t in res.data:
-        fila = [
-            t["fecha"], t["tipo"], f'{float(t["monto"]):,.2f}',
-            t.get("moneda", "ARS"), (t.get("categoria") or "")[:22], (t.get("descripcion") or "")[:45],
-        ]
-        for w, val in zip(col_widths, fila):
-            pdf.cell(w, 6, _safe(str(val)), border=1)
-        pdf.ln()
-        if pdf.get_y() > 270:
-            pdf.add_page()
-
-    salida = bytes(pdf.output())
-    return Response(
-        salida, mimetype="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=finanzas.pdf"},
-    )
 
 # ── Importar movimientos (banco / billetera virtual) ──────────────────────────
 
@@ -446,131 +194,6 @@ def _parse_monto_import(s):
     except ValueError:
         return None
     return -val if neg else val
-
-@app.route("/api/finanzas/import/preview", methods=["POST"])
-@login_required
-def import_preview():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-
-    archivo = request.files.get("archivo")
-    if not archivo or not archivo.filename.lower().endswith(".csv"):
-        return jsonify({"ok": False, "error": "invalid_file_type"}), 400
-
-    raw = archivo.read(2_000_000)
-    texto = None
-    for enc in ("utf-8-sig", "utf-8", "latin-1"):
-        try:
-            texto = raw.decode(enc)
-            break
-        except UnicodeDecodeError:
-            continue
-    if texto is None:
-        return jsonify({"ok": False, "error": "cant_read_file"}), 400
-
-    muestra = texto[:2000]
-    try:
-        delim = csv.Sniffer().sniff(muestra, delimiters=",;\t").delimiter
-    except csv.Error:
-        delim = ";" if muestra.count(";") > muestra.count(",") else ","
-
-    filas = list(csv.reader(io.StringIO(texto), delimiter=delim))
-    if len(filas) < 2:
-        return jsonify({"ok": False, "error": "empty_file"}), 400
-
-    headers = [_norm_header(h) for h in filas[0]]
-    idx_fecha = _buscar_col(headers, ["fecha", "date"])
-    idx_monto = _buscar_col(headers, ["importe", "monto", "valor", "amount", "total"])
-    idx_desc  = _buscar_col(headers, ["descripcion", "concepto", "detalle", "description", "glosa"])
-    idx_debe  = _buscar_col(headers, ["debe", "egreso", "cargo", "debito"])
-    idx_haber = _buscar_col(headers, ["haber", "ingreso", "abono", "credito"])
-
-    if idx_fecha is None or (idx_monto is None and (idx_debe is None or idx_haber is None)):
-        return jsonify({
-            "ok": False,
-            "error": "unrecognized_columns",
-        }), 400
-
-    transacciones = []
-    errores = 0
-    for fila in filas[1:]:
-        if not fila or all(not c.strip() for c in fila):
-            continue
-        try:
-            fecha = _parse_fecha_import(fila[idx_fecha]) if idx_fecha < len(fila) else None
-            desc  = fila[idx_desc].strip() if idx_desc is not None and idx_desc < len(fila) else ""
-
-            if idx_monto is not None:
-                monto_raw = _parse_monto_import(fila[idx_monto]) if idx_monto < len(fila) else None
-                if not monto_raw:
-                    errores += 1
-                    continue
-                tipo, monto = ("Gasto" if monto_raw < 0 else "Ingreso"), abs(monto_raw)
-            else:
-                debe  = abs(_parse_monto_import(fila[idx_debe])  or 0) if idx_debe  < len(fila) else 0
-                haber = abs(_parse_monto_import(fila[idx_haber]) or 0) if idx_haber < len(fila) else 0
-                if haber > 0:
-                    tipo, monto = "Ingreso", haber
-                elif debe > 0:
-                    tipo, monto = "Gasto", debe
-                else:
-                    errores += 1
-                    continue
-
-            if not fecha:
-                errores += 1
-                continue
-
-            transacciones.append({
-                "fecha": fecha, "tipo": tipo, "monto": round(monto, 2),
-                "descripcion": desc, "categoria": "", "moneda": "ARS",
-            })
-        except Exception:
-            errores += 1
-
-        if len(transacciones) >= 1000:
-            break
-
-    return jsonify({"ok": True, "transacciones": transacciones, "errores": errores})
-
-@app.route("/api/finanzas/import/confirm", methods=["POST"])
-@login_required
-def import_confirm():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-
-    data = request.get_json() or {}
-    filas = data.get("transacciones") or []
-    if not isinstance(filas, list) or not filas:
-        return jsonify({"ok": False, "error": "nothing_to_import"}), 400
-    if len(filas) > 1000:
-        return jsonify({"ok": False, "error": "too_many_transactions"}), 400
-
-    payload = []
-    for t in filas:
-        try:
-            payload.append({
-                "tipo":        "Ingreso" if t.get("tipo") == "Ingreso" else "Gasto",
-                "monto":       abs(float(t["monto"])),
-                "fecha":       date.fromisoformat(t["fecha"]).isoformat(),
-                "categoria":   (t.get("categoria") or "").strip()[:60],
-                "descripcion": (t.get("descripcion") or "").strip()[:200],
-                "moneda":      t.get("moneda") if t.get("moneda") in ("ARS", "USD", "EUR") else "ARS",
-                "user_id":     session["user_id"],
-            })
-        except (KeyError, ValueError, TypeError):
-            continue
-
-    if not payload:
-        return jsonify({"ok": False, "error": "nothing_valid_to_import"}), 400
-
-    insertados = 0
-    for i in range(0, len(payload), 500):
-        lote = payload[i:i + 500]
-        db.table("transacciones").insert(lote).execute()
-        insertados += len(lote)
-
-    return jsonify({"ok": True, "insertados": insertados})
 
 # ── Bot de WhatsApp ────────────────────────────────────────────────────────────
 
@@ -826,78 +449,7 @@ def _procesar_mensaje_whatsapp(msg):
     desc_txt = f" · {parseado['descripcion']}" if parseado["descripcion"] else ""
     _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de *{simbolo}{parseado['monto']:,.2f}*{cat_txt}{desc_txt} registrado ✓")
 
-@app.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
-@login_required
-def whatsapp_codigo():
-    if session["user_id"] != _WHATSAPP_USER_ID:
-        return jsonify({"ok": False, "error": "whatsapp_no_disponible"}), 403
-    codigo = f"{random.randint(0, 999999):06d}"
-    _wa_codigos[codigo] = (session["user_id"], time.time() + 900)
-    numero = re.sub(r"[^0-9]", "", os.environ.get("WHATSAPP_DISPLAY_NUMBER", ""))
-    wa_link = f"https://wa.me/{numero}?text={quote(f'VINCULAR {codigo}')}"
-    return jsonify({"ok": True, "codigo": codigo, "wa_link": wa_link})
-
-@app.route("/api/finanzas/whatsapp/estado")
-@login_required
-def whatsapp_estado():
-    res = db.table("whatsapp_users").select("telefono").eq("user_id", session["user_id"]).execute()
-    if res.data:
-        tel = res.data[0]["telefono"]
-        return jsonify({"vinculado": True, "telefono_oculto": "•••• " + tel[-4:]})
-    return jsonify({"vinculado": False})
-
-@app.route("/api/finanzas/whatsapp/desvincular", methods=["DELETE"])
-@login_required
-def whatsapp_desvincular():
-    db.table("whatsapp_users").delete().eq("user_id", session["user_id"]).execute()
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/whatsapp/webhook", methods=["GET"])
-def whatsapp_webhook_verificar():
-    modo = request.args.get("hub.mode")
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge", "")
-    if modo == "subscribe" and token and token == os.environ.get("WHATSAPP_VERIFY_TOKEN"):
-        return challenge, 200
-    return "Forbidden", 403
-
-@app.route("/api/finanzas/whatsapp/webhook", methods=["POST"])
-def whatsapp_webhook_recibir():
-    app_secret = os.environ.get("WHATSAPP_APP_SECRET", "")
-    if app_secret:
-        firma = request.headers.get("X-Hub-Signature-256", "")
-        esperado = "sha256=" + hmac.new(app_secret.encode(), request.get_data(), hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(firma, esperado):
-            return jsonify({"error": "firma invalida"}), 403
-
-    data = request.get_json(silent=True) or {}
-    try:
-        for entry in data.get("entry", []):
-            for change in entry.get("changes", []):
-                for msg in (change.get("value") or {}).get("messages", []):
-                    _procesar_mensaje_whatsapp(msg)
-    except Exception:
-        pass
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/inflacion")
-@login_required
-def inflacion():
-    global _inflacion_cache
-    if time.time() - _inflacion_cache["ts"] < 86400 and _inflacion_cache["data"] is not None:
-        return jsonify(_inflacion_cache["data"])
-    try:
-        r = req.get(
-            "https://apis.datos.gob.ar/series/api/series/",
-            params={"ids": "148.3_INIVELNAL_DICI_M_26", "limit": 25, "format": "json"},
-            timeout=6,
-        )
-        series = r.json().get("data", [])
-        result = [{"mes": row[0][:7], "ipc": row[1]} for row in series if row[1] is not None]
-        _inflacion_cache = {"data": result, "ts": time.time()}
-        return jsonify(result)
-    except Exception:
-        return jsonify(_inflacion_cache["data"] or []), 200
+# ── Stats ──────────────────────────────────────────────────────────────────────
 
 def _stats_mes(user_id, mes, anio):
     from collections import defaultdict
@@ -939,154 +491,7 @@ def _stats_mes(user_id, mes, anio):
         "count_mes": len(res_act.data),
     }
 
-@app.route("/api/finanzas/stats")
-@login_required
-def stats():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    hoy_ar = _hoy_ar()
-    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
-    anio = request.args.get("anio", type=int, default=hoy_ar.year)
-    mes  = max(1, min(12, mes))
-    return jsonify(_stats_mes(session["user_id"], mes, anio))
-
-_resumen_ia_cache = {}  # (user_id, mes, anio) -> texto ya generado (solo meses cerrados, ver abajo)
-
-@app.route("/api/finanzas/resumen-ia")
-@login_required
-def resumen_ia():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-    if not os.environ.get("GEMINI_API_KEY"):
-        return jsonify({"ok": False, "error": "ia_no_configurada"}), 503
-
-    hoy_ar = _hoy_ar()
-    mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
-    anio = request.args.get("anio", type=int, default=hoy_ar.year)
-    mes  = max(1, min(12, mes))
-    es_mes_actual = (mes == hoy_ar.month and anio == hoy_ar.year)
-
-    cache_key = (session["user_id"], mes, anio)
-    if not es_mes_actual and cache_key in _resumen_ia_cache:
-        return jsonify({"ok": True, "resumen": _resumen_ia_cache[cache_key]})
-
-    datos = _stats_mes(session["user_id"], mes, anio)
-    if datos["count_mes"] == 0:
-        return jsonify({"ok": False, "error": "sin_datos"}), 400
-
-    r = datos["resumen"]
-    cats_txt = ", ".join(f"{c['nombre']} ${c['total']:.0f}" for c in datos["categorias"][:6]) or "sin gastos"
-    prompt = (
-        f"Datos financieros de {r['mes_actual']} de un usuario (montos en ARS):\n"
-        f"- Ingresos: ${r['ingresos_actual']:.0f} (mes anterior, {r['mes_anterior']}: ${r['ingresos_anterior']:.0f})\n"
-        f"- Gastos: ${r['gastos_actual']:.0f} (mes anterior: ${r['gastos_anterior']:.0f})\n"
-        f"- Gastos por categoría: {cats_txt}\n\n"
-        "Escribí un resumen breve (3-4 oraciones, español rioplatense, tono cercano y directo) sobre cómo viene "
-        "el mes comparado con el anterior y en qué se concentra el gasto. Interpretá los números, no los repitas "
-        "tal cual. No uses markdown ni bullets, solo texto corrido."
-    )
-    try:
-        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
-                               http_options=genai_types.HttpOptions(timeout=25000))
-        resp = client.models.generate_content(model="gemini-3.5-flash-lite", contents=prompt)
-        texto = (resp.text or "").strip()
-    except Exception:
-        return jsonify({"ok": False, "error": "ia_no_disponible"}), 502
-
-    if not texto:
-        return jsonify({"ok": False, "error": "ia_no_disponible"}), 502
-
-    if not es_mes_actual:
-        _resumen_ia_cache[cache_key] = texto
-    return jsonify({"ok": True, "resumen": texto})
-
-@app.route("/api/finanzas/recurrentes", methods=["GET"])
-@login_required
-def listar_recurrentes():
-    res = db.table("recurrentes").select("*").eq("user_id", session["user_id"]).eq("activo", True).order("creado_en", desc=True).execute()
-    return jsonify(res.data)
-
-@app.route("/api/finanzas/recurrentes", methods=["POST"])
-@login_required
-def crear_recurrente():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-    try:
-        t = request.get_json()
-        payload = {
-            "tipo":          t["tipo"],
-            "monto":         float(t["monto"]),
-            "categoria":     t.get("categoria") or "",
-            "descripcion":   t.get("descripcion") or "",
-            "moneda":        t.get("moneda") or "ARS",
-            "frecuencia":    t["frecuencia"],
-            "proxima_fecha": t["fecha"],
-            "user_id":       session["user_id"],
-        }
-        res = db.table("recurrentes").insert(payload).execute()
-        return jsonify(res.data[0]), 201
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-@app.route("/api/finanzas/recurrentes/<int:rid>", methods=["DELETE"])
-@login_required
-def eliminar_recurrente(rid):
-    db.table("recurrentes").update({"activo": False}).eq("id", rid).eq("user_id", session["user_id"]).execute()
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/<int:tid>", methods=["PUT"])
-@login_required
-def editar(tid):
-    t = request.get_json()
-    payload = {
-        "tipo":        t["tipo"],
-        "monto":       float(t["monto"]),
-        "fecha":       t["fecha"],
-        "categoria":   t.get("categoria", ""),
-        "descripcion": t.get("descripcion", ""),
-        "moneda":      t.get("moneda", "ARS"),
-        "viaje_id":    t.get("viaje_id"),
-    }
-    res = db.table("transacciones").update(payload).eq("id", tid).eq("user_id", session["user_id"]).execute()
-    return jsonify(res.data[0])
-
-@app.route("/api/finanzas/<int:tid>", methods=["DELETE"])
-@login_required
-def eliminar(tid):
-    db.table("transacciones").delete().eq("id", tid).eq("user_id", session["user_id"]).execute()
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/presupuestos", methods=["GET"])
-@login_required
-def get_presupuestos():
-    res = db.table("presupuestos").select("*").eq("user_id", session["user_id"]).execute()
-    return jsonify(res.data)
-
-@app.route("/api/finanzas/presupuestos", methods=["POST"])
-@login_required
-def set_presupuesto():
-    d = request.get_json()
-    cat    = (d.get("categoria") or "").strip()
-    monto  = float(d.get("monto") or 0)
-    moneda = d.get("moneda") if d.get("moneda") in ("ARS", "USD", "EUR") else "ARS"
-    if not cat or monto <= 0:
-        return jsonify({"error": "datos inválidos"}), 400
-    db.table("presupuestos").upsert(
-        {"user_id": session["user_id"], "categoria": cat, "monto": monto, "moneda": moneda},
-        on_conflict="user_id,categoria,moneda"
-    ).execute()
-    res = (
-        db.table("presupuestos").select("*")
-        .eq("user_id", session["user_id"]).eq("categoria", cat).eq("moneda", moneda)
-        .execute()
-    )
-    return jsonify(res.data[0] if res.data else {})
-
-@app.route("/api/finanzas/presupuestos/<int:pid>", methods=["DELETE"])
-@login_required
-def del_presupuesto(pid):
-    db.table("presupuestos").delete().eq("id", pid).eq("user_id", session["user_id"]).execute()
-    return jsonify({"ok": True})
+_resumen_ia_cache = {}  # (user_id, mes, anio) -> texto ya generado (solo meses cerrados)
 
 # ── Viajes ──────────────────────────────────────────────────────────────────
 
@@ -1097,167 +502,33 @@ def _payload_viaje(d):
         "fecha_fin":    d.get("fecha_fin"),
     }
 
-@app.route("/api/finanzas/viajes", methods=["GET"])
-@login_required
-def listar_viajes():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    viajes = (
-        db.table("viajes").select("*").eq("user_id", session["user_id"])
-        .order("fecha_inicio", desc=True).execute().data
-    )
-    ids = [v["id"] for v in viajes]
-    gastos = {}
-    if ids:
-        cotiz = _obtener_cotizaciones()
-        txs = (
-            db.table("transacciones").select("viaje_id,tipo,monto,moneda")
-            .eq("user_id", session["user_id"]).in_("viaje_id", ids).execute().data
-        )
-        for t in txs:
-            if t["tipo"] != "Gasto":
-                continue
-            vid = t["viaje_id"]
-            origen = t.get("moneda") or "ARS"
-            monto = float(t["monto"])
-            gastos.setdefault(vid, {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
-            for destino in ("ARS", "USD", "EUR"):
-                conv = _convertir_moneda(monto, origen, destino, cotiz)
-                if conv is not None:
-                    gastos[vid][destino] += conv
-    for v in viajes:
-        v["gastado"] = gastos.get(v["id"], {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
-    return jsonify(viajes)
-
-@app.route("/api/finanzas/viajes", methods=["POST"])
-@login_required
-def crear_viaje():
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-    d = request.get_json()
-    payload = _payload_viaje(d)
-    if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
-        return jsonify({"ok": False, "error": "missing_trip_fields"}), 400
-    payload["user_id"] = session["user_id"]
-    res = db.table("viajes").insert(payload).execute()
-    return jsonify(res.data[0]), 201
-
-@app.route("/api/finanzas/viajes/<int:vid>", methods=["PUT"])
-@login_required
-def editar_viaje(vid):
-    if not _es_pro(session["user_id"]):
-        return jsonify({"ok": False, "error": "pro_requerido"}), 403
-    d = request.get_json()
-    payload = _payload_viaje(d)
-    if not payload["nombre"] or not payload["fecha_inicio"] or not payload["fecha_fin"]:
-        return jsonify({"ok": False, "error": "missing_trip_fields"}), 400
-    res = db.table("viajes").update(payload).eq("id", vid).eq("user_id", session["user_id"]).execute()
-    if not res.data:
-        return jsonify({"ok": False, "error": "no encontrado"}), 404
-    return jsonify(res.data[0])
-
-@app.route("/api/finanzas/viajes/<int:vid>", methods=["DELETE"])
-@login_required
-def eliminar_viaje(vid):
-    db.table("viajes").delete().eq("id", vid).eq("user_id", session["user_id"]).execute()
-    return jsonify({"ok": True})
-
-@app.route("/api/finanzas/viajes/<int:vid>", methods=["GET"])
-@login_required
-def detalle_viaje(vid):
-    if not _es_pro(session["user_id"]):
-        return jsonify({"error": "pro_requerido"}), 403
-    viaje = db.table("viajes").select("*").eq("id", vid).eq("user_id", session["user_id"]).execute().data
-    if not viaje:
-        return jsonify({"error": "no encontrado"}), 404
-    viaje = viaje[0]
-
-    txs = (
-        db.table("transacciones").select("*")
-        .eq("user_id", session["user_id"]).eq("viaje_id", vid)
-        .order("fecha").execute().data
-    )
-
-    cotiz = _obtener_cotizaciones()
-    totales = {"ARS": 0.0, "USD": 0.0, "EUR": 0.0}
-    por_cat = {"ARS": {}, "USD": {}, "EUR": {}}
-    for t in txs:
-        origen = t.get("moneda") or "ARS"
-        monto = float(t["monto"])
-        t["monto_usd"] = _convertir_moneda(monto, origen, "USD", cotiz)
-        if t["tipo"] != "Gasto":
-            continue
-        cat = (t.get("categoria") or "").strip() or "Sin categoría"
-        for destino in ("ARS", "USD", "EUR"):
-            conv = _convertir_moneda(monto, origen, destino, cotiz)
-            if conv is None:
-                continue
-            totales[destino] += conv
-            por_cat[destino][cat] = por_cat[destino].get(cat, 0.0) + conv
-
-    por_cat_lista = {
-        m: sorted([{"nombre": c, "total": v} for c, v in cats.items()], key=lambda x: -x["total"])
-        for m, cats in por_cat.items()
-    }
-
-    return jsonify({
-        "viaje": viaje, "transacciones": txs, "totales": totales,
-        "por_categoria": por_cat_lista,
-    })
+# ── Pagos ─────────────────────────────────────────────────────────────────────
 
 _PLANES_PRO = {
     "mensual": {"frequency": 1,  "monto": 6000,  "etiqueta": "Finanzas Pro (mensual)"},
     "anual":   {"frequency": 12, "monto": 60000, "etiqueta": "Finanzas Pro (anual)"},
 }
 
-@app.route("/api/finanzas/suscribir")
-@login_required
-def suscribir():
-    mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
-    base_url = os.environ.get("BASE_URL") or request.host_url.rstrip("/")
-    plan = _PLANES_PRO.get(request.args.get("ciclo"), _PLANES_PRO["mensual"])
-    r = req.post(
-        "https://api.mercadopago.com/preapproval",
-        headers={"Authorization": f"Bearer {mp_token}"},
-        json={
-            "reason": plan["etiqueta"],
-            "external_reference": session["user_id"],
-            "payer_email": f"{session['username']}@finanzas.local",
-            "auto_recurring": {
-                "frequency": plan["frequency"],
-                "frequency_type": "months",
-                "transaction_amount": plan["monto"],
-                "currency_id": "ARS",
-            },
-            "back_url": f"{base_url}/finanzas",
-            "notification_url": f"{base_url}/api/finanzas/webhook/mercadopago",
-        }
-    )
-    data = r.json()
-    init_point = data.get("init_point")
-    if not init_point:
-        return jsonify({"error": "No se pudo crear la suscripción", "detalle": data}), 500
-    return redirect(init_point)
+# ── Registro de rutas (ver routes_*.py) ────────────────────────────────────────
+# Cada archivo routes_*.py agrupa los endpoints de un area de la app (paginas,
+# auth, finanzas/stats, viajes, whatsapp, pagos) y accede a todo lo de arriba
+# (db, genai, helpers, caches) via "import finanzas_server as core", nunca con
+# "from finanzas_server import x" -- eso rompería el mockeo en los tests, que
+# reemplazan atributos de este modulo (core.db, core.genai, etc).
 
-@app.route("/api/finanzas/webhook/mercadopago", methods=["POST"])
-def webhook_mp():
-    data = request.get_json(silent=True) or {}
-    topic = data.get("type") or request.args.get("topic", "")
-    resource_id = data.get("data", {}).get("id") or request.args.get("id", "")
+import routes_paginas  # noqa: E402
+import routes_auth  # noqa: E402
+import routes_finanzas  # noqa: E402
+import routes_viajes  # noqa: E402
+import routes_whatsapp  # noqa: E402
+import routes_pagos  # noqa: E402
 
-    if topic in ("subscription_preapproval", "preapproval") and resource_id:
-        mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
-        r = req.get(
-            f"https://api.mercadopago.com/preapproval/{resource_id}",
-            headers={"Authorization": f"Bearer {mp_token}"}
-        )
-        preapproval = r.json()
-        if preapproval.get("status") == "authorized":
-            user_id = preapproval.get("external_reference")
-            if user_id:
-                db.table("usuarios").update({"plan": "pro"}).eq("id", user_id).execute()
-
-    return jsonify({"ok": True})
+app.register_blueprint(routes_paginas.bp)
+app.register_blueprint(routes_auth.bp)
+app.register_blueprint(routes_finanzas.bp)
+app.register_blueprint(routes_viajes.bp)
+app.register_blueprint(routes_whatsapp.bp)
+app.register_blueprint(routes_pagos.bp)
 
 if __name__ == "__main__":
     import socket
