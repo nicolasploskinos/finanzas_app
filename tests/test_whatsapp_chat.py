@@ -74,6 +74,40 @@ def test_interpretar_json_invalido_no_esta_disponible(monkeypatch):
     assert app_module._wa_interpretar_mensaje_ia("gasté 500") == (False, None)
 
 
+def test_interpretar_respeta_descripcion_entre_parentesis(monkeypatch):
+    # Convención de siempre (la misma que el parser regex): lo que va entre
+    # paréntesis es la descripción tal cual, aunque la IA hubiese propuesto
+    # otra cosa.
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    calls = []
+    respuesta = json.dumps({
+        "es_transaccion": True, "tipo": "Gasto", "monto": 500, "moneda": "ARS",
+        "categoria": "comida", "descripcion": "una descripcion inventada por la IA",
+    })
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta, calls))
+
+    disponible, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en supermercado (compra semanal)")
+
+    assert disponible is True
+    assert datos["descripcion"] == "compra semanal"
+    assert datos["categoria"] == "Comida"  # la categoría la sigue decidiendo la IA
+    # el paréntesis no se le manda a la IA, para que no intente reinterpretarlo
+    assert "(compra semanal)" not in calls[0][1]
+
+
+def test_interpretar_sin_parentesis_usa_la_descripcion_de_la_ia(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    respuesta = json.dumps({
+        "es_transaccion": True, "tipo": "Gasto", "monto": 500, "moneda": "ARS",
+        "categoria": "comida", "descripcion": "en el kiosco de la esquina",
+    })
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
+
+    _, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco de la esquina")
+
+    assert datos["descripcion"] == "en el kiosco de la esquina"
+
+
 # ── _wa_responder_pregunta ───────────────────────────────────────────────────
 
 def test_sin_api_key_no_responde(fake_db, monkeypatch):

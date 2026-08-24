@@ -266,11 +266,20 @@ def _wa_interpretar_mensaje_ia(texto):
     - (True, dict): la IA extrajo una transacción."""
     if not os.environ.get("GEMINI_API_KEY"):
         return False, None
+
+    # Convención de siempre: lo que va entre paréntesis es la descripción,
+    # tal cual, sin que la IA lo reinterprete. Se lo sacamos del texto antes
+    # de mandarlo, así la categoría se infiere solo del resto del mensaje —
+    # mismo comportamiento que el parser regex de respaldo.
+    desc_match = re.search(r"\(([^)]+)\)", texto)
+    descripcion_forzada = desc_match.group(1).strip() if desc_match else None
+    texto_ia = (texto[:desc_match.start()] + texto[desc_match.end():]) if desc_match else texto
+
     prompt = (
         "Interpretá este mensaje de WhatsApp de alguien registrando un gasto o ingreso personal, en español "
         "rioplatense informal: puede usar jerga ('lucas' o 'palos' para miles/millones), montos aproximados, "
         "abreviaturas, faltas de ortografía, o frases sueltas sin estructura fija.\n\n"
-        f'Mensaje: "{texto}"\n\n'
+        f'Mensaje: "{texto_ia}"\n\n'
         "Si el mensaje NO describe un gasto o ingreso con un monto concreto (por ejemplo es una pregunta, un "
         "saludo, o no incluye plata), respondé es_transaccion=false y nada más.\n"
         "Si SÍ es una carga, completá además: tipo (Gasto o Ingreso; asumí Gasto si no queda claro), monto "
@@ -305,12 +314,13 @@ def _wa_interpretar_mensaje_ia(texto):
 
     tipo = data.get("tipo") if data.get("tipo") in ("Gasto", "Ingreso") else "Gasto"
     moneda = data.get("moneda") if data.get("moneda") in ("ARS", "USD", "EUR") else "ARS"
+    descripcion = descripcion_forzada if descripcion_forzada is not None else (data.get("descripcion") or "").strip()
     return True, {
         "tipo": tipo,
         "monto": round(monto, 2),
         "moneda": moneda,
         "categoria": (data.get("categoria") or "").strip().capitalize(),
-        "descripcion": (data.get("descripcion") or "").strip(),
+        "descripcion": descripcion,
     }
 
 def _wa_responder_pregunta(user_id, pregunta):
