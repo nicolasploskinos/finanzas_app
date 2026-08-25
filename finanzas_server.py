@@ -19,7 +19,6 @@ load_dotenv()
 _inflacion_cache = {"data": None, "ts": 0}
 _cotiz_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
-_wa_ultima_transaccion = {}  # user_id -> id de la última transacción cargada por WhatsApp
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
 # La app de Meta está en modo desarrollo (sin Business Verification), así que
@@ -420,7 +419,7 @@ def _procesar_mensaje_whatsapp(msg):
         _wa_enviar_mensaje(telefono, "✅ ¡Listo! Tu WhatsApp quedó vinculado a tu cuenta de Finanzas.")
         return
 
-    vinculo = db.table("whatsapp_users").select("user_id").eq("telefono", telefono).execute()
+    vinculo = db.table("whatsapp_users").select("user_id,ultima_transaccion_id").eq("telefono", telefono).execute()
     if not vinculo.data:
         _wa_enviar_mensaje(
             telefono,
@@ -432,13 +431,13 @@ def _procesar_mensaje_whatsapp(msg):
         return
 
     if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()):
-        tx_id = _wa_ultima_transaccion.get(user_id)
+        tx_id = vinculo.data[0].get("ultima_transaccion_id")
         if not tx_id:
             _wa_enviar_mensaje(telefono, "No tengo ninguna carga reciente de WhatsApp para borrar 🤔")
             return
         borrado = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("id", tx_id).eq("user_id", user_id).execute().data
         db.table("transacciones").delete().eq("id", tx_id).eq("user_id", user_id).execute()
-        _wa_ultima_transaccion.pop(user_id, None)
+        db.table("whatsapp_users").update({"ultima_transaccion_id": None}).eq("telefono", telefono).execute()
         if borrado:
             t = borrado[0]
             simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(t.get("moneda") or "ARS", "$")
@@ -471,7 +470,7 @@ def _procesar_mensaje_whatsapp(msg):
         )
         return
 
-    _wa_ultima_transaccion[user_id] = resultado["id"]
+    db.table("whatsapp_users").update({"ultima_transaccion_id": resultado["id"]}).eq("telefono", telefono).execute()
 
     simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(parseado["moneda"], "$")
     emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"
