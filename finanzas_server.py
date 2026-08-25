@@ -19,6 +19,7 @@ load_dotenv()
 _inflacion_cache = {"data": None, "ts": 0}
 _cotiz_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
+_wa_ultima_transaccion = {}  # user_id -> id de la última transacción cargada por WhatsApp
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
 # La app de Meta está en modo desarrollo (sin Business Verification), así que
@@ -430,6 +431,23 @@ def _procesar_mensaje_whatsapp(msg):
     if user_id != _WHATSAPP_USER_ID:
         return
 
+    if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)$", texto.strip()):
+        tx_id = _wa_ultima_transaccion.get(user_id)
+        if not tx_id:
+            _wa_enviar_mensaje(telefono, "No tengo ninguna carga reciente de WhatsApp para borrar 🤔")
+            return
+        borrado = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("id", tx_id).eq("user_id", user_id).execute().data
+        db.table("transacciones").delete().eq("id", tx_id).eq("user_id", user_id).execute()
+        _wa_ultima_transaccion.pop(user_id, None)
+        if borrado:
+            t = borrado[0]
+            simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(t.get("moneda") or "ARS", "$")
+            cat_txt = f" · {t['categoria']}" if t.get("categoria") else ""
+            _wa_enviar_mensaje(telefono, f"🗑️ Borrado: {t['tipo']} de *{simbolo}{float(t['monto']):,.2f}*{cat_txt}")
+        else:
+            _wa_enviar_mensaje(telefono, "🗑️ Listo, borrado.")
+        return
+
     ia_disponible, parseado = _wa_interpretar_mensaje_ia(texto)
     if not ia_disponible:
         parseado = _parse_mensaje_whatsapp(texto)
@@ -452,6 +470,8 @@ def _procesar_mensaje_whatsapp(msg):
             "⛔ Llegaste al límite de *50* transacciones gratis este mes. Entrá a la app para hacerte Pro y seguir cargando.",
         )
         return
+
+    _wa_ultima_transaccion[user_id] = resultado["id"]
 
     simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(parseado["moneda"], "$")
     emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"

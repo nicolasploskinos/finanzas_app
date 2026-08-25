@@ -110,3 +110,10 @@ def _reset_resumen_ia_cache():
     app_module._resumen_ia_cache.clear()
     yield
     app_module._resumen_ia_cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_wa_ultima_transaccion():
+    app_module._wa_ultima_transaccion.clear()
+    yield
+    app_module._wa_ultima_transaccion.clear()

@@ -216,3 +216,63 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     app_module._procesar_mensaje_whatsapp({"id": "wamid3", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
 
     assert "registrado" in enviados[0]
+
+
+# ── "borrar último" ──────────────────────────────────────────────────────────
+
+def test_cargar_una_transaccion_guarda_su_id_para_poder_borrarla(fake_db, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)  # usa el parser regex, más directo
+    monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "tx-999"}))
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: None)
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid4", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
+
+    assert app_module._wa_ultima_transaccion[app_module._WHATSAPP_USER_ID] == "tx-999"
+
+
+def test_borrar_ultimo_sin_carga_previa_no_borra_nada(fake_db, monkeypatch):
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid5", "from": "5491111111111", "text": {"body": "borrar ultimo"}})
+
+    assert "no tengo ninguna carga reciente" in enviados[0].lower()
+    deletes = [c for (tabla, q) in fake_db.queries if tabla == "transacciones" for c in q.calls if c[0] == "delete"]
+    assert deletes == []
+
+
+def test_borrar_ultimo_borra_la_transaccion_y_confirma(fake_db, monkeypatch):
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["transacciones"] = [
+        {"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"},
+    ]
+    app_module._wa_ultima_transaccion[app_module._WHATSAPP_USER_ID] = 42
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid6", "from": "5491111111111", "text": {"body": "Borrar Último"}})
+
+    assert "Borrado" in enviados[0]
+    assert "500" in enviados[0]
+    assert app_module._WHATSAPP_USER_ID not in app_module._wa_ultima_transaccion
+    deletes = [c for (tabla, q) in fake_db.queries if tabla == "transacciones" for c in q.calls if c[0] == "delete"]
+    assert len(deletes) == 1
+
+
+def test_borrar_ultimo_dos_veces_seguidas_la_segunda_no_encuentra_nada(fake_db, monkeypatch):
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"}]
+    app_module._wa_ultima_transaccion[app_module._WHATSAPP_USER_ID] = 42
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid7", "from": "5491111111111", "text": {"body": "eliminar la ultima"}})
+    app_module._procesar_mensaje_whatsapp({"id": "wamid8", "from": "5491111111111", "text": {"body": "eliminar la ultima"}})
+
+    assert "Borrado" in enviados[0]
+    assert "no tengo ninguna carga reciente" in enviados[1].lower()
