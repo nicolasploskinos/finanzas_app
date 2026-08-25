@@ -431,7 +431,7 @@ def _procesar_mensaje_whatsapp(msg):
     if user_id != _WHATSAPP_USER_ID:
         return
 
-    if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)$", texto.strip()):
+    if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()):
         tx_id = _wa_ultima_transaccion.get(user_id)
         if not tx_id:
             _wa_enviar_mensaje(telefono, "No tengo ninguna carga reciente de WhatsApp para borrar 🤔")

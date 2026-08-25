@@ -6,6 +6,8 @@ llama a la API real."""
 import json
 from types import SimpleNamespace
 
+import pytest
+
 import finanzas_server as app_module
 
 
@@ -219,6 +221,29 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
 
 
 # ── "borrar último" ──────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("frase", [
+    "borrar ultimo",
+    "borrar último",
+    "borrar ultimo gasto",
+    "borrar ultimo ingreso",
+    "borrar la ultima",
+    "eliminar la ultima",
+    "eliminar ultimo gasto",
+    "ELIMINAR ULTIMO INGRESO",
+])
+def test_variantes_de_borrar_ultimo_se_interpretan_igual(fake_db, monkeypatch, frase):
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"}]
+    app_module._wa_ultima_transaccion[app_module._WHATSAPP_USER_ID] = 42
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": f"wamid-{frase}", "from": "5491111111111", "text": {"body": frase}})
+
+    assert "Borrado" in enviados[0]
+
 
 def test_cargar_una_transaccion_guarda_su_id_para_poder_borrarla(fake_db, monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)  # usa el parser regex, más directo
