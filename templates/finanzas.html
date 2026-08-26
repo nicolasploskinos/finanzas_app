@@ -16,11 +16,13 @@
       --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
       --green: #4ade80; --red: #f87171; --blue: #60a5fa;
       --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
+      --green-rgb: 74,222,128; --red-rgb: 248,113,113; --blue-rgb: 96,165,250; --yellow-rgb: 251,191,36;
     }
     body.light {
       --bg: #ece3d0; --surface: #f5eede; --surface2: #e4dac1;
       --green: #4c8a5e; --red: #b3543f; --blue: #4d6f9e;
-      --yellow: #ad7c1f; --text: #3a3226; --muted: #7d7261; --border: #d3c6a6;
+      --yellow: #ad7c1f; --text: #3a3226; --muted: #655b4c; --border: #d3c6a6;
+      --green-rgb: 76,138,94; --red-rgb: 179,84,63; --blue-rgb: 77,111,158; --yellow-rgb: 173,124,31;
     }
 
     body {
@@ -57,7 +59,7 @@
     header p  { font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap; }
     .header-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; min-width: 0; }
     .header-username { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-    .header-actions { display:flex; gap:8px; align-items:center; flex-wrap: nowrap; }
+    .header-actions { display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
 
     /* Balance por moneda */
     .bal-moneda { padding: 12px 12px 4px; }
@@ -155,8 +157,8 @@
     .tx.swiping { transition: none; }
 
     .tx-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; flex-shrink: 0; }
-    .tx-icon.gasto   { background: rgba(248,113,113,.15); color: var(--red); }
-    .tx-icon.ingreso { background: rgba(74,222,128,.15);  color: var(--green); }
+    .tx-icon.gasto   { background: rgba(var(--red-rgb),.15); color: var(--red); }
+    .tx-icon.ingreso { background: rgba(var(--green-rgb),.15);  color: var(--green); }
     .tx-info { flex: 1; min-width: 0; }
     .tx-cat  { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tx-desc { font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -172,7 +174,7 @@
       border: 1px solid var(--border);
     }
     .tx-edit { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 4px; line-height: 1; opacity: .7; border-radius: 8px; }
-    .tx-edit:active { opacity: 1; color: var(--blue); background: rgba(96,165,250,.1); }
+    .tx-edit:active { opacity: 1; color: var(--blue); background: rgba(var(--blue-rgb),.1); }
 
     /* Presupuestos */
     .presup-section { padding: 0 12px 10px; }
@@ -193,11 +195,11 @@
       width: 58px; height: 58px; border-radius: 18px;
       background: var(--blue); border: none; color: white;
       font-size: 28px; cursor: pointer;
-      box-shadow: 0 6px 24px rgba(96,165,250,.45);
+      box-shadow: 0 6px 24px rgba(var(--blue-rgb),.45);
       display: flex; align-items: center; justify-content: center;
       z-index: 200; transition: transform .15s, box-shadow .15s;
     }
-    .fab:active { transform: scale(.92); box-shadow: 0 2px 10px rgba(96,165,250,.3); }
+    .fab:active { transform: scale(.92); box-shadow: 0 2px 10px rgba(var(--blue-rgb),.3); }
 
     /* Modal */
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
@@ -209,7 +211,7 @@
     .tipo-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
     .tipo-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
     .tipo-btn.gasto-active   { background: var(--red);   color: white; }
-    .tipo-btn.ingreso-active { background: var(--green); color: #1e1e2e; }
+    .tipo-btn.ingreso-active { background: var(--green); color: var(--bg); }
     .tipo-btn.inactive       { background: var(--surface2); color: var(--muted); }
 
     .moneda-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
@@ -222,8 +224,9 @@
     .campo input:focus, .campo select:focus { border-color: var(--blue); }
     .campo input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
-    .btn-guardar { width: 100%; background: var(--blue); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(96,165,250,.35); transition: opacity .2s; }
+    .btn-guardar { width: 100%; background: var(--blue); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(var(--blue-rgb),.35); transition: opacity .2s; }
     .btn-guardar:active { opacity: .85; }
+    .btn-guardar:disabled { opacity: .6; cursor: default; }
 
     /* Consolidado */
     .cons-section { margin: 12px 12px 8px; background: var(--surface); border-radius: 18px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,.12); border: 1px solid var(--border); }
@@ -231,7 +234,7 @@
     .cons-title { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
     .cons-toggle { display: flex; gap: 4px; background: var(--surface2); border-radius: 8px; padding: 3px; }
     .cons-btn { flex: 1; padding: 6px 8px; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: transparent; color: var(--muted); transition: all .2s; text-align: center; }
-    .cons-btn.active { background: var(--blue); color: white; box-shadow: 0 1px 4px rgba(96,165,250,.4); }
+    .cons-btn.active { background: var(--blue); color: white; box-shadow: 0 1px 4px rgba(var(--blue-rgb),.4); }
     .cons-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
     .cons-card { background: var(--surface2); border-radius: 12px; padding: 10px 10px; min-width: 0; }
     .cons-card-full { grid-column: 1 / -1; text-align: center; }
@@ -267,7 +270,7 @@
     .pro-fila-texto span { color: var(--red); }
     .pro-ciclos { display: flex; gap: 8px; margin-bottom: 20px; }
     .pro-ciclo-btn { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 14px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all .15s; position: relative; }
-    .pro-ciclo-btn.active { border-color: var(--yellow); background: rgba(251,191,36,.1); }
+    .pro-ciclo-btn.active { border-color: var(--yellow); background: rgba(var(--yellow-rgb),.1); }
     .pro-ciclo-nombre { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
     .pro-ciclo-btn.active .pro-ciclo-nombre { color: var(--yellow); }
     .pro-ciclo-precio { font-size: 18px; font-weight: 900; color: var(--text); margin-top: 2px; }
@@ -278,7 +281,7 @@
     .btn-pro-cancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px; }
 
     /* Trial banner */
-    .trial-banner { background: linear-gradient(135deg,rgba(96,165,250,.15),rgba(139,92,246,.15)); border-bottom: 1px solid rgba(96,165,250,.25); padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .trial-banner { background: linear-gradient(135deg,rgba(var(--blue-rgb),.15),rgba(var(--blue-rgb),.04)); border-bottom: 1px solid rgba(var(--blue-rgb),.25); padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
     /* Stats */
     .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
@@ -368,14 +371,14 @@
     <div class="header-username" data-en="Hi, {{ username }}">Hola, {{ username }}</div>
     <div class="header-actions">
       {% if not is_pro %}
-      <button onclick="abrirModalPro()" style="font-size:11px;font-weight:700;background:#fbbf24;color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;white-space:nowrap;">⭐ Pro</button>
+      <button onclick="abrirModalPro()" style="font-size:11px;font-weight:700;background:var(--yellow);color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;white-space:nowrap;">⭐ Pro</button>
       {% else %}
-      <span style="font-size:11px;font-weight:700;background:#4ade80;color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
+      <span style="font-size:11px;font-weight:700;background:var(--green);color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
-      <a href="/finanzas/viajes" title="Viajes" style="font-size:15px;text-decoration:none;padding:2px;">✈️</a>
-      <button onclick="toggleLang()" id="btn-lang" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:2px 4px;" title="Switch language">EN</button>
-      <button onclick="toggleModo()" id="btn-modo" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px;" title="Cambiar modo">🌙</button>
-      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;" data-en="Log out">Salir</a>
+      <a href="/finanzas/viajes" title="Viajes" aria-label="Viajes" style="font-size:15px;text-decoration:none;padding:6px;">✈️</a>
+      <button onclick="toggleLang()" id="btn-lang" aria-label="Switch language" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:6px 8px;" title="Switch language">EN</button>
+      <button onclick="toggleModo()" id="btn-modo" aria-label="Cambiar modo claro/oscuro" style="background:none;border:none;cursor:pointer;font-size:15px;padding:6px;" title="Cambiar modo">🌙</button>
+      <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;border-left:1px solid var(--border);padding:6px 0 6px 10px;" data-en="Log out">Salir</a>
     </div>
   </div>
 </header>
@@ -531,9 +534,9 @@
   <div class="col-der">
 
   {% if not is_pro %}
-  <div style="margin:0 12px 8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:9px 14px;font-size:12px;color:#fbbf24;display:flex;justify-content:space-between;align-items:center">
+  <div style="margin:0 12px 8px;background:rgba(var(--yellow-rgb),.1);border:1px solid rgba(var(--yellow-rgb),.3);border-radius:10px;padding:9px 14px;font-size:12px;color:var(--yellow);display:flex;justify-content:space-between;align-items:center">
     <span data-en="📅 Showing last 3 months">📅 Mostrando últimos 3 meses</span>
-    <button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer;padding:0" data-en="See all →">Ver todo →</button>
+    <button onclick="abrirModalPro()" style="background:none;border:none;color:var(--yellow);font-weight:700;cursor:pointer;padding:0" data-en="See all →">Ver todo →</button>
   </div>
   {% endif %}
 
@@ -651,7 +654,8 @@
       </div>
     </div>
 
-    <button class="btn-guardar" onclick="guardar()" data-en="Save">Guardar</button>
+    <button class="btn-guardar" id="btn-guardar-tx" onclick="guardar()" data-en="Save">Guardar</button>
+    <button class="btn-guardar" id="btn-eliminar-tx" onclick="eliminarTxDesdeModal()" style="display:none;background:none;color:var(--red);box-shadow:none;margin-top:4px" data-en="Delete">Eliminar</button>
   </div>
 </div>
 
@@ -1117,7 +1121,7 @@
               <div class="tx-monto ${t.tipo.toLowerCase()}">${t.tipo==="Ingreso"?"+":"-"}${fmtMon(t.monto, mon)}</div>
               ${badge}
             </div>
-            <button class="tx-edit" onclick="editarTx(${t.id})">✏️</button>
+            <button class="tx-edit" onclick="editarTx(${t.id})" aria-label="Editar transacción">✏️</button>
           </div>
         </div>`;
       }).join("")}
@@ -1192,16 +1196,21 @@
             ${r.categoria || tr("sin_categoria")}${r.descripcion ? " · " + r.descripcion : ""} · ${tr("proximo")}: ${formatFecha(r.proxima_fecha)}
           </div>
         </div>
-        <button onclick="eliminarRecurrente(${r.id})" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0">×</button>
+        <button onclick="eliminarRecurrente(${r.id})" aria-label="Eliminar recurrente" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0">×</button>
       </div>`).join("");
   }
 
   async function eliminarRecurrente(id) {
     if (!confirm(tr("confirm_borrar_recurrente"))) return;
-    await fetch(`/api/finanzas/recurrentes/${id}`, { method: "DELETE" });
-    recurrentes = recurrentes.filter(r => r.id !== id);
-    renderRecurrentes();
-    toast(tr("recurrente_eliminado"));
+    try {
+      const resp = await fetch(`/api/finanzas/recurrentes/${id}`, { method: "DELETE" });
+      if (!resp.ok) { toast(tr("error_guardar")); return; }
+      recurrentes = recurrentes.filter(r => r.id !== id);
+      renderRecurrentes();
+      toast(tr("recurrente_eliminado"));
+    } catch {
+      toast(tr("error_guardar"));
+    }
   }
 
   // ── WhatsApp ───────────────────────────────────────────────────────────────
@@ -1247,6 +1256,7 @@
     editandoId = null;
     document.getElementById("modal-title").textContent = tr("nueva_transaccion");
     document.getElementById("recur-campo").style.display = "";
+    document.getElementById("btn-eliminar-tx").style.display = "none";
     setTipo("Gasto");
     setRecur("no");
     actualizarSugerenciasCat();
@@ -1259,6 +1269,7 @@
     editandoId = null;
     setRecur("no");
     document.getElementById("recur-campo").style.display = "";
+    document.getElementById("btn-eliminar-tx").style.display = "none";
     document.getElementById("modal-title").textContent = tr("nueva_transaccion");
   }
   function cerrarSiFondo(e) { if (e.target === document.getElementById("overlay")) cerrarModal(); }
@@ -1269,6 +1280,7 @@
     editandoId = id;
     document.getElementById("modal-title").textContent = tr("editar_transaccion");
     document.getElementById("recur-campo").style.display = "none";
+    document.getElementById("btn-eliminar-tx").style.display = "";
     setTipo(t.tipo);
     setMonedaForm(t.moneda || "ARS");
     document.getElementById("inp-monto").value = t.monto;
@@ -1279,6 +1291,29 @@
     actualizarSugerenciasCat();
     document.getElementById("overlay").classList.add("open");
     document.getElementById("inp-monto").focus();
+  }
+
+  async function _borrarTxBackend(id) {
+    try {
+      const r = await fetch(`/api/finanzas/${id}`, { method: "DELETE" });
+      if (!r.ok) { toast(tr("error_guardar")); return false; }
+      datos = datos.filter(t => t.id !== id);
+      render();
+      renderPresup();
+      if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
+      toast(tr("tx_eliminada"));
+      return true;
+    } catch {
+      toast(tr("error_guardar"));
+      return false;
+    }
+  }
+
+  async function eliminarTxDesdeModal() {
+    if (!editandoId) return;
+    if (!confirm(tr("confirm_borrar_tx"))) return;
+    const ok = await _borrarTxBackend(editandoId);
+    if (ok) cerrarModal();
   }
 
   async function guardar() {
@@ -1294,6 +1329,8 @@
     const viajeId  = tipoActual === "Gasto" && viajeSel && viajeSel.value ? +viajeSel.value : null;
     const tx = { tipo: tipoActual, monto, fecha, categoria: cat, descripcion: desc, moneda: monedaActual, viaje_id: viajeId };
 
+    const btn = document.getElementById("btn-guardar-tx");
+    btn.disabled = true;
     try {
       if (editandoId) {
         const r = await fetch(`/api/finanzas/${editandoId}`, {
@@ -1346,6 +1383,7 @@
         toast(tipoActual === "Ingreso" ? tr("ingreso_guardado") : tr("gasto_guardado"));
       }
     } catch { toast(tr("error_guardar")); }
+    finally { btn.disabled = false; }
   }
 
   const MSG = {
@@ -1418,6 +1456,7 @@
     editar_transaccion:           { es: "Editar transacción", en: "Edit transaction" },
     por_mes:                      { es: "/mes", en: "/mo" },
     monto_lbl:                    { es: "MONTO", en: "AMOUNT" },
+    chart_no_cargo:                { es: "No se pudo cargar el gráfico", en: "Couldn't load the chart" },
     ia_generando:                  { es: "Generando resumen…", en: "Generating summary…" },
     ia_no_disponible:              { es: "No se pudo generar el resumen, probá de nuevo en un rato", en: "Couldn't generate the summary, try again in a bit" },
     ia_no_configurada:             { es: "Función no disponible por ahora", en: "Feature not available right now" },
@@ -1581,6 +1620,7 @@
     const light = document.body.classList.toggle("light");
     document.getElementById("btn-modo").textContent = light ? "☀️" : "🌙";
     localStorage.setItem("modo", light ? "light" : "dark");
+    if (statsOpen) cargarStats();  // el gráfico usa colores fijados al crearlo, hay que rehacerlo
   }
   if (localStorage.getItem("modo") === "light") {
     document.body.classList.add("light");
@@ -1667,14 +1707,14 @@
     el.style.display = "";
     const restantes = 50 - count;
     if (count >= 50) {
-      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);color:#f87171";
-      el.innerHTML = `${tr("limite_alcanzado")}<button onclick="abrirModalPro()" style="background:none;border:none;color:#f87171;font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_a_pro")}</button>${tr("para_seguir")}`;
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(var(--red-rgb),.15);border:1px solid rgba(var(--red-rgb),.4);color:var(--red)";
+      el.innerHTML = `${tr("limite_alcanzado")}<button onclick="abrirModalPro()" style="background:none;border:none;color:var(--red);font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_a_pro")}</button>${tr("para_seguir")}`;
     } else if (count >= 45) {
-      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.4);color:#fb923c";
-      el.innerHTML = `${tr("te_quedan_tx", { n: restantes })}<button onclick="abrirModalPro()" style="background:none;border:none;color:#fb923c;font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_flecha")}</button>`;
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(var(--yellow-rgb),.18);border:1px solid rgba(var(--yellow-rgb),.5);color:var(--yellow)";
+      el.innerHTML = `${tr("te_quedan_tx", { n: restantes })}<button onclick="abrirModalPro()" style="background:none;border:none;color:var(--yellow);font-weight:800;cursor:pointer;text-decoration:underline">${tr("upgrade_flecha")}</button>`;
     } else {
-      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24";
-      el.innerHTML = `${tr("usaste_tx", { n: count })}<button onclick="abrirModalPro()" style="background:none;border:none;color:#fbbf24;font-weight:700;cursor:pointer">${tr("ver_pro_flecha")}</button>`;
+      el.style.cssText = "display:block;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center;background:rgba(var(--yellow-rgb),.1);border:1px solid rgba(var(--yellow-rgb),.3);color:var(--yellow)";
+      el.innerHTML = `${tr("usaste_tx", { n: count })}<button onclick="abrirModalPro()" style="background:none;border:none;color:var(--yellow);font-weight:700;cursor:pointer">${tr("ver_pro_flecha")}</button>`;
     }
   }
 
@@ -1716,11 +1756,11 @@
       if (r.gastos_anterior > 0) {
         const nomPct  = (r.gastos_actual - r.gastos_anterior) / r.gastos_anterior * 100;
         const realPct = ((1 + nomPct / 100) / (1 + inflPct / 100) - 1) * 100;
-        const col = realPct > 0 ? "#f87171" : "#4ade80";
+        const col = realPct > 0 ? "var(--red)" : "var(--green)";
         realHtml = ` &nbsp;·&nbsp; ${tr("gastos_reales")}: <strong style="color:${col}">${realPct > 0 ? "▲" : "▼"} ${Math.abs(realPct).toFixed(1)}%</strong>`;
       }
-      strip.innerHTML = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted);margin-bottom:12px">
-        📊 ${tr("inflacion_indec")} ${mesTraducido(r.mes_actual)}: <strong style="color:#fbbf24">+${inflPct.toFixed(1)}%</strong>${realHtml}
+      strip.innerHTML = `<div style="background:rgba(var(--yellow-rgb),.08);border:1px solid rgba(var(--yellow-rgb),.2);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted);margin-bottom:12px">
+        📊 ${tr("inflacion_indec")} ${mesTraducido(r.mes_actual)}: <strong style="color:var(--yellow)">+${inflPct.toFixed(1)}%</strong>${realHtml}
       </div>`;
     } else {
       strip.innerHTML = "";
@@ -1755,7 +1795,15 @@
       canvas.style.display = "none"; vacio.style.display = ""; return;
     }
     canvas.style.display = ""; vacio.style.display = "none";
+    if (typeof Chart === "undefined") {
+      console.error("Chart.js no cargó (¿bloqueado por la red?)");
+      canvas.style.display = "none";
+      vacio.style.display = "block";
+      vacio.textContent = tr("chart_no_cargo");
+      return;
+    }
     const COLS = ["#60a5fa","#f87171","#4ade80","#fbbf24","#a78bfa","#fb923c","#34d399","#f472b6","#38bdf8","#facc15"];
+    const colorMuted = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#94a3b8";
     if (grafico) grafico.destroy();
     grafico = new Chart(canvas, {
       type: "doughnut",
@@ -1766,7 +1814,7 @@
       options: {
         responsive: true,
         plugins: {
-          legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 8, boxWidth: 12 } },
+          legend: { position: "bottom", labels: { color: colorMuted, font: { size: 11 }, padding: 8, boxWidth: 12 } },
           tooltip: { callbacks: { label: ctx => {
             const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
             return ` $${Math.round(ctx.raw).toLocaleString("es-AR")} (${Math.round(ctx.raw/t*100)}%)`;
@@ -1835,7 +1883,8 @@
       const gastado = gasto[normalizar(p.categoria) + "|" + moneda] || 0;
       const pct     = Math.min(gastado / p.monto * 100, 100);
       const color   = pct >= 100 ? "var(--red)" : pct >= 70 ? "var(--yellow)" : "var(--green)";
-      const amtTxt  = `${fmtMon(gastado, moneda)} / ${fmtMon(p.monto, moneda)}`;
+      const alerta  = pct >= 100 ? "⚠️ " : pct >= 70 ? "⏳ " : "";
+      const amtTxt  = `${alerta}${fmtMon(gastado, moneda)} / ${fmtMon(p.monto, moneda)}`;
       const nombre  = moneda === "ARS" ? p.categoria : `${p.categoria} · ${moneda}`;
       return `
         <div class="presup-bar-row">
@@ -1877,7 +1926,7 @@
             <span style="font-size:13px;font-weight:600">${p.categoria}</span>
             <span style="font-size:12px;color:var(--muted);margin-left:8px">${fmtMon(p.monto, p.moneda || "ARS")}${tr("por_mes")}${(p.moneda && p.moneda !== "ARS") ? ` · ${p.moneda}` : ""}</span>
           </div>
-          <button onclick="eliminarPresup(${p.id})" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
+          <button onclick="eliminarPresup(${p.id})" aria-label="Eliminar presupuesto" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
         </div>`).join("") +
       `</div>`;
   }
@@ -1887,28 +1936,37 @@
     const monto  = parseFloat(document.getElementById("presup-inp-monto").value);
     const moneda = presupMonedaActual;
     if (!cat || !monto || monto <= 0) { toast(tr("completa_cat_monto")); return; }
-    const r = await fetch("/api/finanzas/presupuestos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categoria: cat, monto, moneda })
-    });
-    if (!r.ok) { toast(tr("error_guardar")); return; }
-    const nuevo = await r.json();
-    const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat) && (p.moneda || "ARS") === moneda);
-    if (idx >= 0) presupuestos[idx] = nuevo; else presupuestos.push(nuevo);
-    document.getElementById("presup-inp-cat").value   = "";
-    document.getElementById("presup-inp-monto").value = "";
-    renderPresupModalLista();
-    renderPresup();
-    toast(tr("presupuesto_guardado"));
+    try {
+      const r = await fetch("/api/finanzas/presupuestos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoria: cat, monto, moneda })
+      });
+      if (!r.ok) { toast(tr("error_guardar")); return; }
+      const nuevo = await r.json();
+      const idx = presupuestos.findIndex(p => normalizar(p.categoria) === normalizar(cat) && (p.moneda || "ARS") === moneda);
+      if (idx >= 0) presupuestos[idx] = nuevo; else presupuestos.push(nuevo);
+      document.getElementById("presup-inp-cat").value   = "";
+      document.getElementById("presup-inp-monto").value = "";
+      renderPresupModalLista();
+      renderPresup();
+      toast(tr("presupuesto_guardado"));
+    } catch {
+      toast(tr("error_guardar"));
+    }
   }
 
   async function eliminarPresup(id) {
-    await fetch(`/api/finanzas/presupuestos/${id}`, { method: "DELETE" });
-    presupuestos = presupuestos.filter(p => p.id !== id);
-    renderPresupModalLista();
-    renderPresup();
-    toast(tr("presupuesto_eliminado"));
+    try {
+      const r = await fetch(`/api/finanzas/presupuestos/${id}`, { method: "DELETE" });
+      if (!r.ok) { toast(tr("error_guardar")); return; }
+      presupuestos = presupuestos.filter(p => p.id !== id);
+      renderPresupModalLista();
+      renderPresup();
+      toast(tr("presupuesto_eliminado"));
+    } catch {
+      toast(tr("error_guardar"));
+    }
   }
 
   // ── Swipe para eliminar ─────────────────────────────────────────────────────
@@ -1954,12 +2012,8 @@
       el.style.opacity    = "0";
       const id = +el.dataset.id;
       setTimeout(async () => {
-        await fetch(`/api/finanzas/${id}`, { method: "DELETE" });
-        datos = datos.filter(t => t.id !== id);
-        render();
-        renderPresup();
-        if (ES_PRO) cargarStats(); else actualizarLimiteBanner(contarMesActual());
-        toast(tr("tx_eliminada"));
+        const ok = await _borrarTxBackend(id);
+        if (!ok) { el.style.transition = "transform .2s, opacity .15s"; el.style.transform = "translateX(0)"; el.style.opacity = "1"; }
       }, 180);
     } else {
       el.style.transition = "transform .2s";
