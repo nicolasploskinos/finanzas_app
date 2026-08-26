@@ -300,7 +300,7 @@ def test_mensaje_en_ingles_se_carga_y_confirma_en_ingles(fake_db, monkeypatch):
 
 def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     # Si Gemini no está disponible, la carga de gastos por WhatsApp no debe
-    # dejar de funcionar: cae al parser viejo basado en regex (solo español).
+    # dejar de funcionar: cae al parser viejo basado en regex.
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
     fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
@@ -311,6 +311,58 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     app_module._procesar_mensaje_whatsapp({"id": "wamid3", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
 
     assert "Anoté" in enviados[0]
+
+
+# ── respaldo sin IA: también entiende inglés (regex + detección de idioma) ──
+
+@pytest.mark.parametrize("frase,tipo_esperado,moneda_esperada", [
+    ("spent 500 on groceries", "Gasto", "ARS"),
+    ("paid 50 bucks for the gym", "Gasto", "USD"),
+    ("received 1200 income", "Ingreso", "ARS"),
+])
+def test_parser_regex_entiende_ingles(frase, tipo_esperado, moneda_esperada):
+    r = app_module._parse_mensaje_whatsapp(frase)
+    assert r is not None
+    assert r["tipo"] == tipo_esperado
+    assert r["moneda"] == moneda_esperada
+
+
+@pytest.mark.parametrize("frase,idioma_esperado", [
+    ("spent 500 on groceries", "en"),
+    ("gasté 500 en el kiosco", "es"),
+    ("undo that", "en"),
+    ("borrar ultimo", "es"),
+    ("delete the last one", "en"),
+])
+def test_deteccion_de_idioma_por_regex(frase, idioma_esperado):
+    assert app_module._wa_detectar_idioma_regex(frase) == idioma_esperado
+
+
+def test_carga_en_ingles_sin_ia_confirma_en_ingles(fake_db, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid-en-regex", "from": "5491111111111", "text": {"body": "spent 500 on groceries"}})
+
+    assert "Logged your expense" in enviados[0]
+    assert "Anoté" not in enviados[0]
+
+
+def test_borrar_ultimo_en_ingles_sin_ia_confirma_en_ingles(fake_db, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": 42}]
+    fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"}]
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": "wamid-en-del-regex", "from": "5491111111111", "text": {"body": "delete the last one"}})
+
+    assert "Done, deleted" in enviados[0]
 
 
 # ── "borrar último" ───────────────────────────────────────────────────────────

@@ -198,19 +198,44 @@ def _parse_monto_import(s):
 # ── Bot de WhatsApp ────────────────────────────────────────────────────────────
 
 _WA_PALABRAS_INGRESO = {
+    # español
     "ingreso", "ingrese", "ingresaron",
     "cobre", "cobro",
     "deposito", "depositaron",
     "recibi",
     "gane",
     "sueldo",
+    # inglés
+    "income", "received", "earned", "deposited", "salary", "paycheck",
 }
 _WA_PALABRAS_DESCARTE = {
+    # español
     "gaste", "gasto", "pague",
     "cobre", "cobro", "ingreso", "ingrese", "ingresaron", "deposito", "depositaron", "recibi", "gane",
     "en", "de", "del", "la", "el", "los", "las", "me",
     "usd", "dolar", "dolares", "eur", "euro", "euros",
+    # inglés
+    "spent", "paid", "income", "received", "earned", "deposited", "salary", "paycheck", "got", "bought",
+    "on", "for", "the", "a", "an", "of", "my", "i",
+    "dollar", "dollars", "bucks", "pound", "pounds",
 }
+
+# Palabras inequívocamente de un idioma u otro, para poder responder en el
+# mismo idioma incluso cuando la IA no está disponible y se usa el regex.
+_WA_MARCADORES_ES = {
+    "gaste", "gasto", "pague", "cobre", "cobro", "ingreso", "recibi", "gane", "sueldo",
+    "en", "de", "del", "la", "el", "los", "las", "eso", "esto", "ultimo", "ultima", "borra", "borrar", "elimina",
+}
+_WA_MARCADORES_EN = {
+    "spent", "paid", "income", "received", "earned", "deposited", "salary", "paycheck", "got", "bought",
+    "on", "for", "the", "a", "an", "my", "that", "this", "last", "one", "undo", "delete", "remove", "please",
+}
+
+def _wa_detectar_idioma_regex(texto):
+    palabras = re.findall(r"[a-z]+", _norm_header(texto))
+    hits_en = sum(1 for p in palabras if p in _WA_MARCADORES_EN)
+    hits_es = sum(1 for p in palabras if p in _WA_MARCADORES_ES)
+    return "en" if hits_en > hits_es else "es"
 
 def _parse_mensaje_whatsapp(texto):
     desc_match = re.search(r"\(([^)]+)\)", texto)
@@ -233,9 +258,9 @@ def _parse_mensaje_whatsapp(texto):
     tipo = "Ingreso" if any(p in _WA_PALABRAS_INGRESO for p in palabras) else "Gasto"
 
     moneda = "ARS"
-    if "usd" in palabras or "dolar" in palabras or "dolares" in palabras or "u$s" in palabras:
+    if any(p in palabras for p in ("usd", "dolar", "dolares", "u$s", "dollar", "dollars", "bucks")):
         moneda = "USD"
-    elif "eur" in palabras or "euro" in palabras or "euros" in palabras:
+    elif any(p in palabras for p in ("eur", "euro", "euros")):
         moneda = "EUR"
 
     resto = limpio[:match.start()] + limpio[match.end():]
@@ -560,9 +585,11 @@ def _procesar_mensaje_whatsapp(msg):
     ia_disponible, accion, idioma, datos = _wa_interpretar_mensaje_ia(texto)
     if not ia_disponible:
         # Sin IA disponible: reglas fijas de respaldo, más rígidas que el
-        # entendimiento libre de la IA (solo entienden español) pero que
-        # nunca dejan a la carga sin funcionar del todo.
-        if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()):
+        # entendimiento libre de la IA pero que nunca dejan a la carga sin
+        # funcionar del todo (incluyen tanto español como inglés).
+        idioma = _wa_detectar_idioma_regex(texto)
+        if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()) or \
+           re.match(r"(?i)^(undo|delete|remove)\b", texto.strip()):
             accion, datos = "borrar_ultimo", None
         else:
             parseado_regex = _parse_mensaje_whatsapp(texto)
