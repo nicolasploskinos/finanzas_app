@@ -151,7 +151,7 @@ def test_audio_transcripto_se_procesa_como_texto_normal(fake_db, monkeypatch):
         "audio": {"id": "media-1"},
     })
 
-    assert "registrado" in enviados[0]
+    assert "Anoté" in enviados[0]
 
 
 def test_audio_que_no_se_puede_transcribir_avisa_en_vez_de_fallar(fake_db, monkeypatch):
@@ -166,4 +166,4 @@ def test_audio_que_no_se_puede_transcribir_avisa_en_vez_de_fallar(fake_db, monke
         "audio": {"id": "media-2"},
     })
 
-    assert "no pude escuchar" in enviados[0].lower()
+    assert "no llegué a entender" in enviados[0].lower()

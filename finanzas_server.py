@@ -244,28 +244,31 @@ def _parse_mensaje_whatsapp(texto):
 
     return {"tipo": tipo, "monto": round(abs(monto), 2), "moneda": moneda, "categoria": categoria, "descripcion": descripcion}
 
-_WA_SCHEMA_TRANSACCION = {
+_WA_SCHEMA_INTERPRETACION = {
     "type": "object",
     "properties": {
-        "es_transaccion": {"type": "boolean"},
+        "intencion": {"type": "string", "enum": ["carga", "borrar_ultimo", "otro"]},
         "tipo": {"type": "string", "enum": ["Gasto", "Ingreso"]},
         "monto": {"type": "number"},
         "moneda": {"type": "string", "enum": ["ARS", "USD", "EUR"]},
         "categoria": {"type": "string"},
         "descripcion": {"type": "string"},
     },
-    "required": ["es_transaccion"],
+    "required": ["intencion"],
 }
 
 def _wa_interpretar_mensaje_ia(texto):
-    """Intenta interpretar el mensaje con Gemini, más tolerante que el regex
-    (jerga, montos aproximados, frases sueltas). Devuelve (disponible, dato):
-    - (False, None): la IA no está disponible (sin key, error, timeout) —
-      el llamador debe usar el parser regex como respaldo.
-    - (True, None): la IA respondió pero decidió que no es una carga.
-    - (True, dict): la IA extrajo una transacción."""
+    """Intenta interpretar el mensaje con Gemini, más tolerante que las reglas
+    fijas de respaldo (jerga, montos aproximados, frases sueltas, y cada quien
+    lo escribe o lo dice a su manera). Devuelve (disponible, accion, datos):
+    - (False, None, None): la IA no está disponible (sin key, error, timeout)
+      — el llamador debe usar las reglas de respaldo (regex).
+    - (True, None, None): la IA entendió que no es ni una carga ni un pedido
+      de borrar — probablemente una pregunta o charla.
+    - (True, "borrar_ultimo", None): quiere deshacer lo último que cargó.
+    - (True, "carga", dict): la IA extrajo una transacción."""
     if not os.environ.get("GEMINI_API_KEY"):
-        return False, None
+        return False, None, None
 
     # Convención de siempre: lo que va entre paréntesis es la descripción,
     # tal cual, sin que la IA lo reinterprete. Se lo sacamos del texto antes
@@ -276,18 +279,24 @@ def _wa_interpretar_mensaje_ia(texto):
     texto_ia = (texto[:desc_match.start()] + texto[desc_match.end():]) if desc_match else texto
 
     prompt = (
-        "Interpretá este mensaje de WhatsApp de alguien registrando un gasto o ingreso personal, en español "
+        "Interpretá este mensaje de WhatsApp de alguien llevando sus finanzas personales, en español "
         "rioplatense informal: puede usar jerga ('lucas' o 'palos' para miles/millones), montos aproximados, "
-        "abreviaturas, faltas de ortografía, o frases sueltas sin estructura fija.\n\n"
+        "abreviaturas, faltas de ortografía, frases sueltas sin estructura fija — cada persona escribe o "
+        "habla distinto, así que interpretá la intención, no una frase exacta.\n\n"
         f'Mensaje: "{texto_ia}"\n\n'
-        "Si el mensaje NO describe un gasto o ingreso con un monto concreto (por ejemplo es una pregunta, un "
-        "saludo, o no incluye plata), respondé es_transaccion=false y nada más.\n"
-        "Si SÍ es una carga, completá además: tipo (Gasto o Ingreso; asumí Gasto si no queda claro), monto "
-        "(número, convertí jerga como 'lucas'=miles, 'palos'=millones, o abreviaturas tipo '5k'=5000 y "
-        "'37k'=37000 a su valor real, sin separadores), "
-        "moneda (ARS por defecto, USD o EUR solo si se menciona explícitamente), categoria (una palabra corta "
-        "en español, ej: comida, transporte, sueldo — vacío si no hay ninguna pista), descripcion (detalle breve "
-        "opcional, vacío si no aporta nada nuevo)."
+        "Elegí la intención (intencion):\n"
+        "- 'carga': describe un gasto o ingreso concreto, con un monto (ej: 'gasté 500 en el super', "
+        "'me cayeron 300 lucas de sueldo'). Completá también: tipo (Gasto o Ingreso; asumí Gasto si no queda "
+        "claro), monto (número, convertí jerga como 'lucas'=miles, 'palos'=millones, o abreviaturas tipo "
+        "'5k'=5000 a su valor real, sin separadores), moneda (ARS por defecto, USD o EUR solo si se menciona "
+        "explícitamente), categoria (una palabra corta en español, ej: comida, transporte, sueldo — vacío si "
+        "no hay ninguna pista), descripcion (detalle breve opcional, vacío si no aporta nada nuevo).\n"
+        "- 'borrar_ultimo': quiere deshacer o borrar lo último que cargó por este chat, de cualquier forma en "
+        "que lo pida (ej: 'borrá lo último', 'sacá el último gasto', 'epa me equivoqué, borralo', 'deshacé "
+        "eso', 'corregí, sacá lo de recién', 'no era eso, eliminalo'). No hace falta que use las palabras "
+        "exactas 'borrar' o 'último'.\n"
+        "- 'otro': cualquier otra cosa (pregunta, saludo, charla, o un gasto/ingreso sin monto claro). No "
+        "completes los demás campos en este caso."
     )
     try:
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
@@ -296,26 +305,30 @@ def _wa_interpretar_mensaje_ia(texto):
             model="gemini-3.5-flash-lite", contents=prompt,
             config=genai_types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_json_schema=_WA_SCHEMA_TRANSACCION,
+                response_json_schema=_WA_SCHEMA_INTERPRETACION,
             ),
         )
         data = json.loads(resp.text)
     except Exception:
-        return False, None
+        return False, None, None
 
-    if not data.get("es_transaccion"):
-        return True, None
+    intencion = data.get("intencion")
+    if intencion == "borrar_ultimo":
+        return True, "borrar_ultimo", None
+    if intencion != "carga":
+        return True, None, None
+
     try:
         monto = float(data.get("monto") or 0)
     except (TypeError, ValueError):
         monto = 0
     if monto <= 0:
-        return True, None
+        return True, None, None
 
     tipo = data.get("tipo") if data.get("tipo") in ("Gasto", "Ingreso") else "Gasto"
     moneda = data.get("moneda") if data.get("moneda") in ("ARS", "USD", "EUR") else "ARS"
     descripcion = descripcion_forzada if descripcion_forzada is not None else (data.get("descripcion") or "").strip()
-    return True, {
+    return True, "carga", {
         "tipo": tipo,
         "monto": round(monto, 2),
         "moneda": moneda,
@@ -348,7 +361,8 @@ def _wa_responder_pregunta(user_id, pregunta):
         "Si la pregunta menciona una fecha relativa (ej. 'el viernes pasado', 'ayer', 'la semana pasada'), "
         "calculá la fecha real tomando como referencia la fecha de hoy de arriba, y usá solo los movimientos "
         "de esa fecha o rango exacto.\n"
-        "Respondé en español rioplatense, corto y directo (máximo 3-4 líneas, como un mensaje real de WhatsApp). "
+        "Respondé en español rioplatense, corto y directo (máximo 3-4 líneas), como si fueras un amigo que te "
+        "cuenta cómo vienen tus cuentas — nada de tono de sistema, atención al cliente, ni listas. "
         "Usá solo estos datos, no inventes cifras que no estén ahí. Si no podés responder con esta información, decilo. "
         "Envolvé entre asteriscos simples (*así*) cualquier número o monto que menciones en la respuesta, para que "
         "WhatsApp lo muestre en negrita — es la única marca que podés usar, no uses ningún otro markdown ni bullets."
@@ -431,6 +445,22 @@ def _wa_transcribir_audio(audio_bytes, mime_type):
     except Exception:
         return None
 
+def _wa_borrar_ultima_transaccion(telefono, user_id, tx_id):
+    if not tx_id:
+        _wa_enviar_mensaje(telefono, "No tengo ninguna carga reciente por acá para borrar 🤔 ¿Seguro que cargaste algo hace poco?")
+        return
+    borrado = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("id", tx_id).eq("user_id", user_id).execute().data
+    db.table("transacciones").delete().eq("id", tx_id).eq("user_id", user_id).execute()
+    db.table("whatsapp_users").update({"ultima_transaccion_id": None}).eq("telefono", telefono).execute()
+    if borrado:
+        t = borrado[0]
+        simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(t.get("moneda") or "ARS", "$")
+        cat_txt = f" · {t['categoria']}" if t.get("categoria") else ""
+        articulo = "el gasto" if t["tipo"] == "Gasto" else "el ingreso"
+        _wa_enviar_mensaje(telefono, f"Listo, borré {articulo} de *{simbolo}{float(t['monto']):,.2f}*{cat_txt} 🗑️")
+    else:
+        _wa_enviar_mensaje(telefono, "Listo, ya lo borré 🗑️")
+
 def _procesar_mensaje_whatsapp(msg):
     wamid = msg.get("id")
     if not wamid or wamid in _wa_procesados:
@@ -448,7 +478,7 @@ def _procesar_mensaje_whatsapp(msg):
         texto = _wa_transcribir_audio(audio_bytes, mime_type) if audio_bytes else None
         print(f"[whatsapp] audio recibido de '{telefono}', transcripción: {texto!r}")
         if not texto:
-            _wa_enviar_mensaje(telefono, "No pude escuchar bien el audio 🤔. Probá de nuevo o mandalo por texto.")
+            _wa_enviar_mensaje(telefono, "No llegué a entender bien el audio 😅 ¿Me lo repetís o me lo escribís posta?")
             return
     else:
         texto = ((msg.get("text") or {}).get("body") or "").strip()
@@ -461,52 +491,48 @@ def _procesar_mensaje_whatsapp(msg):
         codigo = m.group(1)
         entrada = _wa_codigos.get(codigo)
         if not entrada or entrada[1] < time.time():
-            _wa_enviar_mensaje(telefono, "❌ Código inválido o vencido. Generá uno nuevo desde la app.")
+            _wa_enviar_mensaje(telefono, "Ese código ya no sirve, está vencido o mal escrito 🤔 Generá uno nuevo desde la app y probamos de nuevo.")
             return
         db.table("whatsapp_users").upsert({"telefono": telefono, "user_id": entrada[0]}, on_conflict="telefono").execute()
         _wa_codigos.pop(codigo, None)
-        _wa_enviar_mensaje(telefono, "✅ ¡Listo! Tu WhatsApp quedó vinculado a tu cuenta de Finanzas.")
+        _wa_enviar_mensaje(telefono, "¡Listo! Ya te tengo agendado 🙌 De ahora en más contame tus gastos e ingresos como si me estuvieras escribiendo a un amigo.")
         return
 
     vinculo = db.table("whatsapp_users").select("user_id,ultima_transaccion_id").eq("telefono", telefono).execute()
     if not vinculo.data:
         _wa_enviar_mensaje(
             telefono,
-            "No reconozco este número. Vinculalo primero desde la app: Finanzas → sección WhatsApp → Vincular.",
+            "Todavía no te conozco 👋 Vinculá este WhatsApp desde la app (Finanzas → sección WhatsApp → Vincular) y arrancamos.",
         )
         return
     user_id = vinculo.data[0]["user_id"]
     if user_id != _WHATSAPP_USER_ID:
         return
 
-    if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()):
-        tx_id = vinculo.data[0].get("ultima_transaccion_id")
-        if not tx_id:
-            _wa_enviar_mensaje(telefono, "No tengo ninguna carga reciente de WhatsApp para borrar 🤔")
-            return
-        borrado = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("id", tx_id).eq("user_id", user_id).execute().data
-        db.table("transacciones").delete().eq("id", tx_id).eq("user_id", user_id).execute()
-        db.table("whatsapp_users").update({"ultima_transaccion_id": None}).eq("telefono", telefono).execute()
-        if borrado:
-            t = borrado[0]
-            simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(t.get("moneda") or "ARS", "$")
-            cat_txt = f" · {t['categoria']}" if t.get("categoria") else ""
-            _wa_enviar_mensaje(telefono, f"🗑️ Borrado: {t['tipo']} de *{simbolo}{float(t['monto']):,.2f}*{cat_txt}")
+    ia_disponible, accion, datos = _wa_interpretar_mensaje_ia(texto)
+    if not ia_disponible:
+        # Sin IA disponible: reglas fijas de respaldo, más rígidas que el
+        # entendimiento libre de la IA pero que nunca dejan a la carga sin
+        # funcionar del todo.
+        if re.match(r"(?i)^(borrar|eliminar)\s+(el\s+|la\s+)?(ultimo|último|ultima|última)(\s+(gasto|ingreso))?$", texto.strip()):
+            accion, datos = "borrar_ultimo", None
         else:
-            _wa_enviar_mensaje(telefono, "🗑️ Listo, borrado.")
+            parseado_regex = _parse_mensaje_whatsapp(texto)
+            accion, datos = ("carga", parseado_regex) if parseado_regex else (None, None)
+
+    if accion == "borrar_ultimo":
+        _wa_borrar_ultima_transaccion(telefono, user_id, vinculo.data[0].get("ultima_transaccion_id"))
         return
 
-    ia_disponible, parseado = _wa_interpretar_mensaje_ia(texto)
-    if not ia_disponible:
-        parseado = _parse_mensaje_whatsapp(texto)
-    if not parseado:
+    if accion != "carga" or not datos:
         respuesta = _wa_responder_pregunta(user_id, texto)
         _wa_enviar_mensaje(telefono, respuesta or (
-            "No entendí 🤔. Probá algo como: *gasté 500 en supermercado* o *ingreso 300000 sueldo*, "
-            "o preguntame algo como *cuánto gasté en comida este mes*."
+            "No te entendí bien 😅 Contame algo como *gasté 500 en el super* o *cobré 300000 de sueldo*, "
+            "o preguntame algo tipo *cuánto gasté en comida este mes*."
         ))
         return
 
+    parseado = datos
     hoy = _hoy_ar().isoformat()
     ok, resultado = _insertar_transaccion(
         user_id, parseado["tipo"], parseado["monto"], hoy,
@@ -515,7 +541,7 @@ def _procesar_mensaje_whatsapp(msg):
     if not ok:
         _wa_enviar_mensaje(
             telefono,
-            "⛔ Llegaste al límite de *50* transacciones gratis este mes. Entrá a la app para hacerte Pro y seguir cargando.",
+            "Che, llegaste al límite de *50* cargas gratis este mes ⛔ Si querés seguir sin cortarte, pasate a Pro desde la app.",
         )
         return
 
@@ -523,9 +549,10 @@ def _procesar_mensaje_whatsapp(msg):
 
     simbolo = {"ARS": "$", "USD": "USD ", "EUR": "€"}.get(parseado["moneda"], "$")
     emoji = "🔴" if parseado["tipo"] == "Gasto" else "🟢"
+    tipo_txt = "gasto" if parseado["tipo"] == "Gasto" else "ingreso"
     cat_txt = f" · {parseado['categoria']}" if parseado["categoria"] else ""
     desc_txt = f" · {parseado['descripcion']}" if parseado["descripcion"] else ""
-    _wa_enviar_mensaje(telefono, f"{emoji} {parseado['tipo']} de *{simbolo}{parseado['monto']:,.2f}*{cat_txt}{desc_txt} registrado ✓")
+    _wa_enviar_mensaje(telefono, f"{emoji} Anoté tu {tipo_txt} de *{simbolo}{parseado['monto']:,.2f}*{cat_txt}{desc_txt} ✓")
 
 # ── Stats ──────────────────────────────────────────────────────────────────────
 

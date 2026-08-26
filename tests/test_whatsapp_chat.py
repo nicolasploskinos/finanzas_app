@@ -1,8 +1,9 @@
-"""Interpretación de mensajes de WhatsApp con IA (carga de gasto/ingreso en
-lenguaje natural, con jerga y frases sueltas) y el chat de preguntas sobre
-los datos. Si el mensaje no resulta ser una carga, se lo mandamos a Gemini
-junto con los movimientos recientes del usuario para que responda. Nunca
-llama a la API real."""
+"""Interpretación de mensajes de WhatsApp con IA: carga de gasto/ingreso en
+lenguaje natural (jerga, frases sueltas), pedidos de borrar lo último dicho
+de cualquier forma, y el chat de preguntas sobre los datos. Si el mensaje no
+resulta ser ninguna de las dos primeras cosas, se lo mandamos a Gemini junto
+con los movimientos recientes del usuario para que responda. Nunca llama a
+la API real."""
 import json
 from types import SimpleNamespace
 
@@ -33,47 +34,65 @@ def _fake_client_factory(respuestas, calls=None):
 
 def test_interpretar_sin_api_key_no_esta_disponible(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-    assert app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco") == (False, None)
+    assert app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco") == (False, None, None)
 
 
 def test_interpretar_transaccion_en_lenguaje_informal(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     respuesta = json.dumps({
-        "es_transaccion": True, "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
+        "intencion": "carga", "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
         "categoria": "comida", "descripcion": "asado con amigos",
     })
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
 
-    disponible, datos = app_module._wa_interpretar_mensaje_ia("me gasté como 5 lucas en un asado con los pibes")
+    disponible, accion, datos = app_module._wa_interpretar_mensaje_ia("me gasté como 5 lucas en un asado con los pibes")
 
     assert disponible is True
+    assert accion == "carga"
     assert datos == {
         "tipo": "Gasto", "monto": 5000.0, "moneda": "ARS",
         "categoria": "Comida", "descripcion": "asado con amigos",
     }
 
 
-def test_interpretar_mensaje_que_no_es_transaccion(monkeypatch):
+def test_interpretar_mensaje_que_no_es_transaccion_ni_borrado(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
-    respuesta = json.dumps({"es_transaccion": False})
+    respuesta = json.dumps({"intencion": "otro"})
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
 
-    assert app_module._wa_interpretar_mensaje_ia("hola como andas") == (True, None)
+    assert app_module._wa_interpretar_mensaje_ia("hola como andas") == (True, None, None)
+
+
+@pytest.mark.parametrize("frase", [
+    "borrá lo último",
+    "epa, me equivoqué, borralo",
+    "deshacé eso",
+    "corregí, sacá lo de recién",
+    "no era eso, eliminalo",
+])
+def test_interpretar_reconoce_pedidos_de_borrar_dichos_de_cualquier_forma(monkeypatch, frase):
+    # La gracia de usar IA en vez de una frase fija: entiende la intención
+    # aunque cada uno lo pida a su manera, no solo "borrar ultimo" textual.
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    respuesta = json.dumps({"intencion": "borrar_ultimo"})
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
+
+    assert app_module._wa_interpretar_mensaje_ia(frase) == (True, "borrar_ultimo", None)
 
 
 def test_interpretar_sin_monto_valido_se_trata_como_no_transaccion(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
-    respuesta = json.dumps({"es_transaccion": True, "monto": 0})
+    respuesta = json.dumps({"intencion": "carga", "monto": 0})
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
 
-    assert app_module._wa_interpretar_mensaje_ia("no sé cuánto gasté") == (True, None)
+    assert app_module._wa_interpretar_mensaje_ia("no sé cuánto gasté") == (True, None, None)
 
 
 def test_interpretar_json_invalido_no_esta_disponible(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory("esto no es json"))
 
-    assert app_module._wa_interpretar_mensaje_ia("gasté 500") == (False, None)
+    assert app_module._wa_interpretar_mensaje_ia("gasté 500") == (False, None, None)
 
 
 def test_interpretar_respeta_descripcion_entre_parentesis(monkeypatch):
@@ -83,14 +102,15 @@ def test_interpretar_respeta_descripcion_entre_parentesis(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     calls = []
     respuesta = json.dumps({
-        "es_transaccion": True, "tipo": "Gasto", "monto": 500, "moneda": "ARS",
+        "intencion": "carga", "tipo": "Gasto", "monto": 500, "moneda": "ARS",
         "categoria": "comida", "descripcion": "una descripcion inventada por la IA",
     })
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta, calls))
 
-    disponible, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en supermercado (compra semanal)")
+    disponible, accion, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en supermercado (compra semanal)")
 
     assert disponible is True
+    assert accion == "carga"
     assert datos["descripcion"] == "compra semanal"
     assert datos["categoria"] == "Comida"  # la categoría la sigue decidiendo la IA
     # el paréntesis no se le manda a la IA, para que no intente reinterpretarlo
@@ -100,12 +120,12 @@ def test_interpretar_respeta_descripcion_entre_parentesis(monkeypatch):
 def test_interpretar_sin_parentesis_usa_la_descripcion_de_la_ia(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     respuesta = json.dumps({
-        "es_transaccion": True, "tipo": "Gasto", "monto": 500, "moneda": "ARS",
+        "intencion": "carga", "tipo": "Gasto", "monto": 500, "moneda": "ARS",
         "categoria": "comida", "descripcion": "en el kiosco de la esquina",
     })
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta))
 
-    _, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco de la esquina")
+    _, _, datos = app_module._wa_interpretar_mensaje_ia("gasté 500 en el kiosco de la esquina")
 
     assert datos["descripcion"] == "en el kiosco de la esquina"
 
@@ -165,16 +185,16 @@ def test_api_caida_devuelve_none(fake_db, monkeypatch):
     assert app_module._wa_responder_pregunta("u1", "cuánto gasté?") is None
 
 
-# ── _procesar_mensaje_whatsapp: ruteo mensaje vs. pregunta ──────────────────
+# ── _procesar_mensaje_whatsapp: ruteo carga vs. borrar vs. pregunta ─────────
 
 def test_mensaje_sin_monto_se_trata_como_pregunta(fake_db, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     respuestas = [
-        json.dumps({"es_transaccion": False}),  # 1: intento de interpretar como carga
-        "Gastaste poco este mes.",              # 2: respuesta del chat
+        json.dumps({"intencion": "otro"}),  # 1: intento de interpretar como carga/borrado
+        "Gastaste poco este mes.",          # 2: respuesta del chat
     ]
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuestas))
-    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
     fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 100, "moneda": "ARS", "categoria": "Comida", "descripcion": "", "fecha": "2026-08-01"}]
 
     enviados = []
@@ -188,13 +208,13 @@ def test_mensaje_sin_monto_se_trata_como_pregunta(fake_db, monkeypatch):
 def test_mensaje_informal_interpretado_como_transaccion_se_carga_sin_preguntar(fake_db, monkeypatch):
     calls = []
     respuesta = json.dumps({
-        "es_transaccion": True, "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
+        "intencion": "carga", "tipo": "Gasto", "monto": 5000, "moneda": "ARS",
         "categoria": "comida", "descripcion": "",
     })
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(respuesta, calls))
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
-    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
 
     enviados = []
     monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
@@ -202,7 +222,7 @@ def test_mensaje_informal_interpretado_como_transaccion_se_carga_sin_preguntar(f
     app_module._procesar_mensaje_whatsapp({"id": "wamid2", "from": "5491111111111", "text": {"body": "me gasté 5 lucas en un asado"}})
 
     assert len(calls) == 1  # una sola llamada a Gemini: interpretar. no llega a preguntar.
-    assert "registrado" in enviados[0]
+    assert "Anoté" in enviados[0]
 
 
 def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
@@ -210,14 +230,14 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     # dejar de funcionar: cae al parser viejo basado en regex.
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setattr(app_module, "_insertar_transaccion", lambda *a, **kw: (True, {"id": "t1"}))
-    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID}]
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
 
     enviados = []
     monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
 
     app_module._procesar_mensaje_whatsapp({"id": "wamid3", "from": "5491111111111", "text": {"body": "gasté 500 en supermercado"}})
 
-    assert "registrado" in enviados[0]
+    assert "Anoté" in enviados[0]
 
 
 # ── "borrar último" ───────────────────────────────────────────────────────────
@@ -235,7 +255,9 @@ def test_sin_api_key_usa_el_parser_regex_como_respaldo(fake_db, monkeypatch):
     "eliminar ultimo gasto",
     "ELIMINAR ULTIMO INGRESO",
 ])
-def test_variantes_de_borrar_ultimo_se_interpretan_igual(fake_db, monkeypatch, frase):
+def test_variantes_fijas_de_borrar_ultimo_sin_ia_se_interpretan_igual(fake_db, monkeypatch, frase):
+    # Sin GEMINI_API_KEY: usa la regla de respaldo (regex), más rígida.
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": 42}]
     fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"}]
 
@@ -244,7 +266,28 @@ def test_variantes_de_borrar_ultimo_se_interpretan_igual(fake_db, monkeypatch, f
 
     app_module._procesar_mensaje_whatsapp({"id": f"wamid-{frase}", "from": "5491111111111", "text": {"body": frase}})
 
-    assert "Borrado" in enviados[0]
+    assert "borré" in enviados[0].lower()
+
+
+@pytest.mark.parametrize("frase", [
+    "borrá lo último que cargué",
+    "epa me equivoqué, sacalo",
+    "no, borrá eso",
+    "deshacé el último gasto",
+])
+def test_borrar_ultimo_con_ia_entiende_cualquier_forma_de_pedirlo(fake_db, monkeypatch, frase):
+    # Con IA disponible, no hace falta decir "borrar ultimo" textual.
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    monkeypatch.setattr(app_module.genai, "Client", _fake_client_factory(json.dumps({"intencion": "borrar_ultimo"})))
+    fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": 42}]
+    fake_db.tables["transacciones"] = [{"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"}]
+
+    enviados = []
+    monkeypatch.setattr(app_module, "_wa_enviar_mensaje", lambda tel, txt: enviados.append(txt))
+
+    app_module._procesar_mensaje_whatsapp({"id": f"wamid-ia-{frase}", "from": "5491111111111", "text": {"body": frase}})
+
+    assert "borré" in enviados[0].lower()
 
 
 def test_cargar_una_transaccion_guarda_su_id_en_la_base_para_poder_borrarla(fake_db, monkeypatch):
@@ -264,6 +307,7 @@ def test_cargar_una_transaccion_guarda_su_id_en_la_base_para_poder_borrarla(fake
 
 
 def test_borrar_ultimo_sin_carga_previa_no_borra_nada(fake_db, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": None}]
 
     enviados = []
@@ -277,6 +321,7 @@ def test_borrar_ultimo_sin_carga_previa_no_borra_nada(fake_db, monkeypatch):
 
 
 def test_borrar_ultimo_borra_la_transaccion_y_limpia_el_puntero_en_la_base(fake_db, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     fake_db.tables["whatsapp_users"] = [{"user_id": app_module._WHATSAPP_USER_ID, "ultima_transaccion_id": 42}]
     fake_db.tables["transacciones"] = [
         {"tipo": "Gasto", "monto": 500, "moneda": "ARS", "categoria": "Comida"},
@@ -287,7 +332,7 @@ def test_borrar_ultimo_borra_la_transaccion_y_limpia_el_puntero_en_la_base(fake_
 
     app_module._procesar_mensaje_whatsapp({"id": "wamid6", "from": "5491111111111", "text": {"body": "Borrar Último"}})
 
-    assert "Borrado" in enviados[0]
+    assert "borré" in enviados[0].lower()
     assert "500" in enviados[0]
 
     deletes = [c for (tabla, q) in fake_db.queries if tabla == "transacciones" for c in q.calls if c[0] == "delete"]
