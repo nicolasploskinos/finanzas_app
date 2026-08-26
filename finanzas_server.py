@@ -393,6 +393,44 @@ def _wa_enviar_mensaje(telefono, texto):
     except Exception as e:
         print(f"[whatsapp] excepcion al enviar: {e}")
 
+def _wa_descargar_media(media_id):
+    """Los medios de WhatsApp no vienen en el webhook: hay que pedirle a Meta
+    la URL temporal del archivo y después descargarlo aparte."""
+    token = os.environ.get("WHATSAPP_TOKEN", "")
+    if not token or not media_id:
+        return None, None
+    try:
+        meta = req.get(
+            f"https://graph.facebook.com/v20.0/{media_id}",
+            headers={"Authorization": f"Bearer {token}"}, timeout=10,
+        ).json()
+        url = meta.get("url")
+        if not url:
+            return None, None
+        r = req.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=20)
+        if not r.ok:
+            return None, None
+        return r.content, meta.get("mime_type", "audio/ogg")
+    except Exception:
+        return None, None
+
+def _wa_transcribir_audio(audio_bytes, mime_type):
+    if not os.environ.get("GEMINI_API_KEY"):
+        return None
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"],
+                               http_options=genai_types.HttpOptions(timeout=20000))
+        parte_audio = genai_types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
+        prompt = (
+            "Transcribí exactamente lo que se dice en este audio de WhatsApp, en español, tal cual se dijo "
+            "(incluyendo jerga o números tal como se pronuncian). Devolvé solo la transcripción en texto "
+            "corrido, sin comillas ni comentarios adicionales."
+        )
+        resp = client.models.generate_content(model="gemini-3.5-flash-lite", contents=[parte_audio, prompt])
+        return (resp.text or "").strip() or None
+    except Exception:
+        return None
+
 def _procesar_mensaje_whatsapp(msg):
     wamid = msg.get("id")
     if not wamid or wamid in _wa_procesados:
@@ -402,10 +440,21 @@ def _procesar_mensaje_whatsapp(msg):
         _wa_procesados.clear()
 
     telefono = msg.get("from", "")
-    texto = ((msg.get("text") or {}).get("body") or "").strip()
-    print(f"[whatsapp] mensaje recibido de '{telefono}': {texto!r}")
-    if not telefono or not texto:
+    if not telefono:
         return
+
+    if msg.get("type") == "audio":
+        audio_bytes, mime_type = _wa_descargar_media((msg.get("audio") or {}).get("id"))
+        texto = _wa_transcribir_audio(audio_bytes, mime_type) if audio_bytes else None
+        print(f"[whatsapp] audio recibido de '{telefono}', transcripción: {texto!r}")
+        if not texto:
+            _wa_enviar_mensaje(telefono, "No pude escuchar bien el audio 🤔. Probá de nuevo o mandalo por texto.")
+            return
+    else:
+        texto = ((msg.get("text") or {}).get("body") or "").strip()
+        print(f"[whatsapp] mensaje recibido de '{telefono}': {texto!r}")
+        if not texto:
+            return
 
     m = re.match(r"(?i)^vincular\s+(\d{6})$", texto.strip())
     if m:
