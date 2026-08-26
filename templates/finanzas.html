@@ -1778,7 +1778,8 @@
     box.textContent = tr("ia_generando");
 
     try {
-      const r = await fetch(`/api/finanzas/resumen-ia?mes=${mes}&anio=${anio}`);
+      const lang = document.documentElement.lang === "en" ? "en" : "es";
+      const r = await fetch(`/api/finanzas/resumen-ia?mes=${mes}&anio=${anio}&lang=${lang}`);
       const d = await r.json();
       box.textContent = d.ok ? d.resumen : tr(d.error || "ia_no_disponible");
     } catch {

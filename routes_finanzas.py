@@ -307,9 +307,10 @@ def resumen_ia():
     mes  = request.args.get("mes",  type=int, default=hoy_ar.month)
     anio = request.args.get("anio", type=int, default=hoy_ar.year)
     mes  = max(1, min(12, mes))
+    lang = "en" if request.args.get("lang") == "en" else "es"
     es_mes_actual = (mes == hoy_ar.month and anio == hoy_ar.year)
 
-    cache_key = (session["user_id"], mes, anio)
+    cache_key = (session["user_id"], mes, anio, lang)
     if not es_mes_actual and cache_key in core._resumen_ia_cache:
         return jsonify({"ok": True, "resumen": core._resumen_ia_cache[cache_key]})
 
@@ -319,14 +320,21 @@ def resumen_ia():
 
     r = datos["resumen"]
     cats_txt = ", ".join(f"{c['nombre']} ${c['total']:.0f}" for c in datos["categorias"][:6]) or "sin gastos"
+    if lang == "en":
+        instruccion_idioma = (
+            "Write your answer in English. The month names in the data below are in Spanish — translate them "
+            "into English in your answer (e.g. 'Agosto' -> 'August')."
+        )
+    else:
+        instruccion_idioma = "Escribí tu respuesta en español rioplatense."
     prompt = (
         f"Datos financieros de {r['mes_actual']} de un usuario (montos en ARS):\n"
         f"- Ingresos: ${r['ingresos_actual']:.0f} (mes anterior, {r['mes_anterior']}: ${r['ingresos_anterior']:.0f})\n"
         f"- Gastos: ${r['gastos_actual']:.0f} (mes anterior: ${r['gastos_anterior']:.0f})\n"
         f"- Gastos por categoría: {cats_txt}\n\n"
-        "Escribí un resumen breve (3-4 oraciones, español rioplatense, tono cercano y directo) sobre cómo viene "
-        "el mes comparado con el anterior y en qué se concentra el gasto. Interpretá los números, no los repitas "
-        "tal cual. No uses markdown ni bullets, solo texto corrido."
+        f"Escribí un resumen breve (3-4 oraciones, tono cercano y directo) sobre cómo viene el mes comparado con "
+        "el anterior y en qué se concentra el gasto. Interpretá los números, no los repitas tal cual. No uses "
+        f"markdown ni bullets, solo texto corrido. {instruccion_idioma}"
     )
     try:
         client = core.genai.Client(api_key=os.environ["GEMINI_API_KEY"],
