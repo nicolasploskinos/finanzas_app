@@ -259,14 +259,20 @@ def import_confirm():
     payload = []
     for t in filas:
         try:
+            fecha = date.fromisoformat(t["fecha"]).isoformat()
+            # Un CSV importado suele traer movimientos de fechas pasadas: se
+            # usa la cotización histórica de cada fecha, no la de hoy.
+            cotiz = core._cotizacion_para_fecha(fecha)
             payload.append({
                 "tipo":        "Ingreso" if t.get("tipo") == "Ingreso" else "Gasto",
                 "monto":       abs(float(t["monto"])),
-                "fecha":       date.fromisoformat(t["fecha"]).isoformat(),
+                "fecha":       fecha,
                 "categoria":   (t.get("categoria") or "").strip()[:60],
                 "descripcion": (t.get("descripcion") or "").strip()[:200],
                 "moneda":      t.get("moneda") if t.get("moneda") in ("ARS", "USD", "EUR") else "ARS",
                 "user_id":     session["user_id"],
+                "cotizacion_usd": cotiz.get("USD"),
+                "cotizacion_eur": cotiz.get("EUR"),
             })
         except (KeyError, ValueError, TypeError):
             continue
@@ -402,6 +408,15 @@ def editar(tid):
         "moneda":      t.get("moneda", "ARS"),
         "viaje_id":    t.get("viaje_id"),
     }
+    # Si la fila es de antes de que existiera la foto de cotización (o nunca
+    # se pudo tomar), se completa ahora con la cotización histórica de su
+    # fecha - pero nunca se pisa una ya guardada, para no revaluar una
+    # transacción vieja con el tipo de cambio de hoy.
+    actual = core.db.table("transacciones").select("cotizacion_usd,cotizacion_eur").eq("id", tid).eq("user_id", session["user_id"]).execute().data
+    if actual and actual[0].get("cotizacion_usd") is None:
+        cotiz = core._cotizacion_para_fecha(payload["fecha"])
+        payload["cotizacion_usd"] = cotiz.get("USD")
+        payload["cotizacion_eur"] = cotiz.get("EUR")
     res = core.db.table("transacciones").update(payload).eq("id", tid).eq("user_id", session["user_id"]).execute()
     return jsonify(res.data[0])
 

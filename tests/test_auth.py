@@ -95,11 +95,19 @@ def test_register_campos_faltantes(client, fake_db):
     assert r.get_json()["error"] == "missing_fields"
 
 
+def test_register_password_muy_corta(client, fake_db):
+    r = client.post("/api/finanzas/register",
+                     json={"username": "nico", "password": "corta1"})
+
+    assert r.status_code == 400
+    assert r.get_json()["error"] == "weak_password"
+
+
 def test_register_usuario_ya_existe(client, fake_db):
     fake_db.tables["usuarios"] = [{"id": "u1"}]  # el select por username lo encuentra
 
     r = client.post("/api/finanzas/register",
-                     json={"username": "nico", "password": "algo123"})
+                     json={"username": "nico", "password": "algo12345"})
 
     assert r.status_code == 400
     assert r.get_json()["error"] == "username_taken"
@@ -113,7 +121,7 @@ def test_register_exitoso_no_guarda_email(client, fake_db):
     fake_db.tables["transacciones"] = []
 
     r = client.post("/api/finanzas/register",
-                     json={"username": "nico_nuevo", "password": "algo123"})
+                     json={"username": "nico_nuevo", "password": "algo12345"})
 
     assert r.status_code == 201
     assert r.get_json() == {"ok": True}
@@ -127,4 +135,8 @@ def test_register_exitoso_no_guarda_email(client, fake_db):
     assert len(insert_calls) == 1
     payload = insert_calls[0][1][0]
     assert "email" not in payload
+
+    # Regresión: el registro no debe reclamar transacciones huérfanas
+    # (user_id nulo) para la cuenta recién creada - ver fix de esta sesión.
+    assert not any(tabla == "transacciones" for (tabla, _q) in fake_db.queries)
     assert payload["username"] == "nico_nuevo"

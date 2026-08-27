@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import json
 import time
 import unicodedata
@@ -7,7 +8,7 @@ import calendar
 import requests as req
 from google import genai
 from google.genai import types as genai_types
-from flask import Flask, session, redirect
+from flask import Flask, session, redirect, request, jsonify
 from flask_cors import CORS
 from supabase import create_client
 from functools import wraps
@@ -16,8 +17,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Cuando este archivo se ejecuta directamente ("python finanzas_server.py"),
+# Python lo registra en sys.modules como "__main__", no como "finanzas_server".
+# Los routes_*.py hacen "import finanzas_server as core": sin esta línea, ese
+# import no encuentra el módulo ya cargado y re-ejecuta este archivo entero
+# desde cero como una instancia separada, chocando más abajo al registrar los
+# blueprints sobre el módulo equivocado.
+sys.modules.setdefault("finanzas_server", sys.modules[__name__])
+
 _inflacion_cache = {"data": None, "ts": 0}
 _cotiz_cache = {"data": None, "ts": 0}
+_evolucion_usd_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
@@ -41,6 +51,35 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # tope global de subida (el import de CSV ya recorta a 2MB aparte)
 
 db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+
+def _pagina_error(titulo, mensaje):
+    return f"""<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{titulo} — Finanzas</title>
+<style>
+  body {{ font-family: -apple-system, "Segoe UI", sans-serif; background:#0f0f1a; color:#e2e8f0;
+         display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; text-align:center; }}
+  div {{ padding: 24px; }}
+  h1 {{ font-size: 22px; margin: 0 0 8px; }}
+  p {{ color:#94a3b8; margin: 0 0 20px; }}
+  a {{ color:#60a5fa; text-decoration:none; }}
+</style></head>
+<body><div><h1>{titulo}</h1><p>{mensaje}</p><a href="/finanzas">Volver a Finanzas</a></div></body></html>"""
+
+
+@app.errorhandler(404)
+def _error_404(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "error": "not_found"}), 404
+    return _pagina_error("Página no encontrada", "La página que buscás no existe o cambió de lugar."), 404
+
+
+@app.errorhandler(500)
+def _error_500(e):
+    print(f"[error 500] {request.method} {request.path}: {e}")
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "error": "server_error"}), 500
+    return _pagina_error("Algo salió mal", "Tuvimos un error inesperado. Ya estamos al tanto, probá de nuevo en un rato."), 500
 
 _login_intentos = {}           # username -> [timestamps de intentos fallidos]
 _LOGIN_MAX_INTENTOS = 5
@@ -87,6 +126,54 @@ def _obtener_cotizaciones():
     _cotiz_cache["ts"] = time.time()
     return cotiz
 
+def _evolucion_usd():
+    """Serie histórica día -> cotización oficial del dólar (bluelytics tiene
+    esto desde 2011). Se cachea una hora: es un archivo grande y el histórico
+    no cambia, solo se le agrega el día de hoy."""
+    if _evolucion_usd_cache["data"] and time.time() - _evolucion_usd_cache["ts"] < 3600:
+        return _evolucion_usd_cache["data"]
+    try:
+        r = req.get("https://api.bluelytics.com.ar/v2/evolution.json", timeout=8)
+        serie = {d["date"]: round(d["value_sell"], 2) for d in r.json() if d.get("source") == "Oficial"}
+    except Exception:
+        serie = {}
+    _evolucion_usd_cache["data"] = serie
+    _evolucion_usd_cache["ts"] = time.time()
+    return serie
+
+def _cotizacion_para_fecha(fecha_str):
+    """Cotización a guardar en una transacción con fecha "fecha_str" (para
+    carga tardía con fecha pasada, no para el día de hoy). El dólar histórico
+    sale de _evolucion_usd(); como bluelytics no publica fin de semana ni
+    feriados, se busca hacia atrás hasta la fecha publicada más cercana. El
+    euro no tiene serie histórica pública en esta API: se aproxima aplicando
+    a ese dólar histórico la relación EUR/USD de la cotización en vivo de
+    hoy - es una aproximación razonable para cargas recientes, no un valor
+    exacto de esa fecha."""
+    hoy = _hoy_ar()
+    try:
+        fecha = date.fromisoformat(fecha_str)
+    except (TypeError, ValueError):
+        fecha = hoy
+    if fecha >= hoy:
+        return _obtener_cotizaciones()
+
+    serie = _evolucion_usd()
+    usd_hist = None
+    for atras in range(10):
+        candidata = (fecha - timedelta(days=atras)).isoformat()
+        if candidata in serie:
+            usd_hist = serie[candidata]
+            break
+    if usd_hist is None:
+        return _obtener_cotizaciones()
+
+    cotiz_live = _obtener_cotizaciones()
+    eur_hist = None
+    if cotiz_live.get("USD") and cotiz_live.get("EUR"):
+        eur_hist = round(usd_hist * (cotiz_live["EUR"] / cotiz_live["USD"]), 2)
+    return {"USD": usd_hist, "EUR": eur_hist}
+
 def _convertir_moneda(monto, origen, destino, cotiz):
     if origen == destino:
         return monto
@@ -96,6 +183,17 @@ def _convertir_moneda(monto, origen, destino, cotiz):
     if destino == "ARS":
         return ars
     return ars / cotiz[destino] if cotiz.get(destino) else None
+
+def _cotiz_de_tx(t, cotiz_fallback):
+    """Cada transacción guarda la cotización del día en que se cargó (ver
+    _insertar_transaccion). Para calcular totales usamos esa foto histórica en
+    vez de la cotización de hoy, así los montos ya cargados no se revalúan
+    solos con el paso del tiempo. cotiz_fallback cubre las filas viejas,
+    cargadas antes de que existiera esta columna."""
+    return {
+        "USD": t.get("cotizacion_usd") or cotiz_fallback.get("USD"),
+        "EUR": t.get("cotizacion_eur") or cotiz_fallback.get("EUR"),
+    }
 
 # ── Plan helpers ─────────────────────────────────────────────────────────────
 
@@ -124,13 +222,20 @@ def _siguiente_fecha(fecha_str, frecuencia):
 def _procesar_recurrentes(user_id):
     hoy = _hoy_ar().isoformat()
     pendientes = db.table("recurrentes").select("*").eq("user_id", user_id).eq("activo", True).lte("proxima_fecha", hoy).execute().data
+    if not pendientes:
+        return
     for r in pendientes:
         prox = r["proxima_fecha"]
         while prox <= hoy:
+            # Si el backfill genera una fila con fecha pasada (ej: la app no
+            # se abrió en varios meses), usa la cotización histórica de esa
+            # fecha en vez de la de hoy.
+            cotiz = _cotizacion_para_fecha(prox)
             db.table("transacciones").insert({
                 "tipo": r["tipo"], "monto": r["monto"], "fecha": prox,
                 "categoria": r["categoria"], "descripcion": r["descripcion"],
                 "moneda": r["moneda"], "user_id": user_id,
+                "cotizacion_usd": cotiz.get("USD"), "cotizacion_eur": cotiz.get("EUR"),
             }).execute()
             prox = _siguiente_fecha(prox, r["frecuencia"])
         db.table("recurrentes").update({"proxima_fecha": prox}).eq("id", r["id"]).execute()
@@ -141,10 +246,15 @@ def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion
         count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).execute().data)
         if count >= 50:
             return False, "limite_pro"
+    # Se guarda la cotización del día de la transacción (la de hoy si es de
+    # hoy, la histórica de esa fecha si es una carga tardía con fecha
+    # pasada), para que los totales no se revalúen solos con el tiempo.
+    cotiz = _cotizacion_para_fecha(fecha)
     payload = {
         "tipo": tipo, "monto": float(monto), "fecha": fecha,
         "categoria": categoria or "", "descripcion": descripcion or "",
         "moneda": moneda or "ARS", "user_id": user_id, "viaje_id": viaje_id,
+        "cotizacion_usd": cotiz.get("USD"), "cotizacion_eur": cotiz.get("EUR"),
     }
     res = db.table("transacciones").insert(payload).execute()
     return True, res.data[0]
@@ -637,11 +747,11 @@ def _stats_mes(user_id, mes, anio):
     inicio_mes = date(anio, mes, 1).isoformat()
     inicio_mes_ant = date(anio if mes > 1 else anio - 1, mes - 1 if mes > 1 else 12, 1).isoformat()
     fin_mes = date(anio if mes < 12 else anio + 1, mes + 1 if mes < 12 else 1, 1).isoformat()
-    res_act = db.table("transacciones").select("tipo,monto,moneda,categoria").eq("user_id", user_id).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
-    res_ant = db.table("transacciones").select("tipo,monto,moneda").eq("user_id", user_id).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
-    cotiz = _obtener_cotizaciones()
+    res_act = db.table("transacciones").select("tipo,monto,moneda,categoria,cotizacion_usd,cotizacion_eur").eq("user_id", user_id).gte("fecha", inicio_mes).lt("fecha", fin_mes).execute()
+    res_ant = db.table("transacciones").select("tipo,monto,moneda,cotizacion_usd,cotizacion_eur").eq("user_id", user_id).gte("fecha", inicio_mes_ant).lt("fecha", inicio_mes).execute()
+    cotiz_live = _obtener_cotizaciones()
     def _ars(t):
-        conv = _convertir_moneda(float(t["monto"]), t.get("moneda") or "ARS", "ARS", cotiz)
+        conv = _convertir_moneda(float(t["monto"]), t.get("moneda") or "ARS", "ARS", _cotiz_de_tx(t, cotiz_live))
         return conv if conv is not None else 0.0
     cats_total = defaultdict(float)
     cats_label = {}

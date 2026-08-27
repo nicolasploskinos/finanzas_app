@@ -51,6 +51,21 @@ class TestConvertirMoneda:
         assert app_module._convertir_moneda(100, "ARS", "USD", cotiz_caida) is None
 
 
+class TestCotizDeTx:
+    FALLBACK = {"USD": 1000.0, "EUR": 1100.0}
+
+    def test_usa_la_cotizacion_guardada_en_la_fila(self):
+        t = {"cotizacion_usd": 1500.0, "cotizacion_eur": 1650.0}
+        assert app_module._cotiz_de_tx(t, self.FALLBACK) == {"USD": 1500.0, "EUR": 1650.0}
+
+    def test_fila_vieja_sin_cotizacion_guardada_usa_el_fallback(self):
+        t = {"cotizacion_usd": None, "cotizacion_eur": None}
+        assert app_module._cotiz_de_tx(t, self.FALLBACK) == self.FALLBACK
+
+    def test_fila_sin_las_claves_tambien_usa_el_fallback(self):
+        assert app_module._cotiz_de_tx({}, self.FALLBACK) == self.FALLBACK
+
+
 class TestSiguienteFecha:
     def test_semanal_suma_siete_dias(self):
         assert app_module._siguiente_fecha("2026-08-01", "semanal") == "2026-08-08"

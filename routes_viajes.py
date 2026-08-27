@@ -18,9 +18,9 @@ def listar_viajes():
     ids = [v["id"] for v in viajes]
     gastos = {}
     if ids:
-        cotiz = core._obtener_cotizaciones()
+        cotiz_live = core._obtener_cotizaciones()
         txs = (
-            core.db.table("transacciones").select("viaje_id,tipo,monto,moneda")
+            core.db.table("transacciones").select("viaje_id,tipo,monto,moneda,cotizacion_usd,cotizacion_eur")
             .eq("user_id", session["user_id"]).in_("viaje_id", ids).execute().data
         )
         for t in txs:
@@ -29,6 +29,7 @@ def listar_viajes():
             vid = t["viaje_id"]
             origen = t.get("moneda") or "ARS"
             monto = float(t["monto"])
+            cotiz = core._cotiz_de_tx(t, cotiz_live)
             gastos.setdefault(vid, {"ARS": 0.0, "USD": 0.0, "EUR": 0.0})
             for destino in ("ARS", "USD", "EUR"):
                 conv = core._convertir_moneda(monto, origen, destino, cotiz)
@@ -91,12 +92,13 @@ def detalle_viaje(vid):
         .order("fecha").execute().data
     )
 
-    cotiz = core._obtener_cotizaciones()
+    cotiz_live = core._obtener_cotizaciones()
     totales = {"ARS": 0.0, "USD": 0.0, "EUR": 0.0}
     por_cat = {"ARS": {}, "USD": {}, "EUR": {}}
     for t in txs:
         origen = t.get("moneda") or "ARS"
         monto = float(t["monto"])
+        cotiz = core._cotiz_de_tx(t, cotiz_live)
         t["monto_usd"] = core._convertir_moneda(monto, origen, "USD", cotiz)
         if t["tipo"] != "Gasto":
             continue

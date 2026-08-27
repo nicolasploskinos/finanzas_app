@@ -922,11 +922,15 @@
     actualizarConsolidado();
   }
 
-  function toARS(monto, moneda) {
-    if (moneda === "ARS") return monto;
-    if (moneda === "USD") return cotiz.USD ? monto * cotiz.USD : null;
-    if (moneda === "EUR") return cotiz.EUR ? monto * cotiz.EUR : null;
-    return monto;
+  function toARS(t) {
+    const moneda = t.moneda || "ARS";
+    if (moneda === "ARS") return Number(t.monto);
+    // Se prioriza la cotización guardada en la transacción (la del día en
+    // que se cargó) por sobre la de hoy, así el consolidado no se revalúa
+    // solo cada vez que cambia el dólar/euro. Las filas viejas, cargadas
+    // antes de que existiera esa foto, caen a la cotización actual.
+    const tasa = moneda === "USD" ? (t.cotizacion_usd || cotiz.USD) : (t.cotizacion_eur || cotiz.EUR);
+    return tasa ? Number(t.monto) * tasa : null;
   }
 
   function fromARS(ars, moneda) {
@@ -942,7 +946,7 @@
 
     let ingARS = 0, gasARS = 0;
     lista.forEach(t => {
-      const ars = toARS(t.monto, t.moneda || "ARS");
+      const ars = toARS(t);
       if (ars === null) return;
       if (t.tipo === "Ingreso") ingARS += ars;
       else gasARS += ars;

@@ -112,3 +112,18 @@ def _reset_resumen_ia_cache():
     app_module._resumen_ia_cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _mock_cotizaciones(monkeypatch):
+    # _obtener_cotizaciones y _evolucion_usd pegan contra APIs externas
+    # (bluelytics). Desde que las transacciones guardan una foto de la
+    # cotización al cargarse (ver _insertar_transaccion / _cotizacion_para_fecha),
+    # cualquier test que cree/edite/importe una transacción pasa por acá -
+    # mockeadas por default para no depender de internet. Con _evolucion_usd
+    # vacío, _cotizacion_para_fecha cae siempre al valor fijo de
+    # _obtener_cotizaciones, salvo que un test pise cualquiera de las dos
+    # (ver test_cotizaciones_es_publica_a_proposito y TestCotizacionParaFecha
+    # en test_cotizacion_historica.py, que sí ejercitan el lookup histórico real).
+    monkeypatch.setattr(app_module, "_obtener_cotizaciones", lambda: {"USD": 1000.0, "EUR": 1100.0})
+    monkeypatch.setattr(app_module, "_evolucion_usd", lambda: {})
+
+

@@ -39,6 +39,9 @@ def register():
     if not username or not password:
         return jsonify({"ok": False, "error": "missing_fields"}), 400
 
+    if len(password) < 8:
+        return jsonify({"ok": False, "error": "weak_password"}), 400
+
     if core.db.table("usuarios").select("id").eq("username", username).execute().data:
         return jsonify({"ok": False, "error": "username_taken"}), 400
 
@@ -51,7 +54,6 @@ def register():
     }).execute()
 
     user = res.data[0]
-    core.db.table("transacciones").update({"user_id": user["id"]}).is_("user_id", "null").execute()
 
     session.permanent = True
     session["user_id"]  = user["id"]

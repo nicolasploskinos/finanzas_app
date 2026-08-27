@@ -116,6 +116,7 @@
       <input type="password" id="r-pass" placeholder="••••••••" autocomplete="new-password">
     </div>
     <button class="btn" onclick="register()" data-en="Create account">Crear cuenta</button>
+    <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:12px;" data-en="By creating an account you agree to our <a href='/terminos' style='color:var(--muted)'>Terms</a> and <a href='/privacidad' style='color:var(--muted)'>Privacy Policy</a>">Al crear una cuenta aceptás nuestros <a href="/terminos" style="color:var(--muted)">Términos</a> y <a href="/privacidad" style="color:var(--muted)">Política de Privacidad</a></p>
   </div>
 </div>
 
@@ -159,6 +160,7 @@
     invalid_credentials: { es: "Usuario o contraseña incorrectos", en: "Incorrect username or password" },
     missing_fields:      { es: "Completá todos los campos",        en: "Fill in all fields" },
     username_taken:      { es: "Ese nombre de usuario ya está en uso", en: "That username is already taken" },
+    weak_password:       { es: "La contraseña tiene que tener al menos 8 caracteres", en: "Password must be at least 8 characters" },
     too_many_attempts:   { es: "Demasiados intentos. Probá de nuevo en unos minutos", en: "Too many attempts. Try again in a few minutes" },
   };
   function t(code) {

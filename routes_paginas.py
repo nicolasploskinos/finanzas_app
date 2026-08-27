@@ -12,6 +12,16 @@ def landing():
     return render_template("landing.html")
 
 
+@bp.route("/privacidad")
+def privacidad():
+    return render_template("privacidad.html")
+
+
+@bp.route("/terminos")
+def terminos():
+    return render_template("terminos.html")
+
+
 @bp.route("/finanzas")
 @core.login_required
 def index():
