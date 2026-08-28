@@ -103,10 +103,10 @@ def eliminar_transaccion(tid):
     _db.table("transacciones").delete().eq("id", tid).eq("user_id", _usuario_actual["id"]).execute()
 
 
-class FinanzasApp:
+class MontorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Control de Finanzas")
+        self.root.title("Control de Montor")
         self.root.geometry("1100x720")
         self.root.configure(bg=COLORES["bg"])
         self.root.resizable(True, True)
@@ -183,7 +183,7 @@ class FinanzasApp:
         header.pack(fill="x", padx=0, pady=0)
         header.pack_propagate(False)
 
-        tk.Label(header, text="💰 Control de Finanzas", bg=COLORES["surface"],
+        tk.Label(header, text="💰 Control de Montor", bg=COLORES["surface"],
                  fg=COLORES["text"], font=("Segoe UI", 16, "bold")).pack(side="left", padx=20, pady=15)
 
         # Botón cerrar sesión (derecha)
@@ -988,7 +988,7 @@ class FinanzasApp:
 class LoginApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Finanzas — Ingresar")
+        self.root.title("Montor — Ingresar")
         self.root.geometry("380x480")
         self.root.configure(bg=COLORES["bg"])
         self.root.resizable(False, False)
@@ -1000,7 +1000,7 @@ class LoginApp:
         marco.place(relx=0.5, rely=0.5, anchor="center", width=340)
 
         tk.Label(marco, text="💰", bg=COLORES["surface"], font=("Segoe UI", 36)).pack()
-        tk.Label(marco, text="Control de Finanzas", bg=COLORES["surface"],
+        tk.Label(marco, text="Control de Montor", bg=COLORES["surface"],
                  fg=COLORES["text"], font=("Segoe UI", 15, "bold")).pack(pady=(4, 2))
         tk.Label(marco, text="Ingresá o creá tu cuenta", bg=COLORES["surface"],
                  fg=COLORES["text_muted"], font=("Segoe UI", 10)).pack(pady=(0, 16))
@@ -1108,5 +1108,5 @@ if __name__ == "__main__":
 
     # App principal
     root = tk.Tk()
-    app = FinanzasApp(root)
+    app = MontorApp(root)
     root.mainloop()

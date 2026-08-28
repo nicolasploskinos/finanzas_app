@@ -1,4 +1,4 @@
-# Finanzas: una aplicación web de gestión de finanzas personales multi-moneda con asistencia de Inteligencia Artificial
+# Montor: una aplicación web de gestión de finanzas personales multi-moneda con asistencia de Inteligencia Artificial
 
 **Autor:** Nicolás Ploskinos
 **Fecha:** Agosto de 2026
@@ -7,7 +7,7 @@
 
 ## Resumen
 
-Este trabajo presenta *Finanzas*, una aplicación web de control de gastos e ingresos personales pensada específicamente para el contexto económico argentino, donde conviven distintas monedas (pesos, dólares y euros) en el día a día de una misma persona. El sistema permite registrar transacciones, organizarlas por viajes, definir presupuestos por categoría, automatizar gastos recurrentes, e interactuar con la aplicación tanto desde una interfaz web como desde WhatsApp mediante un asistente conversacional impulsado por modelos de lenguaje (LLM). Se describen las decisiones de arquitectura, la integración de Inteligencia Artificial en distintos puntos del producto, las medidas de seguridad implementadas, la estrategia de testing automatizado y de integración continua, y el modelo de despliegue e infraestructura utilizado. El proyecto fue desarrollado y mantenido por un único desarrollador, e incorpora un modelo de negocio freemium con un plan pago (Pro) gestionado a través de Mercado Pago.
+Este trabajo presenta *Montor*, una aplicación web de control de gastos e ingresos personales pensada específicamente para el contexto económico argentino, donde conviven distintas monedas (pesos, dólares y euros) en el día a día de una misma persona. El sistema permite registrar transacciones, organizarlas por viajes, definir presupuestos por categoría, automatizar gastos recurrentes, e interactuar con la aplicación tanto desde una interfaz web como desde WhatsApp mediante un asistente conversacional impulsado por modelos de lenguaje (LLM). Se describen las decisiones de arquitectura, la integración de Inteligencia Artificial en distintos puntos del producto, las medidas de seguridad implementadas, la estrategia de testing automatizado y de integración continua, y el modelo de despliegue e infraestructura utilizado. El proyecto fue desarrollado y mantenido por un único desarrollador, e incorpora un modelo de negocio freemium con un plan pago (Pro) gestionado a través de Mercado Pago.
 
 **Palabras clave:** finanzas personales, aplicación web, Flask, Inteligencia Artificial, procesamiento de lenguaje natural, WhatsApp Business API, Supabase, testing automatizado.
 
@@ -17,7 +17,7 @@ Este trabajo presenta *Finanzas*, una aplicación web de control de gastos e ing
 
 El manejo de las finanzas personales en Argentina presenta una particularidad poco frecuente en otros países: es habitual que una misma persona perciba ingresos en pesos y en dólares (por ejemplo, a través de trabajo freelance o en relación de dependencia con parte del sueldo dolarizado), y que sus gastos también se distribuyan entre ambas monedas. Las aplicaciones de finanzas personales genéricas disponibles en el mercado —tanto locales como internacionales— rara vez contemplan este escenario de forma nativa: suelen asumir una única moneda de referencia, o tratan la conversión de divisas como una funcionalidad secundaria.
 
-*Finanzas* nace para resolver este problema concreto: permitir que una persona lleve el control de su economía personal viendo, en todo momento, cuánto tiene y cuánto gasta, independientemente de en qué moneda haya ocurrido cada movimiento, y con la cotización oficial actualizada automáticamente.
+*Montor* nace para resolver este problema concreto: permitir que una persona lleve el control de su economía personal viendo, en todo momento, cuánto tiene y cuánto gasta, independientemente de en qué moneda haya ocurrido cada movimiento, y con la cotización oficial actualizada automáticamente.
 
 A partir de esa base, el proyecto fue creciendo para incorporar funcionalidades adicionales que resuelven fricciones reales del uso cotidiano: el registro de gastos durante un viaje al exterior (con seguimiento consolidado en dólares), el establecimiento de presupuestos por categoría, la automatización de gastos que se repiten mes a mes, y —el aporte más significativo del proyecto— la posibilidad de cargar y consultar movimientos conversando directamente por WhatsApp, en lenguaje natural, en español o en inglés, con o sin estructura fija, incluso por nota de voz.
 
@@ -80,7 +80,7 @@ El backend evolucionó de un único archivo monolítico de aproximadamente 1300 
 - `finanzas_server.py`: módulo "núcleo" — instancia de la aplicación Flask, clientes de Supabase y de la API de Gemini, funciones auxiliares compartidas (autenticación, conversión de moneda, lógica del bot de WhatsApp, cálculo de estadísticas) y el registro final de los distintos blueprints.
 - `routes_paginas.py`: páginas HTML (landing, dashboard, login).
 - `routes_auth.py`: registro e inicio de sesión.
-- `routes_finanzas.py`: transacciones, exportación/importación, presupuestos, recurrentes, estadísticas y resumen con IA.
+- `routes_montor.py`: transacciones, exportación/importación, presupuestos, recurrentes, estadísticas y resumen con IA.
 - `routes_viajes.py`: gestión de viajes.
 - `routes_whatsapp.py`: vinculación y webhook del bot de WhatsApp.
 - `routes_pagos.py`: suscripción Pro vía Mercado Pago.
@@ -149,11 +149,11 @@ Para el entorno de desarrollo local se corrigió además un problema de arranque
 
 ## 10. Modelo de negocio
 
-El producto sigue un modelo *freemium*: el uso básico es gratuito y permanente (hasta 50 transacciones por mes, con historial de los últimos tres meses), mientras que un plan pago (**Finanzas Pro**) desbloquea transacciones ilimitadas, historial completo, viajes, gastos recurrentes automáticos, exportación avanzada, importación bancaria y el resumen mensual con IA. La suscripción se gestiona mediante la integración con **Mercado Pago**, con opción de pago mensual o anual (este último con un descuento equivalente a dos meses gratuitos), y todo usuario nuevo accede a una prueba gratuita de 7 días con las funciones Pro habilitadas.
+El producto sigue un modelo *freemium*: el uso básico es gratuito y permanente (hasta 50 transacciones por mes, con historial de los últimos tres meses), mientras que un plan pago (**Montor Pro**) desbloquea transacciones ilimitadas, historial completo, viajes, gastos recurrentes automáticos, exportación avanzada, importación bancaria y el resumen mensual con IA. La suscripción se gestiona mediante la integración con **Mercado Pago**, con opción de pago mensual o anual (este último con un descuento equivalente a dos meses gratuitos), y todo usuario nuevo accede a una prueba gratuita de 7 días con las funciones Pro habilitadas.
 
 ## 11. Conclusiones y trabajo futuro
 
-*Finanzas* demuestra que es posible construir, con recursos de un único desarrollador, un producto de software con funcionalidad real y diferenciada —particularmente en su integración de Inteligencia Artificial conversacional multicanal— sin resignar prácticas de ingeniería de software habitualmente asociadas a equipos más grandes: testing automatizado, integración continua, control de versiones, y una arquitectura modular que facilita el mantenimiento a largo plazo.
+*Montor* demuestra que es posible construir, con recursos de un único desarrollador, un producto de software con funcionalidad real y diferenciada —particularmente en su integración de Inteligencia Artificial conversacional multicanal— sin resignar prácticas de ingeniería de software habitualmente asociadas a equipos más grandes: testing automatizado, integración continua, control de versiones, y una arquitectura modular que facilita el mantenimiento a largo plazo.
 
 Entre las líneas de trabajo futuro identificadas se destacan: completar el proceso de verificación de negocio de Meta para habilitar el bot de WhatsApp a cualquier usuario (actualmente restringido a una única cuenta por una limitación de la plataforma, no del sistema propio); incorporar categorización automática de transacciones mediante IA en la carga desde la interfaz web (hoy disponible únicamente vía WhatsApp); y evaluar la migración del frontend a un framework de componentes si la complejidad de la interfaz lo justifica en el futuro.
 

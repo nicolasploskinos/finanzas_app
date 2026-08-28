@@ -1,4 +1,4 @@
-# Finanzas
+# Montor
 
 App web de control de gastos e ingresos en pesos, dólares y euros, pensada para
 Argentina (cotización oficial BNA, inflación INDEC). Incluye viajes con
@@ -6,7 +6,7 @@ seguimiento en dólares, presupuestos, gastos recurrentes, un bot de WhatsApp
 que interpreta mensajes en lenguaje natural con IA (Gemini), y un resumen
 mensual también generado con IA.
 
-[![Tests](https://github.com/nicolasploskinos/finanzas_app/actions/workflows/tests.yml/badge.svg)](https://github.com/nicolasploskinos/finanzas_app/actions/workflows/tests.yml)
+[![Tests](https://github.com/nicolasploskinos/montor_app/actions/workflows/tests.yml/badge.svg)](https://github.com/nicolasploskinos/montor_app/actions/workflows/tests.yml)
 
 ## Stack
 
@@ -27,7 +27,7 @@ finanzas_server.py     # "core": Flask app, cliente de Supabase/Gemini, helpers
                         # registro de los blueprints de abajo
 routes_paginas.py       # páginas HTML (landing, dashboard, login)
 routes_auth.py          # login / registro
-routes_finanzas.py      # transacciones, export, import, presupuestos,
+routes_montor.py        # transacciones, export, import, presupuestos,
                         # recurrentes, stats, resumen con IA
 routes_viajes.py        # viajes (gastos con seguimiento en USD/EUR)
 routes_whatsapp.py      # vinculación y webhook del bot de WhatsApp
@@ -40,8 +40,8 @@ que los tests puedan seguir reemplazando esos atributos con mocks
 (`monkeypatch.setattr(app_module, "db", fake_db)`, etc.) sin importar en qué
 archivo termine viviendo el código que los usa.
 
-`finanzas.py`, en la raíz, es una app de escritorio (Tkinter) separada — un
-cliente alternativo, no forma parte de la app web.
+`montor_desktop.py`, en la raíz, es una app de escritorio (Tkinter) separada —
+un cliente alternativo, no forma parte de la app web.
 
 ## Levantar el proyecto local
 

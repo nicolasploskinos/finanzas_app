@@ -55,7 +55,7 @@ db = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 def _pagina_error(titulo, mensaje):
     return f"""<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{titulo} — Finanzas</title>
+<title>{titulo} — Montor</title>
 <style>
   body {{ font-family: -apple-system, "Segoe UI", sans-serif; background:#0f0f1a; color:#e2e8f0;
          display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; text-align:center; }}
@@ -64,7 +64,7 @@ def _pagina_error(titulo, mensaje):
   p {{ color:#94a3b8; margin: 0 0 20px; }}
   a {{ color:#60a5fa; text-decoration:none; }}
 </style></head>
-<body><div><h1>{titulo}</h1><p>{mensaje}</p><a href="/finanzas">Volver a Finanzas</a></div></body></html>"""
+<body><div><h1>{titulo}</h1><p>{mensaje}</p><a href="/finanzas">Volver a Montor</a></div></body></html>"""
 
 
 @app.errorhandler(404)
@@ -601,8 +601,8 @@ _WA_TEXTOS = {
         "en": "Done! You're all set 🙌 From now on just tell me your expenses and income like you'd text a friend.",
     },
     "no_vinculado": {
-        "es": "Todavía no te conozco 👋 Vinculá este WhatsApp desde la app (Finanzas → sección WhatsApp → Vincular) y arrancamos.",
-        "en": "I don't know you yet 👋 Link this WhatsApp from the app (Finanzas → WhatsApp section → Link) and we'll get started.",
+        "es": "Todavía no te conozco 👋 Vinculá este WhatsApp desde la app (Montor → sección WhatsApp → Vincular) y arrancamos.",
+        "en": "I don't know you yet 👋 Link this WhatsApp from the app (Montor → WhatsApp section → Link) and we'll get started.",
     },
     "borrar_nada": {
         "es": "No tengo ninguna carga reciente por acá para borrar 🤔 ¿Seguro que cargaste algo hace poco?",
@@ -793,27 +793,27 @@ def _payload_viaje(d):
 # ── Pagos ─────────────────────────────────────────────────────────────────────
 
 _PLANES_PRO = {
-    "mensual": {"frequency": 1,  "monto": 6000,  "etiqueta": "Finanzas Pro (mensual)"},
-    "anual":   {"frequency": 12, "monto": 60000, "etiqueta": "Finanzas Pro (anual)"},
+    "mensual": {"frequency": 1,  "monto": 6000,  "etiqueta": "Montor Pro (mensual)"},
+    "anual":   {"frequency": 12, "monto": 60000, "etiqueta": "Montor Pro (anual)"},
 }
 
 # ── Registro de rutas (ver routes_*.py) ────────────────────────────────────────
 # Cada archivo routes_*.py agrupa los endpoints de un area de la app (paginas,
-# auth, finanzas/stats, viajes, whatsapp, pagos) y accede a todo lo de arriba
+# montor/stats, viajes, whatsapp, pagos) y accede a todo lo de arriba
 # (db, genai, helpers, caches) via "import finanzas_server as core", nunca con
 # "from finanzas_server import x" -- eso rompería el mockeo en los tests, que
 # reemplazan atributos de este modulo (core.db, core.genai, etc).
 
 import routes_paginas  # noqa: E402
 import routes_auth  # noqa: E402
-import routes_finanzas  # noqa: E402
+import routes_montor  # noqa: E402
 import routes_viajes  # noqa: E402
 import routes_whatsapp  # noqa: E402
 import routes_pagos  # noqa: E402
 
 app.register_blueprint(routes_paginas.bp)
 app.register_blueprint(routes_auth.bp)
-app.register_blueprint(routes_finanzas.bp)
+app.register_blueprint(routes_montor.bp)
 app.register_blueprint(routes_viajes.bp)
 app.register_blueprint(routes_whatsapp.bp)
 app.register_blueprint(routes_pagos.bp)

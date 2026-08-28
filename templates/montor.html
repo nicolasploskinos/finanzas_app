@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Finanzas">
+  <meta name="apple-mobile-web-app-title" content="Montor">
   <meta name="theme-color" content="#1e1e2e">
   <link rel="manifest" href="/finanzas/manifest.json">
-  <title>Finanzas</title>
+  <title>Montor</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -364,7 +364,7 @@
 
 <header>
   <div>
-    <h1>💰 Finanzas</h1>
+    <h1>Montor</h1>
     <p id="fecha-hoy"></p>
   </div>
   <div class="header-right">
@@ -665,7 +665,7 @@
 <div class="pro-overlay" id="pro-overlay" onclick="cerrarModalProFondo(event)">
   <div class="pro-modal">
     <div class="pro-modal-handle"></div>
-    <div class="pro-titulo">⭐ Finanzas Pro</div>
+    <div class="pro-titulo">⭐ Montor Pro</div>
     <p class="pro-precio" data-en="Choose your plan">Elegí tu plan</p>
 
     <div class="pro-ciclos">
@@ -1528,7 +1528,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `finanzas.${formato === "excel" ? "xlsx" : "pdf"}`;
+      a.download = `montor.${formato === "excel" ? "xlsx" : "pdf"}`;
       document.body.appendChild(a);
       a.click();
       a.remove();

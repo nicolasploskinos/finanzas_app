@@ -1,4 +1,4 @@
-# Textos de marketing — Finanzas App
+# Textos de marketing — Montor
 
 Listos para copiar y pegar. Reemplazá https://web-production-d822b.up.railway.app con la URL real del servidor.
 

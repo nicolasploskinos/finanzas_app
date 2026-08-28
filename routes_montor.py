@@ -7,7 +7,7 @@ from flask import Blueprint, Response, jsonify, request, session
 
 import finanzas_server as core
 
-bp = Blueprint("finanzas", __name__)
+bp = Blueprint("montor", __name__)
 
 
 @bp.route("/api/finanzas/cotizaciones")
@@ -62,7 +62,7 @@ def exportar():
         ])
     encoded = output.getvalue().encode("utf-8-sig")
     return Response(encoded, mimetype="text/csv; charset=utf-8",
-                    headers={"Content-Disposition": "attachment; filename=finanzas.csv"})
+                    headers={"Content-Disposition": "attachment; filename=montor.csv"})
 
 
 @bp.route("/api/finanzas/export/excel", methods=["GET"])
@@ -98,7 +98,7 @@ def exportar_excel():
     return Response(
         buf.read(),
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=finanzas.xlsx"},
+        headers={"Content-Disposition": "attachment; filename=montor.xlsx"},
     )
 
 
@@ -120,7 +120,7 @@ def exportar_pdf():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, _safe("Finanzas - Historial de transacciones"), ln=1)
+    pdf.cell(0, 10, _safe("Montor - Historial de transacciones"), ln=1)
     pdf.set_font("Helvetica", "", 9)
     pdf.cell(0, 6, _safe(f"Generado el {core._hoy_ar().isoformat()} - Usuario: {session['username']}"), ln=1)
     pdf.ln(2)
@@ -152,7 +152,7 @@ def exportar_pdf():
     salida = bytes(pdf.output())
     return Response(
         salida, mimetype="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=finanzas.pdf"},
+        headers={"Content-Disposition": "attachment; filename=montor.pdf"},
     )
 
 

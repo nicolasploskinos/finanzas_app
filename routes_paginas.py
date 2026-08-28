@@ -41,7 +41,7 @@ def index():
                 is_trial = True
                 trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
     whatsapp_habilitado = session["user_id"] == core._WHATSAPP_USER_ID
-    return render_template("finanzas.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
+    return render_template("montor.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
                             trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
 
 
@@ -66,9 +66,9 @@ def logout():
 
 @bp.route("/finanzas/manifest.json")
 def manifest():
-    return send_from_directory("static", "finanzas_manifest.json", mimetype="application/manifest+json")
+    return send_from_directory("static", "montor_manifest.json", mimetype="application/manifest+json")
 
 
 @bp.route("/finanzas/sw.js")
 def sw():
-    return send_from_directory("static", "finanzas_sw.js", mimetype="application/javascript")
+    return send_from_directory("static", "montor_sw.js", mimetype="application/javascript")
