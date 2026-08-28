@@ -18,12 +18,14 @@
       --green: #4ade80; --red: #f87171; --blue: #60a5fa;
       --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
       --green-rgb: 74,222,128; --red-rgb: 248,113,113; --blue-rgb: 96,165,250; --yellow-rgb: 251,191,36;
+      --violet: #a78bfa; --teal: #2dd4bf; --violet-rgb: 167,139,250; --teal-rgb: 45,212,191;
     }
     body.light {
       --bg: #ece3d0; --surface: #f5eede; --surface2: #e4dac1;
       --green: #4c8a5e; --red: #b3543f; --blue: #4d6f9e;
       --yellow: #ad7c1f; --text: #3a3226; --muted: #655b4c; --border: #d3c6a6;
       --green-rgb: 76,138,94; --red-rgb: 179,84,63; --blue-rgb: 77,111,158; --yellow-rgb: 173,124,31;
+      --violet: #7c5fc4; --teal: #1f8f82; --violet-rgb: 124,95,196; --teal-rgb: 31,143,130;
     }
 
     body {
@@ -298,9 +300,29 @@
        ganen en la cascada a las de arriba sin necesitar !important. */
     @media (min-width: 900px) {
       body { max-width: min(92vw, 1400px); }
-      #tab-resumen { display: flex; align-items: flex-start; gap: 24px; }
-      .col-izq { display: block; flex: 0 0 400px; position: sticky; top: 76px; }
+      #tab-resumen { display: flex; align-items: flex-start; gap: 20px; padding-top: 4px; }
+      .col-izq {
+        display: flex; flex-direction: column; gap: 14px;
+        flex: 0 0 380px; position: sticky; top: 88px;
+        background: var(--surface2); border: 1px solid var(--border);
+        border-radius: 20px; padding: 16px;
+      }
       .col-der { display: block; flex: 1; min-width: 0; }
+
+      /* Acentos de color por seccion: la misma idea que ya usa la lista de
+         transacciones (borde de color a la izquierda), aplicada a los
+         modulos del sidebar para que se distingan de un vistazo. */
+      .col-izq .cons-section,
+      .col-izq .cot-wrap { margin: 0; border-left-width: 4px; border-left-style: solid; }
+      .col-izq .cot-card { margin: 0; border-left-width: 4px; border-left-style: solid; }
+      .col-izq .presup-section { padding: 12px 14px 10px; border-left-width: 4px; border-left-style: solid; background: var(--surface); border-radius: 14px; }
+
+      .col-izq .cons-section     { border-left-color: var(--blue); }
+      .col-izq .presup-section   { border-left-color: var(--violet); }
+      .col-izq .cot-wrap--stats  { border-left-color: var(--teal); }
+      .col-izq .cot-wrap--recur  { border-left-color: var(--yellow); }
+      .col-izq .cot-wrap--whatsapp { border-left-color: var(--green); }
+      .col-izq .cot-card         { border-left-color: var(--blue); }
 
       header h1 { font-size: 20px; }
       header p  { font-size: 12px; }
@@ -445,7 +467,7 @@
   <div id="limite-banner" style="display:none;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center"></div>
 
   <!-- Estadísticas del mes -->
-  <div class="cot-wrap">
+  <div class="cot-wrap cot-wrap--stats">
     <div class="cot-header" onclick="toggleStats()">
       <span data-en="📊 Monthly summary">📊 Resumen del mes</span>
       <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
@@ -474,7 +496,7 @@
   </div>
 
   <!-- Recurrentes -->
-  <div class="cot-wrap">
+  <div class="cot-wrap cot-wrap--recur">
     <div class="cot-header" onclick="toggleRecur()">
       <span data-en="📅 Active recurring">📅 Recurrentes activos</span>
       <div style="display:flex;gap:8px;align-items:center">
@@ -489,7 +511,7 @@
 
   <!-- WhatsApp -->
   {% if whatsapp_habilitado %}
-  <div class="cot-wrap">
+  <div class="cot-wrap cot-wrap--whatsapp">
     <div class="cot-header" onclick="toggleWhatsapp()">
       <span data-en="📱 WhatsApp: log expenses &amp; ask questions">📱 WhatsApp: cargar gastos y preguntar</span>
       <span id="wa-chev" style="font-size:11px;color:var(--muted)">▼</span>
