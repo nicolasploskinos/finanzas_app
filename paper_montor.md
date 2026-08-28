@@ -43,7 +43,7 @@ Desarrollar una aplicación web de gestión de finanzas personales que resuelva 
 
 ### 3.1. Gestión de transacciones
 
-El núcleo de la aplicación es el registro de transacciones (gastos e ingresos), cada una con monto, moneda (ARS/USD/EUR), categoría, descripción y fecha. El usuario puede cargar, editar y eliminar movimientos desde una interfaz web responsive (optimizada primero para uso móvil, con una disposición adaptada para escritorio a partir de cierto ancho de pantalla), buscar y filtrar por texto libre, categoría o rango de fechas, y exportar su historial completo a Excel, PDF o CSV.
+El núcleo de la aplicación es el registro de transacciones (gastos e ingresos), cada una con monto, moneda (ARS/USD/EUR), categoría, descripción y fecha. El usuario puede cargar, editar y eliminar movimientos desde una interfaz web responsive (optimizada primero para uso móvil, con una disposición de dos columnas a partir de los 900px de ancho), buscar y filtrar por texto libre, categoría o rango de fechas, y exportar su historial completo a Excel, PDF o CSV. El ancho máximo del contenido en la vista de escritorio se calcula en función del viewport (en lugar de un valor fijo) para aprovechar mejor el espacio disponible en monitores grandes sin perder la lectura cómoda propia de una columna angosta.
 
 ### 3.2. Multi-moneda, cotización oficial y valor histórico
 

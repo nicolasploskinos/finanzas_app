@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#1e1e2e">
   <link rel="manifest" href="/montor/manifest.json">
   <title>Montor</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232a2a3e'/><circle cx='50' cy='50' r='36' fill='none' stroke='%2360a5fa' stroke-width='6'/><rect x='34' y='54' width='8' height='18' rx='2' fill='%2360a5fa'/><rect x='46' y='46' width='8' height='26' rx='2' fill='%2360a5fa'/><rect x='58' y='36' width='8' height='36' rx='2' fill='%2360a5fa'/></svg>">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -56,6 +57,8 @@
       gap: 8px;
     }
     header h1 { font-size: 16px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }
+    .header-brand { display: flex; align-items: center; gap: 6px; }
+    .header-logo-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--blue); }
     header p  { font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap; }
     .header-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; min-width: 0; }
     .header-username { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
@@ -294,13 +297,14 @@
        Va al final del <style> a propósito, para que estas reglas le
        ganen en la cascada a las de arriba sin necesitar !important. */
     @media (min-width: 900px) {
-      body { max-width: 1140px; }
-      #tab-resumen { display: flex; align-items: flex-start; gap: 16px; }
+      body { max-width: min(92vw, 1400px); }
+      #tab-resumen { display: flex; align-items: flex-start; gap: 24px; }
       .col-izq { display: block; flex: 0 0 400px; position: sticky; top: 76px; }
       .col-der { display: block; flex: 1; min-width: 0; }
 
       header h1 { font-size: 20px; }
       header p  { font-size: 12px; }
+      .header-logo-icon { width: 26px; height: 26px; }
       .header-username { font-size: 16px; max-width: none; }
       .cons-title { font-size: 12px; }
       .cons-btn { font-size: 13px; }
@@ -364,7 +368,15 @@
 
 <header>
   <div>
-    <h1>Montor</h1>
+    <div class="header-brand">
+      <svg class="header-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+        <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor"/>
+        <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor"/>
+        <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
+      </svg>
+      <h1>Montor</h1>
+    </div>
     <p id="fecha-hoy"></p>
   </div>
   <div class="header-right">
