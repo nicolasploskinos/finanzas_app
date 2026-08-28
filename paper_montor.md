@@ -77,7 +77,7 @@ La persistencia de datos se resuelve con **Supabase** (una capa de Postgres gest
 
 El backend evolucionó de un único archivo monolítico de aproximadamente 1300 líneas a una estructura modular organizada por dominio funcional, utilizando *Blueprints* de Flask:
 
-- `finanzas_server.py`: módulo "núcleo" — instancia de la aplicación Flask, clientes de Supabase y de la API de Gemini, funciones auxiliares compartidas (autenticación, conversión de moneda, lógica del bot de WhatsApp, cálculo de estadísticas) y el registro final de los distintos blueprints.
+- `montor_server.py`: módulo "núcleo" — instancia de la aplicación Flask, clientes de Supabase y de la API de Gemini, funciones auxiliares compartidas (autenticación, conversión de moneda, lógica del bot de WhatsApp, cálculo de estadísticas) y el registro final de los distintos blueprints.
 - `routes_paginas.py`: páginas HTML (landing, dashboard, login).
 - `routes_auth.py`: registro e inicio de sesión.
 - `routes_montor.py`: transacciones, exportación/importación, presupuestos, recurrentes, estadísticas y resumen con IA.
@@ -145,7 +145,7 @@ Se configuró un flujo de trabajo de GitHub Actions que se ejecuta automáticame
 
 La aplicación está desplegada en **PythonAnywhere**, sobre un plan gratuito. El despliegue no es automático: es necesario actualizar el código manualmente (mediante `git pull` en una consola remota) y recargar la aplicación web luego de cada cambio, una limitación propia del nivel gratuito del servicio de hosting elegido. Las variables de entorno sensibles (claves de API, credenciales de base de datos, tokens de las distintas integraciones) se gestionan mediante un archivo `.env` que nunca se versiona en el repositorio.
 
-Para el entorno de desarrollo local se corrigió además un problema de arranque propio de Python: al ejecutar el archivo principal directamente, el intérprete lo registra bajo el nombre especial `__main__` en lugar de `finanzas_server`, lo que hacía que los módulos de rutas —que se importan a sí mismos como `finanzas_server`— terminaran re-ejecutando todo el archivo desde cero como una segunda instancia independiente, y fallando al registrar los blueprints. Se resolvió registrando explícitamente el módulo bajo ambos nombres al arrancar, un ajuste mínimo que no cambia el comportamiento en producción (donde ya se ejecuta correctamente vía `gunicorn`).
+Para el entorno de desarrollo local se corrigió además un problema de arranque propio de Python: al ejecutar el archivo principal directamente, el intérprete lo registra bajo el nombre especial `__main__` en lugar de `montor_server`, lo que hacía que los módulos de rutas —que se importan a sí mismos como `montor_server`— terminaran re-ejecutando todo el archivo desde cero como una segunda instancia independiente, y fallando al registrar los blueprints. Se resolvió registrando explícitamente el módulo bajo ambos nombres al arrancar, un ajuste mínimo que no cambia el comportamiento en producción (donde ya se ejecuta correctamente vía `gunicorn`).
 
 ## 10. Modelo de negocio
 

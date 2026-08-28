@@ -1,1 +1,1 @@
-web: gunicorn finanzas_server:app --bind 0.0.0.0:$PORT
+web: gunicorn montor_server:app --bind 0.0.0.0:$PORT

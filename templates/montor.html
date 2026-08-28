@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Montor">
   <meta name="theme-color" content="#1e1e2e">
-  <link rel="manifest" href="/finanzas/manifest.json">
+  <link rel="manifest" href="/montor/manifest.json">
   <title>Montor</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -375,7 +375,7 @@
       {% else %}
       <span style="font-size:11px;font-weight:700;background:var(--green);color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
-      <a href="/finanzas/viajes" title="Viajes" aria-label="Viajes" style="font-size:15px;text-decoration:none;padding:6px;">✈️</a>
+      <a href="/montor/viajes" title="Viajes" aria-label="Viajes" style="font-size:15px;text-decoration:none;padding:6px;">✈️</a>
       <button onclick="toggleLang()" id="btn-lang" aria-label="Switch language" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:6px 8px;" title="Switch language">EN</button>
       <button onclick="toggleModo()" id="btn-modo" aria-label="Cambiar modo claro/oscuro" style="background:none;border:none;cursor:pointer;font-size:15px;padding:6px;" title="Cambiar modo">🌙</button>
       <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;border-left:1px solid var(--border);padding:6px 0 6px 10px;" data-en="Log out">Salir</a>
@@ -894,7 +894,7 @@
 
   async function cargar() {
     try {
-      const r = await fetch("/api/finanzas");
+      const r = await fetch("/api/montor");
       datos = await r.json();
     } catch { datos = []; }
     render();
@@ -903,7 +903,7 @@
 
   async function cargarCotizaciones() {
     try {
-      const r = await fetch("/api/finanzas/cotizaciones");
+      const r = await fetch("/api/montor/cotizaciones");
       cotiz = await r.json();
       const usdStr = cotiz.USD ? '$' + cotiz.USD.toLocaleString('es-AR') : '—';
       const eurStr = cotiz.EUR ? '$' + cotiz.EUR.toLocaleString('es-AR') : '—';
@@ -1175,7 +1175,7 @@
 
   async function cargarRecurrentes() {
     try {
-      const r = await fetch("/api/finanzas/recurrentes");
+      const r = await fetch("/api/montor/recurrentes");
       recurrentes = await r.json();
     } catch { recurrentes = []; }
     renderRecurrentes();
@@ -1207,7 +1207,7 @@
   async function eliminarRecurrente(id) {
     if (!confirm(tr("confirm_borrar_recurrente"))) return;
     try {
-      const resp = await fetch(`/api/finanzas/recurrentes/${id}`, { method: "DELETE" });
+      const resp = await fetch(`/api/montor/recurrentes/${id}`, { method: "DELETE" });
       if (!resp.ok) { toast(tr("error_guardar")); return; }
       recurrentes = recurrentes.filter(r => r.id !== id);
       renderRecurrentes();
@@ -1229,7 +1229,7 @@
 
   async function cargarEstadoWhatsapp() {
     try {
-      const r = await fetch("/api/finanzas/whatsapp/estado");
+      const r = await fetch("/api/montor/whatsapp/estado");
       const data = await r.json();
       document.getElementById("wa-vinculado").style.display   = data.vinculado ? "" : "none";
       document.getElementById("wa-desvinculado").style.display = data.vinculado ? "none" : "";
@@ -1240,7 +1240,7 @@
 
   async function generarCodigoWhatsapp() {
     try {
-      const r = await fetch("/api/finanzas/whatsapp/codigo", { method: "POST" });
+      const r = await fetch("/api/montor/whatsapp/codigo", { method: "POST" });
       const data = await r.json();
       if (!data.ok) { toast(tr("wa_codigo_error")); return; }
       document.getElementById("wa-codigo-txt").textContent = data.codigo;
@@ -1251,7 +1251,7 @@
 
   async function desvincularWhatsapp() {
     if (!confirm(tr("confirm_desvincular_wa"))) return;
-    await fetch("/api/finanzas/whatsapp/desvincular", { method: "DELETE" });
+    await fetch("/api/montor/whatsapp/desvincular", { method: "DELETE" });
     cargarEstadoWhatsapp();
     toast(tr("wa_desvinculado"));
   }
@@ -1299,7 +1299,7 @@
 
   async function _borrarTxBackend(id) {
     try {
-      const r = await fetch(`/api/finanzas/${id}`, { method: "DELETE" });
+      const r = await fetch(`/api/montor/${id}`, { method: "DELETE" });
       if (!r.ok) { toast(tr("error_guardar")); return false; }
       datos = datos.filter(t => t.id !== id);
       render();
@@ -1337,7 +1337,7 @@
     btn.disabled = true;
     try {
       if (editandoId) {
-        const r = await fetch(`/api/finanzas/${editandoId}`, {
+        const r = await fetch(`/api/montor/${editandoId}`, {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(tx)
         });
@@ -1347,7 +1347,7 @@
         render();
         toast(tr("tx_actualizada"));
       } else if (recurrenciaActual !== "no") {
-        const rr = await fetch("/api/finanzas/recurrentes", {
+        const rr = await fetch("/api/montor/recurrentes", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...tx, frecuencia: recurrenciaActual })
         });
@@ -1362,7 +1362,7 @@
         if (recurOpen) cargarRecurrentes();
         toast(tr("recurrente_creado", { frecuencia: tr("frecuencia_" + recurrenciaActual) }));
       } else {
-        const r = await fetch("/api/finanzas", {
+        const r = await fetch("/api/montor", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(tx)
         });
@@ -1491,7 +1491,7 @@
     document.getElementById("btn-pro-pagar").textContent = ciclo === "anual" ? tr("suscribirme_anual") : tr("suscribirme_mensual");
   }
   function pagarPro() {
-    window.location.href = `/api/finanzas/suscribir?ciclo=${cicloProElegido}`;
+    window.location.href = `/api/montor/suscribir?ciclo=${cicloProElegido}`;
   }
 
   function abrirModalPro() {
@@ -1518,7 +1518,7 @@
   async function exportar(formato) {
     document.getElementById("export-menu").style.display = "none";
     try {
-      const r = await fetch(`/api/finanzas/export/${formato}`);
+      const r = await fetch(`/api/montor/export/${formato}`);
       if (!r.ok) {
         if (r.status === 403) { abrirModalPro(); return; }
         toast(tr("no_pudo_exportar"));
@@ -1553,7 +1553,7 @@
     fd.append("archivo", file);
     toast(tr("leyendo_archivo"));
     try {
-      const r = await fetch("/api/finanzas/import/preview", { method: "POST", body: fd });
+      const r = await fetch("/api/montor/import/preview", { method: "POST", body: fd });
       const data = await r.json();
       if (!r.ok || !data.ok) {
         if (r.status === 403) { abrirModalPro(); return; }
@@ -1600,7 +1600,7 @@
     });
     if (!seleccion.length) { toast(tr("elegi_movimiento")); return; }
     try {
-      const r = await fetch("/api/finanzas/import/confirm", {
+      const r = await fetch("/api/montor/import/confirm", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transacciones: seleccion })
       });
@@ -1616,7 +1616,7 @@
 
   function cerrarSesion() {
     if (confirm(tr("confirm_cerrar_sesion"))) {
-      window.location.href = "/finanzas/logout";
+      window.location.href = "/montor/logout";
     }
   }
 
@@ -1658,7 +1658,7 @@
     applyLang("en");
   }
 
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/finanzas/sw.js");
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/montor/sw.js");
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   let statsOpen = false;
@@ -1691,8 +1691,8 @@
       const mes  = document.getElementById("stats-mes").value  || (hoy.getMonth() + 1);
       const anio = document.getElementById("stats-anio").value || hoy.getFullYear();
       const [rStats, rInfl] = await Promise.all([
-        fetch(`/api/finanzas/stats?mes=${mes}&anio=${anio}`),
-        fetch("/api/finanzas/inflacion"),
+        fetch(`/api/montor/stats?mes=${mes}&anio=${anio}`),
+        fetch("/api/montor/inflacion"),
       ]);
       const d     = await rStats.json();
       const inflData = rInfl.ok ? await rInfl.json() : [];
@@ -1783,7 +1783,7 @@
 
     try {
       const lang = document.documentElement.lang === "en" ? "en" : "es";
-      const r = await fetch(`/api/finanzas/resumen-ia?mes=${mes}&anio=${anio}&lang=${lang}`);
+      const r = await fetch(`/api/montor/resumen-ia?mes=${mes}&anio=${anio}&lang=${lang}`);
       const d = await r.json();
       box.textContent = d.ok ? d.resumen : tr(d.error || "ia_no_disponible");
     } catch {
@@ -1841,7 +1841,7 @@
     const sel = document.getElementById("inp-viaje");
     if (!sel) return;
     try {
-      const r = await fetch("/api/finanzas/viajes");
+      const r = await fetch("/api/montor/viajes");
       viajesDisponibles = await r.json();
     } catch { viajesDisponibles = []; }
     sel.innerHTML = '<option value="">Ninguno</option>' +
@@ -1861,7 +1861,7 @@
 
   async function cargarPresup() {
     try {
-      const r = await fetch("/api/finanzas/presupuestos");
+      const r = await fetch("/api/montor/presupuestos");
       presupuestos = await r.json();
     } catch { presupuestos = []; }
     renderPresup();
@@ -1942,7 +1942,7 @@
     const moneda = presupMonedaActual;
     if (!cat || !monto || monto <= 0) { toast(tr("completa_cat_monto")); return; }
     try {
-      const r = await fetch("/api/finanzas/presupuestos", {
+      const r = await fetch("/api/montor/presupuestos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categoria: cat, monto, moneda })
@@ -1963,7 +1963,7 @@
 
   async function eliminarPresup(id) {
     try {
-      const r = await fetch(`/api/finanzas/presupuestos/${id}`, { method: "DELETE" });
+      const r = await fetch(`/api/montor/presupuestos/${id}`, { method: "DELETE" });
       if (!r.ok) { toast(tr("error_guardar")); return; }
       presupuestos = presupuestos.filter(p => p.id !== id);
       renderPresupModalLista();

@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-python finanzas_server.py
+python montor_server.py
 pause

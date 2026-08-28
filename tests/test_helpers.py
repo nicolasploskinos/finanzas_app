@@ -1,7 +1,7 @@
 """Funciones puras (sin base de datos) — las más fáciles de romper sin darse cuenta."""
 from datetime import date, datetime, timezone
 
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 class TestHoyAr:

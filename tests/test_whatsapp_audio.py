@@ -3,7 +3,7 @@ la URL temporal, después descargar el archivo) y se transcriben con Gemini
 antes de pasar por el mismo pipeline que un mensaje de texto normal."""
 from types import SimpleNamespace
 
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _fake_genai_client(texto):

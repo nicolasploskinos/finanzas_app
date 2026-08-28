@@ -3,12 +3,12 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, jsonify, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("auth", __name__)
 
 
-@bp.route("/api/finanzas/login", methods=["POST"])
+@bp.route("/api/montor/login", methods=["POST"])
 def login():
     data     = request.get_json()
     username = (data.get("username") or "").strip()
@@ -30,7 +30,7 @@ def login():
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/register", methods=["POST"])
+@bp.route("/api/montor/register", methods=["POST"])
 def register():
     data     = request.get_json()
     username = (data.get("username") or "").strip()

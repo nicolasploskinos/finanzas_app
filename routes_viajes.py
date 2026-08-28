@@ -1,12 +1,12 @@
 """Viajes: seguimiento de gastos por viaje, convertidos a ARS/USD/EUR."""
 from flask import Blueprint, jsonify, request, session
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("viajes", __name__)
 
 
-@bp.route("/api/finanzas/viajes", methods=["GET"])
+@bp.route("/api/montor/viajes", methods=["GET"])
 @core.login_required
 def listar_viajes():
     if not core._es_pro(session["user_id"]):
@@ -40,7 +40,7 @@ def listar_viajes():
     return jsonify(viajes)
 
 
-@bp.route("/api/finanzas/viajes", methods=["POST"])
+@bp.route("/api/montor/viajes", methods=["POST"])
 @core.login_required
 def crear_viaje():
     if not core._es_pro(session["user_id"]):
@@ -54,7 +54,7 @@ def crear_viaje():
     return jsonify(res.data[0]), 201
 
 
-@bp.route("/api/finanzas/viajes/<int:vid>", methods=["PUT"])
+@bp.route("/api/montor/viajes/<int:vid>", methods=["PUT"])
 @core.login_required
 def editar_viaje(vid):
     if not core._es_pro(session["user_id"]):
@@ -69,14 +69,14 @@ def editar_viaje(vid):
     return jsonify(res.data[0])
 
 
-@bp.route("/api/finanzas/viajes/<int:vid>", methods=["DELETE"])
+@bp.route("/api/montor/viajes/<int:vid>", methods=["DELETE"])
 @core.login_required
 def eliminar_viaje(vid):
     core.db.table("viajes").delete().eq("id", vid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/viajes/<int:vid>", methods=["GET"])
+@bp.route("/api/montor/viajes/<int:vid>", methods=["GET"])
 @core.login_required
 def detalle_viaje(vid):
     if not core._es_pro(session["user_id"]):

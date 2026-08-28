@@ -190,12 +190,12 @@
     const pass     = document.getElementById("l-pass").value;
     if (!username || !pass) { mostrarError("missing_fields"); return; }
 
-    const r = await fetch("/api/finanzas/login", {
+    const r = await fetch("/api/montor/login", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ username, password: pass })
     });
     const data = await r.json();
-    if (data.ok) window.location.href = "/finanzas";
+    if (data.ok) window.location.href = "/montor";
     else mostrarError(data.error);
   }
 
@@ -204,12 +204,12 @@
     const pass     = document.getElementById("r-pass").value;
     if (!username || !pass) { mostrarError("missing_fields"); return; }
 
-    const r = await fetch("/api/finanzas/register", {
+    const r = await fetch("/api/montor/register", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ username, password: pass })
     });
     const data = await r.json();
-    if (data.ok) window.location.href = "/finanzas";
+    if (data.ok) window.location.href = "/montor";
     else mostrarError(data.error);
   }
 

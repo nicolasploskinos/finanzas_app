@@ -1079,7 +1079,7 @@ class LoginApp:
                     self.error_label.config(text="Ese nombre de usuario ya está en uso")
                     return
                 res = _db.table("usuarios").insert({
-                    "email": f"{username}@finanzas.local",
+                    "email": f"{username}@montor.local",
                     "username": username,
                     "password_hash": generate_password_hash(password),
                     "verificado": True,

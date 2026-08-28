@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from flask import Blueprint, render_template, session, redirect, send_from_directory
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("paginas", __name__)
 
@@ -22,7 +22,7 @@ def terminos():
     return render_template("terminos.html")
 
 
-@bp.route("/finanzas")
+@bp.route("/montor")
 @core.login_required
 def index():
     user = core.db.table("usuarios").select("plan,trial_expira").eq("id", session["user_id"]).execute().data
@@ -45,30 +45,30 @@ def index():
                             trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
 
 
-@bp.route("/finanzas/viajes")
+@bp.route("/montor/viajes")
 @core.login_required
 def viajes_page():
     return render_template("viajes.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
 
 
-@bp.route("/finanzas/login")
+@bp.route("/montor/login")
 def login_page():
     if "user_id" in session:
-        return redirect("/finanzas")
+        return redirect("/montor")
     return render_template("auth.html")
 
 
-@bp.route("/finanzas/logout")
+@bp.route("/montor/logout")
 def logout():
     session.clear()
-    return redirect("/finanzas/login")
+    return redirect("/montor/login")
 
 
-@bp.route("/finanzas/manifest.json")
+@bp.route("/montor/manifest.json")
 def manifest():
     return send_from_directory("static", "montor_manifest.json", mimetype="application/manifest+json")
 
 
-@bp.route("/finanzas/sw.js")
+@bp.route("/montor/sw.js")
 def sw():
     return send_from_directory("static", "montor_sw.js", mimetype="application/javascript")

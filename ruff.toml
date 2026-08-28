@@ -1,8 +1,8 @@
 line-length = 130
 
-# finanzas.py es la app de escritorio (tkinter), un cliente separado y no
-# forma parte de la app web que vive en finanzas_server.py / routes_*.py.
-exclude = ["finanzas.py"]
+# montor_desktop.py es la app de escritorio (tkinter), un cliente separado y no
+# forma parte de la app web que vive en montor_server.py / routes_*.py.
+exclude = ["montor_desktop.py"]
 
 [lint]
 # Pyflakes (bugs reales: imports/variables sin usar, nombres indefinidos) +

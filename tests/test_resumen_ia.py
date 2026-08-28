@@ -2,7 +2,7 @@
 API real: se reemplaza genai.Client por un fake que devuelve texto fijo."""
 from types import SimpleNamespace
 
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _fake_client_factory(texto="Este mes gastaste más que el anterior.", calls=None):
@@ -38,7 +38,7 @@ def _con_transacciones(fake_db):
 
 def test_requiere_pro(client, fake_db):
     _loguear(client, fake_db, pro=False)
-    r = client.get("/api/finanzas/resumen-ia")
+    r = client.get("/api/montor/resumen-ia")
     assert r.status_code == 403
     assert r.get_json()["error"] == "pro_requerido"
 
@@ -46,7 +46,7 @@ def test_requiere_pro(client, fake_db):
 def test_sin_api_key_configurada(client, fake_db, monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     _loguear(client, fake_db)
-    r = client.get("/api/finanzas/resumen-ia")
+    r = client.get("/api/montor/resumen-ia")
     assert r.status_code == 503
     assert r.get_json()["error"] == "ia_no_configurada"
 
@@ -58,7 +58,7 @@ def test_sin_transacciones_no_llama_a_la_api(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     fake_db.tables["transacciones"] = []
 
-    r = client.get("/api/finanzas/resumen-ia?mes=1&anio=2026")
+    r = client.get("/api/montor/resumen-ia?mes=1&anio=2026")
 
     assert r.status_code == 400
     assert r.get_json()["error"] == "sin_datos"
@@ -72,7 +72,7 @@ def test_genera_resumen_de_un_mes_cerrado(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     _con_transacciones(fake_db)
 
-    r = client.get("/api/finanzas/resumen-ia?mes=1&anio=2026")
+    r = client.get("/api/montor/resumen-ia?mes=1&anio=2026")
 
     assert r.status_code == 200
     body = r.get_json()
@@ -88,8 +88,8 @@ def test_mes_cerrado_se_cachea_no_se_llama_dos_veces(client, fake_db, monkeypatc
     _loguear(client, fake_db)
     _con_transacciones(fake_db)
 
-    r1 = client.get("/api/finanzas/resumen-ia?mes=1&anio=2026")
-    r2 = client.get("/api/finanzas/resumen-ia?mes=1&anio=2026")
+    r1 = client.get("/api/montor/resumen-ia?mes=1&anio=2026")
+    r2 = client.get("/api/montor/resumen-ia?mes=1&anio=2026")
 
     assert r1.get_json() == r2.get_json()
     assert len(calls) == 1  # la segunda vez se sirvió del cache
@@ -105,8 +105,8 @@ def test_mes_actual_nunca_se_cachea(client, fake_db, monkeypatch):
         {"tipo": "Gasto", "monto": 1000, "moneda": "ARS", "categoria": "Comida", "fecha": hoy.isoformat()},
     ]
 
-    client.get(f"/api/finanzas/resumen-ia?mes={hoy.month}&anio={hoy.year}")
-    client.get(f"/api/finanzas/resumen-ia?mes={hoy.month}&anio={hoy.year}")
+    client.get(f"/api/montor/resumen-ia?mes={hoy.month}&anio={hoy.year}")
+    client.get(f"/api/montor/resumen-ia?mes={hoy.month}&anio={hoy.year}")
 
     assert len(calls) == 2  # el mes en curso puede cambiar, así que no se cachea
 
@@ -126,7 +126,7 @@ def test_api_caida_devuelve_error_generico(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     _con_transacciones(fake_db)
 
-    r = client.get("/api/finanzas/resumen-ia?mes=1&anio=2026")
+    r = client.get("/api/montor/resumen-ia?mes=1&anio=2026")
 
     assert r.status_code == 502
     assert r.get_json()["error"] == "ia_no_disponible"

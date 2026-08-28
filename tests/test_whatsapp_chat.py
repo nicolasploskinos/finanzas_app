@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _fake_client_factory(respuestas, calls=None):

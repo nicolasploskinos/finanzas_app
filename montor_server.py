@@ -17,13 +17,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Cuando este archivo se ejecuta directamente ("python finanzas_server.py"),
-# Python lo registra en sys.modules como "__main__", no como "finanzas_server".
-# Los routes_*.py hacen "import finanzas_server as core": sin esta línea, ese
+# Cuando este archivo se ejecuta directamente ("python montor_server.py"),
+# Python lo registra en sys.modules como "__main__", no como "montor_server".
+# Los routes_*.py hacen "import montor_server as core": sin esta línea, ese
 # import no encuentra el módulo ya cargado y re-ejecuta este archivo entero
 # desde cero como una instancia separada, chocando más abajo al registrar los
 # blueprints sobre el módulo equivocado.
-sys.modules.setdefault("finanzas_server", sys.modules[__name__])
+sys.modules.setdefault("montor_server", sys.modules[__name__])
 
 _inflacion_cache = {"data": None, "ts": 0}
 _cotiz_cache = {"data": None, "ts": 0}
@@ -64,7 +64,7 @@ def _pagina_error(titulo, mensaje):
   p {{ color:#94a3b8; margin: 0 0 20px; }}
   a {{ color:#60a5fa; text-decoration:none; }}
 </style></head>
-<body><div><h1>{titulo}</h1><p>{mensaje}</p><a href="/finanzas">Volver a Montor</a></div></body></html>"""
+<body><div><h1>{titulo}</h1><p>{mensaje}</p><a href="/montor">Volver a Montor</a></div></body></html>"""
 
 
 @app.errorhandler(404)
@@ -98,7 +98,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
-            return redirect("/finanzas/login")
+            return redirect("/montor/login")
         return f(*args, **kwargs)
     return decorated
 
@@ -800,8 +800,8 @@ _PLANES_PRO = {
 # ── Registro de rutas (ver routes_*.py) ────────────────────────────────────────
 # Cada archivo routes_*.py agrupa los endpoints de un area de la app (paginas,
 # montor/stats, viajes, whatsapp, pagos) y accede a todo lo de arriba
-# (db, genai, helpers, caches) via "import finanzas_server as core", nunca con
-# "from finanzas_server import x" -- eso rompería el mockeo en los tests, que
+# (db, genai, helpers, caches) via "import montor_server as core", nunca con
+# "from montor_server import x" -- eso rompería el mockeo en los tests, que
 # reemplazan atributos de este modulo (core.db, core.genai, etc).
 
 import routes_paginas  # noqa: E402
@@ -822,5 +822,5 @@ if __name__ == "__main__":
     import socket
     port = int(os.environ.get("PORT", 5001))
     ip = socket.gethostbyname(socket.gethostname())
-    print(f"\n  Local:  http://localhost:{port}/finanzas\n")
+    print(f"\n  Local:  http://localhost:{port}/montor\n")
     app.run(host="0.0.0.0", port=port, debug=False)

@@ -2,12 +2,12 @@
 import os
 from flask import Blueprint, jsonify, redirect, request, session
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("pagos", __name__)
 
 
-@bp.route("/api/finanzas/suscribir")
+@bp.route("/api/montor/suscribir")
 @core.login_required
 def suscribir():
     mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
@@ -19,15 +19,15 @@ def suscribir():
         json={
             "reason": plan["etiqueta"],
             "external_reference": session["user_id"],
-            "payer_email": f"{session['username']}@finanzas.local",
+            "payer_email": f"{session['username']}@montor.local",
             "auto_recurring": {
                 "frequency": plan["frequency"],
                 "frequency_type": "months",
                 "transaction_amount": plan["monto"],
                 "currency_id": "ARS",
             },
-            "back_url": f"{base_url}/finanzas",
-            "notification_url": f"{base_url}/api/finanzas/webhook/mercadopago",
+            "back_url": f"{base_url}/montor",
+            "notification_url": f"{base_url}/api/montor/webhook/mercadopago",
         }
     )
     data = r.json()
@@ -37,7 +37,7 @@ def suscribir():
     return redirect(init_point)
 
 
-@bp.route("/api/finanzas/webhook/mercadopago", methods=["POST"])
+@bp.route("/api/montor/webhook/mercadopago", methods=["POST"])
 def webhook_mp():
     data = request.get_json(silent=True) or {}
     topic = data.get("type") or request.args.get("topic", "")

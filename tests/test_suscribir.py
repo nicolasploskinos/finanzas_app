@@ -1,7 +1,7 @@
 """El endpoint de suscripción arma la preaprobación de MercadoPago con el
 monto y la frecuencia que corresponda según el ciclo elegido (mensual o
 anual). Nunca llama a la API real de MercadoPago."""
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _loguear(client, fake_db, user_id="u1"):
@@ -30,7 +30,7 @@ def test_ciclo_mensual_por_defecto(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     llamadas = _mock_mp_post(monkeypatch)
 
-    r = client.get("/api/finanzas/suscribir")
+    r = client.get("/api/montor/suscribir")
 
     assert r.status_code == 302
     assert llamadas[0]["auto_recurring"] == {
@@ -42,7 +42,7 @@ def test_ciclo_anual(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     llamadas = _mock_mp_post(monkeypatch)
 
-    r = client.get("/api/finanzas/suscribir?ciclo=anual")
+    r = client.get("/api/montor/suscribir?ciclo=anual")
 
     assert r.status_code == 302
     assert llamadas[0]["auto_recurring"] == {
@@ -54,6 +54,6 @@ def test_ciclo_invalido_cae_a_mensual(client, fake_db, monkeypatch):
     _loguear(client, fake_db)
     llamadas = _mock_mp_post(monkeypatch)
 
-    client.get("/api/finanzas/suscribir?ciclo=lo-que-sea")
+    client.get("/api/montor/suscribir?ciclo=lo-que-sea")
 
     assert llamadas[0]["auto_recurring"]["transaction_amount"] == 6000

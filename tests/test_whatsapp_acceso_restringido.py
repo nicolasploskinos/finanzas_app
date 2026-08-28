@@ -2,7 +2,7 @@
 puede hablarle a números permitidos a mano. Por ahora eso significa: solo la
 cuenta de Nicolás. Nadie más puede generar un código de vinculación, y si
 por algún motivo hubiera un vínculo viejo de otra cuenta, se ignora."""
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _loguear(client, fake_db, user_id):
@@ -15,7 +15,7 @@ def _loguear(client, fake_db, user_id):
 def test_otro_usuario_no_puede_generar_codigo(client, fake_db):
     _loguear(client, fake_db, "otro-usuario-cualquiera")
 
-    r = client.post("/api/finanzas/whatsapp/codigo")
+    r = client.post("/api/montor/whatsapp/codigo")
 
     assert r.status_code == 403
     assert r.get_json()["error"] == "whatsapp_no_disponible"
@@ -25,7 +25,7 @@ def test_nicolas_si_puede_generar_codigo(client, fake_db, monkeypatch):
     monkeypatch.setenv("WHATSAPP_DISPLAY_NUMBER", "+15551729935")
     _loguear(client, fake_db, app_module._WHATSAPP_USER_ID)
 
-    r = client.post("/api/finanzas/whatsapp/codigo")
+    r = client.post("/api/montor/whatsapp/codigo")
 
     assert r.status_code == 200
     assert r.get_json()["ok"] is True

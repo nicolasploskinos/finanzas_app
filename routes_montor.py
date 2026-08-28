@@ -5,17 +5,17 @@ import os
 from datetime import date, timedelta
 from flask import Blueprint, Response, jsonify, request, session
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("montor", __name__)
 
 
-@bp.route("/api/finanzas/cotizaciones")
+@bp.route("/api/montor/cotizaciones")
 def cotizaciones():
     return jsonify(core._obtener_cotizaciones())
 
 
-@bp.route("/api/finanzas", methods=["GET"])
+@bp.route("/api/montor", methods=["GET"])
 @core.login_required
 def listar():
     try:
@@ -31,7 +31,7 @@ def listar():
     return jsonify(res.data)
 
 
-@bp.route("/api/finanzas", methods=["POST"])
+@bp.route("/api/montor", methods=["POST"])
 @core.login_required
 def agregar():
     t = request.get_json()
@@ -45,7 +45,7 @@ def agregar():
     return jsonify(resultado), 201
 
 
-@bp.route("/api/finanzas/export", methods=["GET"])
+@bp.route("/api/montor/export", methods=["GET"])
 @core.login_required
 def exportar():
     if not core._es_pro(session["user_id"]):
@@ -65,7 +65,7 @@ def exportar():
                     headers={"Content-Disposition": "attachment; filename=montor.csv"})
 
 
-@bp.route("/api/finanzas/export/excel", methods=["GET"])
+@bp.route("/api/montor/export/excel", methods=["GET"])
 @core.login_required
 def exportar_excel():
     if not core._es_pro(session["user_id"]):
@@ -102,7 +102,7 @@ def exportar_excel():
     )
 
 
-@bp.route("/api/finanzas/export/pdf", methods=["GET"])
+@bp.route("/api/montor/export/pdf", methods=["GET"])
 @core.login_required
 def exportar_pdf():
     if not core._es_pro(session["user_id"]):
@@ -156,7 +156,7 @@ def exportar_pdf():
     )
 
 
-@bp.route("/api/finanzas/import/preview", methods=["POST"])
+@bp.route("/api/montor/import/preview", methods=["POST"])
 @core.login_required
 def import_preview():
     if not core._es_pro(session["user_id"]):
@@ -243,7 +243,7 @@ def import_preview():
     return jsonify({"ok": True, "transacciones": transacciones, "errores": errores})
 
 
-@bp.route("/api/finanzas/import/confirm", methods=["POST"])
+@bp.route("/api/montor/import/confirm", methods=["POST"])
 @core.login_required
 def import_confirm():
     if not core._es_pro(session["user_id"]):
@@ -289,7 +289,7 @@ def import_confirm():
     return jsonify({"ok": True, "insertados": insertados})
 
 
-@bp.route("/api/finanzas/stats")
+@bp.route("/api/montor/stats")
 @core.login_required
 def stats():
     if not core._es_pro(session["user_id"]):
@@ -301,7 +301,7 @@ def stats():
     return jsonify(core._stats_mes(session["user_id"], mes, anio))
 
 
-@bp.route("/api/finanzas/resumen-ia")
+@bp.route("/api/montor/resumen-ia")
 @core.login_required
 def resumen_ia():
     if not core._es_pro(session["user_id"]):
@@ -358,14 +358,14 @@ def resumen_ia():
     return jsonify({"ok": True, "resumen": texto})
 
 
-@bp.route("/api/finanzas/recurrentes", methods=["GET"])
+@bp.route("/api/montor/recurrentes", methods=["GET"])
 @core.login_required
 def listar_recurrentes():
     res = core.db.table("recurrentes").select("*").eq("user_id", session["user_id"]).eq("activo", True).order("creado_en", desc=True).execute()
     return jsonify(res.data)
 
 
-@bp.route("/api/finanzas/recurrentes", methods=["POST"])
+@bp.route("/api/montor/recurrentes", methods=["POST"])
 @core.login_required
 def crear_recurrente():
     if not core._es_pro(session["user_id"]):
@@ -388,14 +388,14 @@ def crear_recurrente():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-@bp.route("/api/finanzas/recurrentes/<int:rid>", methods=["DELETE"])
+@bp.route("/api/montor/recurrentes/<int:rid>", methods=["DELETE"])
 @core.login_required
 def eliminar_recurrente(rid):
     core.db.table("recurrentes").update({"activo": False}).eq("id", rid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/<int:tid>", methods=["PUT"])
+@bp.route("/api/montor/<int:tid>", methods=["PUT"])
 @core.login_required
 def editar(tid):
     t = request.get_json()
@@ -421,21 +421,21 @@ def editar(tid):
     return jsonify(res.data[0])
 
 
-@bp.route("/api/finanzas/<int:tid>", methods=["DELETE"])
+@bp.route("/api/montor/<int:tid>", methods=["DELETE"])
 @core.login_required
 def eliminar(tid):
     core.db.table("transacciones").delete().eq("id", tid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/presupuestos", methods=["GET"])
+@bp.route("/api/montor/presupuestos", methods=["GET"])
 @core.login_required
 def get_presupuestos():
     res = core.db.table("presupuestos").select("*").eq("user_id", session["user_id"]).execute()
     return jsonify(res.data)
 
 
-@bp.route("/api/finanzas/presupuestos", methods=["POST"])
+@bp.route("/api/montor/presupuestos", methods=["POST"])
 @core.login_required
 def set_presupuesto():
     d = request.get_json()
@@ -456,14 +456,14 @@ def set_presupuesto():
     return jsonify(res.data[0] if res.data else {})
 
 
-@bp.route("/api/finanzas/presupuestos/<int:pid>", methods=["DELETE"])
+@bp.route("/api/montor/presupuestos/<int:pid>", methods=["DELETE"])
 @core.login_required
 def del_presupuesto(pid):
     core.db.table("presupuestos").delete().eq("id", pid).eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/inflacion")
+@bp.route("/api/montor/inflacion")
 @core.login_required
 def inflacion():
     if core.time.time() - core._inflacion_cache["ts"] < 86400 and core._inflacion_cache["data"] is not None:

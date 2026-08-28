@@ -1,7 +1,7 @@
 """Conversión del número al formato que la API de envío de Meta espera para
 Argentina (54+área+15+número), distinto del formato en que llegan los
 mensajes entrantes (549+área+número)."""
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def test_convierte_numero_argentino_moderno_a_formato_de_envio():

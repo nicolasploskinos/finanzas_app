@@ -2,7 +2,7 @@
   "name": "Montor",
   "short_name": "Montor",
   "description": "Control personal de ingresos y gastos",
-  "start_url": "/finanzas",
+  "start_url": "/montor",
   "display": "standalone",
   "background_color": "#1e1e2e",
   "theme_color": "#1e1e2e",

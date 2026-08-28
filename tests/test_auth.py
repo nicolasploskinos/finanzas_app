@@ -3,13 +3,13 @@
 la pena tener cubiertos."""
 from werkzeug.security import generate_password_hash
 
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def test_login_usuario_inexistente_no_filtra_informacion(client, fake_db):
     fake_db.tables["usuarios"] = []  # nadie se llama así
 
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "fantasma", "password": "loquesea"})
 
     assert r.status_code == 401
@@ -27,7 +27,7 @@ def test_login_contrasena_incorrecta(client, fake_db):
         "password_hash": generate_password_hash("laposta123"),
     }]
 
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "nico", "password": "cualquiercosa"})
 
     assert r.status_code == 401
@@ -41,17 +41,17 @@ def test_login_se_bloquea_al_sexto_intento_fallido(client, fake_db):
     }]
 
     for _ in range(5):
-        r = client.post("/api/finanzas/login",
+        r = client.post("/api/montor/login",
                          json={"username": "nico", "password": "mal"})
         assert r.status_code == 401
 
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "nico", "password": "mal"})
     assert r.status_code == 429
     assert r.get_json()["error"] == "too_many_attempts"
 
     # Ni siquiera con la contraseña correcta se entra mientras dure el bloqueo.
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "nico", "password": "laposta123"})
     assert r.status_code == 429
 
@@ -63,9 +63,9 @@ def test_login_exitoso_resetea_el_contador_de_intentos(client, fake_db):
     }]
 
     for _ in range(4):
-        client.post("/api/finanzas/login", json={"username": "nico", "password": "mal"})
+        client.post("/api/montor/login", json={"username": "nico", "password": "mal"})
 
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "nico", "password": "laposta123"})
     assert r.status_code == 200
 
@@ -78,7 +78,7 @@ def test_login_correcto_abre_sesion(client, fake_db):
         "password_hash": generate_password_hash("laposta123"),
     }]
 
-    r = client.post("/api/finanzas/login",
+    r = client.post("/api/montor/login",
                      json={"username": "nico", "password": "laposta123"})
 
     assert r.status_code == 200
@@ -89,14 +89,14 @@ def test_login_correcto_abre_sesion(client, fake_db):
 
 
 def test_register_campos_faltantes(client, fake_db):
-    r = client.post("/api/finanzas/register", json={"username": "", "password": ""})
+    r = client.post("/api/montor/register", json={"username": "", "password": ""})
 
     assert r.status_code == 400
     assert r.get_json()["error"] == "missing_fields"
 
 
 def test_register_password_muy_corta(client, fake_db):
-    r = client.post("/api/finanzas/register",
+    r = client.post("/api/montor/register",
                      json={"username": "nico", "password": "corta1"})
 
     assert r.status_code == 400
@@ -106,7 +106,7 @@ def test_register_password_muy_corta(client, fake_db):
 def test_register_usuario_ya_existe(client, fake_db):
     fake_db.tables["usuarios"] = [{"id": "u1"}]  # el select por username lo encuentra
 
-    r = client.post("/api/finanzas/register",
+    r = client.post("/api/montor/register",
                      json={"username": "nico", "password": "algo12345"})
 
     assert r.status_code == 400
@@ -120,7 +120,7 @@ def test_register_exitoso_no_guarda_email(client, fake_db):
     fake_db.tables["usuarios"] = []
     fake_db.tables["transacciones"] = []
 
-    r = client.post("/api/finanzas/register",
+    r = client.post("/api/montor/register",
                      json={"username": "nico_nuevo", "password": "algo12345"})
 
     assert r.status_code == 201

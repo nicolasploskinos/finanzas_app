@@ -22,7 +22,7 @@ mensual también generado con IA.
 El backend está separado por área en vez de vivir en un único archivo:
 
 ```
-finanzas_server.py     # "core": Flask app, cliente de Supabase/Gemini, helpers
+montor_server.py     # "core": Flask app, cliente de Supabase/Gemini, helpers
                         # compartidos (auth, moneda, WhatsApp, stats), y el
                         # registro de los blueprints de abajo
 routes_paginas.py       # páginas HTML (landing, dashboard, login)
@@ -35,7 +35,7 @@ routes_pagos.py         # suscripción Pro vía MercadoPago
 ```
 
 Cada `routes_*.py` accede a lo compartido (`db`, `genai`, helpers, caches) vía
-`import finanzas_server as core` — nunca `from finanzas_server import x` — para
+`import montor_server as core` — nunca `from montor_server import x` — para
 que los tests puedan seguir reemplazando esos atributos con mocks
 (`monkeypatch.setattr(app_module, "db", fake_db)`, etc.) sin importar en qué
 archivo termine viviendo el código que los usa.
@@ -47,7 +47,7 @@ un cliente alternativo, no forma parte de la app web.
 
 ```bash
 pip install -r requirements-dev.txt
-python finanzas_server.py
+python montor_server.py
 ```
 
 Necesita un archivo `.env` en la raíz con, como mínimo:
@@ -97,7 +97,7 @@ Config en `ruff.toml`. Corre automáticamente en cada push/PR vía GitHub Action
 - Row Level Security habilitado en todas las tablas de Supabase
 - El bot de WhatsApp está restringido a una sola cuenta (la app de Meta está en
   modo desarrollo, sin Business Verification — ver comentario en
-  `finanzas_server.py` junto a `_WHATSAPP_USER_ID`)
+  `montor_server.py` junto a `_WHATSAPP_USER_ID`)
 
 ## Deploy
 

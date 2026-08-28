@@ -2,10 +2,10 @@
 Las transacciones en USD/EUR guardan la cotización del día en que se cargan
 (columnas cotizacion_usd/cotizacion_eur), para que los totales no se
 revaloricen solos cada vez que cambia el dólar - ver _cotiz_de_tx en
-finanzas_server.py. Estos tests simulan que la cotización "de hoy" cambió
+montor_server.py. Estos tests simulan que la cotización "de hoy" cambió
 después de cargada la transacción, y verifican que el total no se mueva.
 """
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 def _loguear(client, fake_db, user_id="u1", pro=True):
@@ -93,7 +93,7 @@ def test_viaje_usa_la_cotizacion_guardada_por_transaccion(client, fake_db, monke
     # El dólar "hoy" duplicó su valor respecto de cuando se cargó el gasto.
     monkeypatch.setattr(app_module, "_obtener_cotizaciones", lambda: {"USD": 2000.0, "EUR": 2200.0})
 
-    r = client.get("/api/finanzas/viajes/1")
+    r = client.get("/api/montor/viajes/1")
 
     assert r.status_code == 200
     assert r.get_json()["totales"]["ARS"] == 100_000.0
@@ -106,7 +106,7 @@ def test_editar_transaccion_no_pisa_la_cotizacion_ya_guardada(client, fake_db, m
     }]
     monkeypatch.setattr(app_module, "_obtener_cotizaciones", lambda: {"USD": 2000.0, "EUR": 2200.0})
 
-    r = client.put("/api/finanzas/5", json={
+    r = client.put("/api/montor/5", json={
         "tipo": "Gasto", "monto": 50, "fecha": "2026-01-01", "moneda": "USD",
     })
 
@@ -123,7 +123,7 @@ def test_editar_transaccion_vieja_completa_la_cotizacion_faltante(client, fake_d
     fake_db.tables["transacciones"] = [{"id": 5, "cotizacion_usd": None, "cotizacion_eur": None}]
     monkeypatch.setattr(app_module, "_obtener_cotizaciones", lambda: {"USD": 2000.0, "EUR": 2200.0})
 
-    r = client.put("/api/finanzas/5", json={
+    r = client.put("/api/montor/5", json={
         "tipo": "Gasto", "monto": 50, "fecha": "2026-01-01", "moneda": "USD",
     })
 

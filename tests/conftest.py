@@ -1,14 +1,14 @@
 """
 Fixtures compartidas para los tests.
 
-Los tests nunca tocan la base de datos real: se reemplaza finanzas_server.db
+Los tests nunca tocan la base de datos real: se reemplaza montor_server.db
 por un FakeDB en memoria (ver más abajo) antes de que cualquier test corra,
 así que no hace falta credenciales de Supabase reales ni conexión a internet.
 """
 import os
 import sys
 
-# Variables dummy: finanzas_server las lee al importarse (app.secret_key,
+# Variables dummy: montor_server las lee al importarse (app.secret_key,
 # create_client), pero create_client no valida nada hasta la primera consulta
 # real, y esa consulta nunca ocurre porque reemplazamos "db" antes de usarlo.
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
@@ -18,7 +18,7 @@ os.environ.setdefault("SUPABASE_KEY", "test-anon-key")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-import finanzas_server as app_module
+import montor_server as app_module
 
 
 class FakeResult:
@@ -62,7 +62,7 @@ class FakeQuery:
 
 class FakeDB:
     """
-    Reemplazo de finanzas_server.db para tests.
+    Reemplazo de montor_server.db para tests.
 
     `tables` mapea nombre de tabla -> lista de filas que debe devolver
     CUALQUIER .execute() sobre esa tabla (alcanza para los tests actuales,

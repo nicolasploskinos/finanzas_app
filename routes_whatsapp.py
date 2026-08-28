@@ -8,12 +8,12 @@ import time
 from urllib.parse import quote
 from flask import Blueprint, jsonify, request, session
 
-import finanzas_server as core
+import montor_server as core
 
 bp = Blueprint("whatsapp", __name__)
 
 
-@bp.route("/api/finanzas/whatsapp/codigo", methods=["POST"])
+@bp.route("/api/montor/whatsapp/codigo", methods=["POST"])
 @core.login_required
 def whatsapp_codigo():
     if session["user_id"] != core._WHATSAPP_USER_ID:
@@ -25,7 +25,7 @@ def whatsapp_codigo():
     return jsonify({"ok": True, "codigo": codigo, "wa_link": wa_link})
 
 
-@bp.route("/api/finanzas/whatsapp/estado")
+@bp.route("/api/montor/whatsapp/estado")
 @core.login_required
 def whatsapp_estado():
     res = core.db.table("whatsapp_users").select("telefono").eq("user_id", session["user_id"]).execute()
@@ -35,14 +35,14 @@ def whatsapp_estado():
     return jsonify({"vinculado": False})
 
 
-@bp.route("/api/finanzas/whatsapp/desvincular", methods=["DELETE"])
+@bp.route("/api/montor/whatsapp/desvincular", methods=["DELETE"])
 @core.login_required
 def whatsapp_desvincular():
     core.db.table("whatsapp_users").delete().eq("user_id", session["user_id"]).execute()
     return jsonify({"ok": True})
 
 
-@bp.route("/api/finanzas/whatsapp/webhook", methods=["GET"])
+@bp.route("/api/montor/whatsapp/webhook", methods=["GET"])
 def whatsapp_webhook_verificar():
     modo = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
@@ -52,7 +52,7 @@ def whatsapp_webhook_verificar():
     return "Forbidden", 403
 
 
-@bp.route("/api/finanzas/whatsapp/webhook", methods=["POST"])
+@bp.route("/api/montor/whatsapp/webhook", methods=["POST"])
 def whatsapp_webhook_recibir():
     app_secret = os.environ.get("WHATSAPP_APP_SECRET", "")
     if app_secret:
