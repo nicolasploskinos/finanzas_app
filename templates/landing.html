@@ -23,7 +23,7 @@
       --red: #f87171;
       --yellow: #fbbf24;
       --text: #e2e8f0;
-      --muted: #94a3b8;
+      --muted: #a6b3c6;
       --border: #2d2d50;
     }
     body.light {
@@ -37,7 +37,7 @@
       --red: #b3543f;
       --yellow: #ad7c1f;
       --text: #3a3226;
-      --muted: #7d7261;
+      --muted: #675e4f;
       --border: #d3c6a6;
     }
     body.light nav { background: rgba(236,227,208,.92); }
@@ -70,7 +70,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px; height: 68px;
     }
-    .nav-logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+    .nav-logo { font-size: 23px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
     .nav-logo svg { width: 28px; height: 28px; }
     .nav-logo span { color: var(--blue); }
     .nav-cta {
@@ -132,7 +132,7 @@
     .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
     .trust-strip {
       display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
-      margin-top: 36px; font-size: 14.5px; color: var(--muted); font-weight: 600;
+      margin-top: 36px; font-size: 15.5px; color: var(--muted); font-weight: 600;
     }
     .trust-strip span.item { display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary {
@@ -207,7 +207,7 @@
       padding: 0 0 10px; color: var(--muted); font-family: inherit; text-align: left;
     }
     .demo-tab-label {
-      font-size: 11px; font-weight: 800; letter-spacing: .2px;
+      font-size: 12.5px; font-weight: 800; letter-spacing: .2px;
       display: block; margin-bottom: 8px; transition: color .2s;
     }
     .demo-tab.active .demo-tab-label, .demo-tab.done .demo-tab-label { color: var(--text); }
@@ -218,9 +218,9 @@
     @keyframes demofill { from { width: 0%; } to { width: 100%; } }
     @media (prefers-reduced-motion: reduce) { .demo-tab.active .demo-tab-fill { animation: none; width: 60%; } }
     .demo-step {
-      font-size: 13px; color: var(--muted); background: var(--surface2);
+      font-size: 14.5px; color: var(--muted); background: var(--surface2);
       border: 1px solid var(--border); border-radius: 12px;
-      padding: 10px 12px; margin-bottom: 14px; line-height: 1.5;
+      padding: 11px 13px; margin-bottom: 14px; line-height: 1.6;
     }
     .demo-step strong { color: var(--blue); }
     .demo-screen { display: none; animation: demoIn .4s ease; }
@@ -232,16 +232,16 @@
     /* ── MINI CONVERTER (hook) ── */
     .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
     .mini-convert-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .mini-convert-row label { font-size: 13px; font-weight: 800; flex-shrink: 0; }
+    .mini-convert-row label { font-size: 14px; font-weight: 800; flex-shrink: 0; }
     .mini-convert-row input {
       flex: 1; min-width: 0; background: var(--surface3); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 14px; font-weight: 700;
+      border-radius: 8px; padding: 9px 11px; color: var(--text); font-size: 15px; font-weight: 700;
       font-family: inherit;
     }
-    .mini-convert-out { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; flex-wrap: wrap; }
+    .mini-convert-out { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 700; flex-wrap: wrap; }
     .mini-convert-out span { color: var(--muted); font-weight: 600; }
     .mini-convert-out strong { color: var(--text); font-weight: 800; }
-    .mini-convert-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
+    .mini-convert-note { font-size: 11.5px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
 
     /* ── FEATURES ── */
     .section { padding: 90px 24px; max-width: 1240px; margin: 0 auto; }
@@ -279,8 +279,8 @@
       transition: transform .25s;
     }
     .feat-card:hover .feat-icon { transform: scale(1.08) rotate(-4deg); }
-    .feat-card h3 { font-size: 19px; font-weight: 800; margin-bottom: 9px; }
-    .feat-card p  { font-size: 14.5px; color: var(--muted); line-height: 1.65; }
+    .feat-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+    .feat-card p  { font-size: 15.5px; color: var(--muted); line-height: 1.7; }
 
     /* ── PARA QUIÉN ── */
     .para-quien {
@@ -290,8 +290,8 @@
     }
     .check-list { list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
     .check-list li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 17px;
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 18px; line-height: 1.5;
     }
     .check-list li::before {
       content: "✓"; color: var(--green);
@@ -332,21 +332,21 @@
       font-size: 58px; font-weight: 900; line-height: 1;
       color: var(--green); margin-bottom: 4px;
     }
-    .precio-sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+    .precio-sub { color: var(--muted); font-size: 15px; margin-bottom: 26px; line-height: 1.5; }
     .precio-ciclos { display: flex; gap: 10px; margin: 18px 0 22px; }
     .precio-ciclo-box { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 14px 8px; position: relative; }
     .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(251,191,36,.08); }
-    .precio-ciclo-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px; }
+    .precio-ciclo-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px; }
     .precio-ciclo-box.destacado .precio-ciclo-label { color: var(--yellow); }
-    .precio-ciclo-monto { font-size: 21px; font-weight: 900; }
-    .precio-ciclo-monto span { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .precio-ciclo-monto { font-size: 22px; font-weight: 900; }
+    .precio-ciclo-monto span { font-size: 12px; font-weight: 600; color: var(--muted); }
     .precio-ciclo-badge {
       position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-      background: var(--green); color: #000; font-size: 10px; font-weight: 800;
+      background: var(--green); color: #000; font-size: 11px; font-weight: 800;
       padding: 3px 10px; border-radius: 100px; white-space: nowrap;
     }
-    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 11px; margin-bottom: 30px; }
-    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 14.5px; }
+    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+    .precio-features li { display: flex; align-items: center; gap: 10px; font-size: 15.5px; }
     .precio-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
     .precio-features li.no::before { content: "✗"; color: var(--muted); }
     .precio-features li.no { color: var(--muted); }
@@ -368,7 +368,7 @@
       border-radius: 14px; overflow: hidden;
     }
     .faq-q {
-      padding: 20px 22px; font-size: 17px; font-weight: 700;
+      padding: 22px 24px; font-size: 18px; font-weight: 700;
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       user-select: none;
     }
@@ -376,8 +376,8 @@
     .faq-chev { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; margin-left: 12px; }
     .faq-q.open .faq-chev { transform: rotate(180deg); }
     .faq-a {
-      display: none; padding: 0 22px 20px;
-      font-size: 15.5px; color: var(--muted); line-height: 1.7;
+      display: none; padding: 0 24px 22px;
+      font-size: 16.5px; color: var(--muted); line-height: 1.75;
       border-top: 1px solid var(--border);
     }
     .faq-a.open { display: block; }
@@ -386,7 +386,7 @@
     footer {
       border-top: 1px solid var(--border);
       text-align: center; padding: 32px 20px;
-      font-size: 14px; color: var(--muted);
+      font-size: 15px; color: var(--muted);
     }
     footer a { color: var(--muted); text-decoration: none; }
     footer a:hover { color: var(--text); }
