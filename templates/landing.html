@@ -54,6 +54,13 @@
       overflow-x: hidden;
     }
 
+    /* ── SCROLL PROGRESS ── */
+    #scroll-progress {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--blue), #a78bfa);
+      z-index: 200; transition: width .1s linear;
+    }
+
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -83,19 +90,21 @@
       background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
       position: relative; overflow: hidden;
     }
-    .hero::before, .hero::after {
-      content: ""; position: absolute; border-radius: 50%; pointer-events: none;
-      filter: blur(50px);
+    .hero-blob {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      filter: blur(50px); transition: transform .5s cubic-bezier(.2,.7,.3,1);
+      will-change: transform;
     }
-    .hero::before {
+    .hero-blob-1 {
       width: 420px; height: 420px; background: radial-gradient(circle, rgba(167,139,250,.18), transparent 70%);
       top: -60px; right: -120px;
     }
-    .hero::after {
+    .hero-blob-2 {
       width: 340px; height: 340px; background: radial-gradient(circle, rgba(74,222,128,.12), transparent 70%);
       bottom: 20px; left: -100px;
     }
     .hero > * { position: relative; }
+    @media (prefers-reduced-motion: reduce) { .hero-blob { transition: none; } }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25);
@@ -249,8 +258,66 @@
     }
     .mockup-wrap { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px 20px 60px; }
 
+    /* ── INTERACTIVE DEMO ── */
+    .demo-section { display: flex; flex-direction: column; align-items: center; padding: 10px 20px 70px; }
+    .demo-section .section-sub { margin-bottom: 34px; }
+    .demo-frame {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 18px;
+      max-width: 420px; width: 100%;
+      box-shadow: 0 40px 80px rgba(0,0,0,.5);
+    }
+    .demo-chrome { display: flex; gap: 6px; margin-bottom: 16px; }
+    .demo-chrome span { width: 10px; height: 10px; border-radius: 50%; opacity: .55; }
+    .demo-chrome span:nth-child(1) { background: var(--red); }
+    .demo-chrome span:nth-child(2) { background: var(--yellow); }
+    .demo-chrome span:nth-child(3) { background: var(--green); }
+    .demo-tabs { display: flex; gap: 10px; margin-bottom: 18px; }
+    .demo-tab {
+      flex: 1; background: none; border: none; cursor: pointer;
+      padding: 0 0 10px; color: var(--muted); font-family: inherit; text-align: left;
+    }
+    .demo-tab-label {
+      font-size: 11px; font-weight: 800; letter-spacing: .2px;
+      display: block; margin-bottom: 8px; transition: color .2s;
+    }
+    .demo-tab.active .demo-tab-label, .demo-tab.done .demo-tab-label { color: var(--text); }
+    .demo-tab-track { height: 3px; background: var(--surface3); border-radius: 100px; overflow: hidden; }
+    .demo-tab-fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #a78bfa); border-radius: 100px; }
+    .demo-tab.active .demo-tab-fill { animation: demofill 4.2s linear forwards; }
+    .demo-tab.done .demo-tab-fill { width: 100%; }
+    @keyframes demofill { from { width: 0%; } to { width: 100%; } }
+    @media (prefers-reduced-motion: reduce) { .demo-tab.active .demo-tab-fill { animation: none; width: 60%; } }
+    .demo-step {
+      font-size: 13px; color: var(--muted); background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; margin-bottom: 14px; line-height: 1.5;
+    }
+    .demo-step strong { color: var(--blue); }
+    .demo-screen { display: none; animation: demoIn .4s ease; }
+    .demo-screen.active { display: block; }
+    @keyframes demoIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { .demo-screen { animation: none; } }
+    .demo-frame .mock-donut { transition: transform .5s ease; }
+    .demo-screen.active .mock-donut { transform: scale(1); }
+
+    /* ── MINI CONVERTER (hook) ── */
+    .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .mini-convert-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .mini-convert-row label { font-size: 13px; font-weight: 800; flex-shrink: 0; }
+    .mini-convert-row input {
+      flex: 1; min-width: 0; background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 14px; font-weight: 700;
+      font-family: inherit;
+    }
+    .mini-convert-out { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; flex-wrap: wrap; }
+    .mini-convert-out span { color: var(--muted); font-weight: 600; }
+    .mini-convert-out strong { color: var(--text); font-weight: 800; }
+    .mini-convert-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
+
     /* ── FEATURES ── */
     .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
+    .section, .demo-section { scroll-margin-top: 70px; }
     .section-label {
       text-align: center; font-size: 12px; font-weight: 800;
       color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
@@ -409,6 +476,8 @@
 </head>
 <body>
 
+<div id="scroll-progress"></div>
+
 <!-- NAV -->
 <nav>
   <div class="nav-logo">
@@ -428,12 +497,14 @@
 </nav>
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero" id="hero">
+  <div class="hero-blob hero-blob-1"></div>
+  <div class="hero-blob hero-blob-2"></div>
   <h1 data-en="Take control of your finances in <em>pesos, dollars, and euros</em>, without the hassle">Controlá tus finanzas en <em>pesos, dólares y euros</em>, sin complicaciones</h1>
   <p data-en="Track income and expenses in ARS, USD, and EUR. The official BNA exchange rate updates itself.">Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
   <div class="hero-btns">
     <a href="/montor/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
-    <a href="#features" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
+    <a href="#demo" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
   </div>
   <div class="trust-strip">
     <span class="item">🔒 <span data-en="Password-protected access">Acceso protegido con contraseña</span></span>
@@ -442,163 +513,185 @@
   </div>
 </section>
 
-<!-- MOCKUP -->
-<div class="mockup-wrap">
-  <!-- Mockup 2: formulario -->
-  <div class="mockup" style="align-self:center">
-    <div class="mock-header">
-      <div class="mock-title" data-en="+ New transaction">+ Nueva transacción</div>
+<!-- DEMO INTERACTIVO -->
+<section class="demo-section" id="demo">
+  <div class="section-label" data-en="See it in action">Mirá cómo funciona</div>
+  <h2 data-en="Three taps, one real balance">Tres toques, un saldo real</h2>
+  <p class="section-sub" data-en="An interactive walkthrough of the whole flow — click a tab, or just wait and watch.">Un recorrido interactivo por todo el flujo — tocá una pestaña, o simplemente esperá y mirá.</p>
+
+  <div class="demo-frame">
+    <div class="demo-chrome"><span></span><span></span><span></span></div>
+
+    <div class="demo-tabs" role="tablist" aria-label="Demo Montor">
+      <button class="demo-tab active" type="button" role="tab" aria-selected="true" aria-controls="demo-screen-0" id="demo-tab-0" data-tab="0">
+        <span class="demo-tab-label" data-en="1. Load it">1. Cargalo</span>
+        <span class="demo-tab-track"><span class="demo-tab-fill"></span></span>
+      </button>
+      <button class="demo-tab" type="button" role="tab" aria-selected="false" aria-controls="demo-screen-1" id="demo-tab-1" data-tab="1">
+        <span class="demo-tab-label" data-en="2. See it consolidated">2. Vélo consolidado</span>
+        <span class="demo-tab-track"><span class="demo-tab-fill"></span></span>
+      </button>
+      <button class="demo-tab" type="button" role="tab" aria-selected="false" aria-controls="demo-screen-2" id="demo-tab-2" data-tab="2">
+        <span class="demo-tab-label" data-en="3. Understand your month">3. Entendé tu mes</span>
+        <span class="demo-tab-track"><span class="demo-tab-fill"></span></span>
+      </button>
     </div>
-    <div>
-      <div class="mock-form-label" data-en="TYPE">TIPO</div>
-      <div class="mock-tipo-btns">
-        <div class="mock-tipo-btn gasto" data-en="Expense">Gasto</div>
-        <div class="mock-tipo-btn" data-en="Income">Ingreso</div>
+
+    <div class="demo-screens">
+
+      <!-- SCREEN 0: formulario -->
+      <div class="demo-screen active" id="demo-screen-0" role="tabpanel" aria-labelledby="demo-tab-0">
+        <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
+          <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
+        </div>
+        <div class="mock-header">
+          <div class="mock-title" data-en="+ New transaction">+ Nueva transacción</div>
+        </div>
+        <div>
+          <div class="mock-form-label" data-en="TYPE">TIPO</div>
+          <div class="mock-tipo-btns">
+            <div class="mock-tipo-btn gasto" data-en="Expense">Gasto</div>
+            <div class="mock-tipo-btn" data-en="Income">Ingreso</div>
+          </div>
+
+          <div class="mock-form-label" data-en="CURRENCY">MONEDA</div>
+          <div class="mock-tipo-btns" style="margin-bottom:10px">
+            <div class="mock-tipo-btn active">ARS $</div>
+            <div class="mock-tipo-btn">USD</div>
+            <div class="mock-tipo-btn">EUR €</div>
+          </div>
+
+          <div class="mock-form-label" data-en="AMOUNT">MONTO</div>
+          <div class="mock-form-input">$ 15.000</div>
+
+          <div class="mock-form-label" data-en="CATEGORY">CATEGORÍA</div>
+          <div class="mock-form-input" data-en="Groceries">Supermercado</div>
+
+          <div class="mock-form-label" data-en="TRIP (optional)">VIAJE (opcional)</div>
+          <div class="mock-form-input" data-en="✈️ Brazil 2026">✈️ Brasil 2026</div>
+
+          <div class="mock-form-label" data-en="REPEAT">REPETICIÓN</div>
+          <div class="mock-tipo-btns">
+            <div class="mock-tipo-btn active" data-en="Don't repeat">Sin repetir</div>
+            <div class="mock-tipo-btn" data-en="Weekly">Semanal</div>
+            <div class="mock-tipo-btn" data-en="Monthly">Mensual</div>
+          </div>
+
+          <div class="mock-guardar" data-en="Save">Guardar</div>
+        </div>
       </div>
 
-      <div class="mock-form-label" data-en="CURRENCY">MONEDA</div>
-      <div class="mock-tipo-btns" style="margin-bottom:10px">
-        <div class="mock-tipo-btn active">ARS $</div>
-        <div class="mock-tipo-btn">USD</div>
-        <div class="mock-tipo-btn">EUR €</div>
+      <!-- SCREEN 1: lista principal -->
+      <div class="demo-screen" id="demo-screen-1" role="tabpanel" aria-labelledby="demo-tab-1">
+        <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
+          Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
+        </div>
+        <div class="mock-header">
+          <div>
+            <div class="mock-title" data-en="💰 My Finances">💰 Mis Finanzas</div>
+            <div class="mock-user" style="color:var(--muted);font-size:12px;" data-en="Hi, nico 👋">Hola, nico 👋</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted)" data-en="Jun 2026">Jun 2026</div>
+        </div>
+        <div class="mock-consol">
+          <div class="mock-consol-label" data-en="TOTAL CONSOLIDATED IN">TOTAL CONSOLIDADO EN</div>
+          <div class="mock-consol-btns">
+            <div class="mock-cbtn active">ARS $</div>
+            <div class="mock-cbtn">USD</div>
+            <div class="mock-cbtn">EUR €</div>
+          </div>
+          <div class="mock-consol-row">
+            <div class="mock-val-card">
+              <div class="mock-val-label" data-en="Income">Ingresos</div>
+              <div class="mock-val green" data-count="842500" data-prefix="$">$842.500</div>
+            </div>
+            <div class="mock-val-card">
+              <div class="mock-val-label" data-en="Expenses">Gastos</div>
+              <div class="mock-val red" data-count="613200" data-prefix="$">$613.200</div>
+            </div>
+            <div class="mock-val-card">
+              <div class="mock-val-label" data-en="Balance">Saldo</div>
+              <div class="mock-val blue" data-count="229300" data-prefix="$">$229.300</div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-presup">
+          <div class="mock-consol-label" data-en="THIS MONTH'S BUDGETS">PRESUPUESTOS DEL MES</div>
+          <div class="mock-presup-row">
+            <div class="mock-presup-labels">
+              <span data-en="Groceries">Supermercado</span>
+              <span class="mock-presup-amt" data-en="$45,000 / $60,000">$45.000 / $60.000</span>
+            </div>
+            <div class="mock-presup-track"><div class="mock-presup-fill" style="width:75%"></div></div>
+          </div>
+        </div>
+        <div class="mock-tx-list">
+          <div class="mock-tx mock-ingreso">
+            <div class="mock-tx-icon i">↑</div>
+            <div class="mock-tx-info">
+              <div class="mock-tx-desc" data-en="Salary">Sueldo</div>
+              <div class="mock-tx-cat" data-en="Income · ARS">Ingreso · ARS</div>
+            </div>
+            <div class="mock-tx-monto green">+$750.000</div>
+          </div>
+          <div class="mock-tx mock-gasto">
+            <div class="mock-tx-icon g">↓</div>
+            <div class="mock-tx-info">
+              <div class="mock-tx-desc" data-en="Rent">Alquiler</div>
+              <div class="mock-tx-cat" data-en="Housing · ARS · 🔄">Vivienda · ARS · 🔄</div>
+            </div>
+            <div class="mock-tx-monto red">-$400.000</div>
+          </div>
+          <div class="mock-tx mock-gasto">
+            <div class="mock-tx-icon g">↓</div>
+            <div class="mock-tx-info">
+              <div class="mock-tx-desc">Netflix</div>
+              <div class="mock-tx-cat" data-en="Subscriptions · USD · 🔄">Suscripciones · USD · 🔄</div>
+            </div>
+            <div class="mock-tx-monto red">-USD 7,99</div>
+          </div>
+        </div>
       </div>
 
-      <div class="mock-form-label" data-en="AMOUNT">MONTO</div>
-      <div class="mock-form-input">$ 15.000</div>
-
-      <div class="mock-form-label" data-en="CATEGORY">CATEGORÍA</div>
-      <div class="mock-form-input" data-en="Groceries">Supermercado</div>
-
-      <div class="mock-form-label" data-en="TRIP (optional)">VIAJE (opcional)</div>
-      <div class="mock-form-input" data-en="✈️ Brazil 2026">✈️ Brasil 2026</div>
-
-      <div class="mock-form-label" data-en="DESCRIPTION">DESCRIPCIÓN</div>
-      <div class="mock-form-input" style="color:var(--muted)" data-en="Weekly shopping...">Compra semanal...</div>
-
-      <div class="mock-form-label" data-en="DATE">FECHA</div>
-      <div class="mock-form-input">2026-06-28</div>
-
-      <div class="mock-form-label" data-en="REPEAT">REPETICIÓN</div>
-      <div class="mock-tipo-btns">
-        <div class="mock-tipo-btn active" data-en="Don't repeat">Sin repetir</div>
-        <div class="mock-tipo-btn" data-en="Weekly">Semanal</div>
-        <div class="mock-tipo-btn" data-en="Monthly">Mensual</div>
+      <!-- SCREEN 2: resumen y gráficos -->
+      <div class="demo-screen" id="demo-screen-2" role="tabpanel" aria-labelledby="demo-tab-2">
+        <div class="demo-step" data-en="A <strong>category chart</strong> and an automatic comparison against real INDEC inflation.">
+          Un <strong>gráfico por categoría</strong> y la comparación automática con la inflación real del INDEC.
+        </div>
+        <div class="mock-header">
+          <div class="mock-title" data-en="📊 Monthly summary">📊 Resumen del mes</div>
+        </div>
+        <div class="mock-stats-grid">
+          <div class="mock-stats-card">
+            <div class="mock-stats-label" data-en="Expenses July">Gastos Julio</div>
+            <div class="mock-stats-value" style="color:var(--red)" data-count="613200" data-prefix="$">$613.200</div>
+            <div class="mock-stats-diff" style="color:var(--red)">▲ 12% <span data-en="vs June">vs Junio</span></div>
+          </div>
+          <div class="mock-stats-card">
+            <div class="mock-stats-label" data-en="Income July">Ingresos Julio</div>
+            <div class="mock-stats-value" style="color:var(--green)" data-count="842500" data-prefix="$">$842.500</div>
+            <div class="mock-stats-diff" style="color:var(--green)">▲ 8% <span data-en="vs June">vs Junio</span></div>
+          </div>
+        </div>
+        <div class="mock-donut-wrap">
+          <div class="mock-donut"></div>
+          <div class="mock-legend">
+            <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#60a5fa"></span><span data-en="Housing">Vivienda</span></div>
+            <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#f87171"></span><span data-en="Groceries">Supermercado</span></div>
+            <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#4ade80"></span><span data-en="Transport">Transporte</span></div>
+            <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#fbbf24"></span><span data-en="Subscriptions">Suscripciones</span></div>
+            <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#a78bfa"></span><span data-en="Other">Otros</span></div>
+          </div>
+        </div>
+        <div class="mock-inflacion">
+          📊 <span data-en="INDEC inflation July:">Inflación INDEC Julio:</span> <strong style="color:#fbbf24">+6,5%</strong>
+          &nbsp;·&nbsp; <span data-en="Real spending:">Gastos reales:</span> <strong style="color:var(--green)">▼ 2,1%</strong>
+        </div>
       </div>
 
-      <div class="mock-guardar" data-en="Save">Guardar</div>
     </div>
   </div>
-
-  <!-- Mockup 1: lista principal -->
-  <div class="mockup">
-    <div class="mock-header">
-      <div>
-        <div class="mock-title" data-en="💰 My Finances">💰 Mis Finanzas</div>
-        <div class="mock-user" style="color:var(--muted);font-size:12px;" data-en="Hi, nico 👋">Hola, nico 👋</div>
-      </div>
-      <div style="font-size:11px;color:var(--muted)" data-en="Jun 2026">Jun 2026</div>
-    </div>
-    <div class="mock-consol">
-      <div class="mock-consol-label" data-en="TOTAL CONSOLIDATED IN">TOTAL CONSOLIDADO EN</div>
-      <div class="mock-consol-btns">
-        <div class="mock-cbtn active">ARS $</div>
-        <div class="mock-cbtn">USD</div>
-        <div class="mock-cbtn">EUR €</div>
-      </div>
-      <div class="mock-consol-row">
-        <div class="mock-val-card">
-          <div class="mock-val-label" data-en="Income">Ingresos</div>
-          <div class="mock-val green">$842.500</div>
-        </div>
-        <div class="mock-val-card">
-          <div class="mock-val-label" data-en="Expenses">Gastos</div>
-          <div class="mock-val red">$613.200</div>
-        </div>
-        <div class="mock-val-card">
-          <div class="mock-val-label" data-en="Balance">Saldo</div>
-          <div class="mock-val blue">$229.300</div>
-        </div>
-      </div>
-    </div>
-    <div class="mock-presup">
-      <div class="mock-consol-label" data-en="THIS MONTH'S BUDGETS">PRESUPUESTOS DEL MES</div>
-      <div class="mock-presup-row">
-        <div class="mock-presup-labels">
-          <span data-en="Groceries">Supermercado</span>
-          <span class="mock-presup-amt" data-en="$45,000 / $60,000">$45.000 / $60.000</span>
-        </div>
-        <div class="mock-presup-track"><div class="mock-presup-fill" style="width:75%"></div></div>
-      </div>
-    </div>
-    <div class="mock-tx-list">
-      <div class="mock-tx mock-ingreso">
-        <div class="mock-tx-icon i">↑</div>
-        <div class="mock-tx-info">
-          <div class="mock-tx-desc" data-en="Salary">Sueldo</div>
-          <div class="mock-tx-cat" data-en="Income · ARS">Ingreso · ARS</div>
-        </div>
-        <div class="mock-tx-monto green">+$750.000</div>
-      </div>
-      <div class="mock-tx mock-gasto">
-        <div class="mock-tx-icon g">↓</div>
-        <div class="mock-tx-info">
-          <div class="mock-tx-desc" data-en="Rent">Alquiler</div>
-          <div class="mock-tx-cat" data-en="Housing · ARS · 🔄">Vivienda · ARS · 🔄</div>
-        </div>
-        <div class="mock-tx-monto red">-$400.000</div>
-      </div>
-      <div class="mock-tx mock-gasto">
-        <div class="mock-tx-icon g">↓</div>
-        <div class="mock-tx-info">
-          <div class="mock-tx-desc">Netflix</div>
-          <div class="mock-tx-cat" data-en="Subscriptions · USD · 🔄">Suscripciones · USD · 🔄</div>
-        </div>
-        <div class="mock-tx-monto red">-USD 7,99</div>
-      </div>
-      <div class="mock-tx mock-ingreso">
-        <div class="mock-tx-icon i">↑</div>
-        <div class="mock-tx-info">
-          <div class="mock-tx-desc">Freelance</div>
-          <div class="mock-tx-cat" data-en="Income · USD">Ingreso · USD</div>
-        </div>
-        <div class="mock-tx-monto green">+USD 150</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mockup 3: resumen y gráficos -->
-  <div class="mockup" style="align-self:center">
-    <div class="mock-header">
-      <div class="mock-title" data-en="📊 Monthly summary">📊 Resumen del mes</div>
-    </div>
-    <div class="mock-stats-grid">
-      <div class="mock-stats-card">
-        <div class="mock-stats-label" data-en="Expenses July">Gastos Julio</div>
-        <div class="mock-stats-value" style="color:var(--red)">$613.200</div>
-        <div class="mock-stats-diff" style="color:var(--red)">▲ 12% <span data-en="vs June">vs Junio</span></div>
-      </div>
-      <div class="mock-stats-card">
-        <div class="mock-stats-label" data-en="Income July">Ingresos Julio</div>
-        <div class="mock-stats-value" style="color:var(--green)">$842.500</div>
-        <div class="mock-stats-diff" style="color:var(--green)">▲ 8% <span data-en="vs June">vs Junio</span></div>
-      </div>
-    </div>
-    <div class="mock-donut-wrap">
-      <div class="mock-donut"></div>
-      <div class="mock-legend">
-        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#60a5fa"></span><span data-en="Housing">Vivienda</span></div>
-        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#f87171"></span><span data-en="Groceries">Supermercado</span></div>
-        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#4ade80"></span><span data-en="Transport">Transporte</span></div>
-        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#fbbf24"></span><span data-en="Subscriptions">Suscripciones</span></div>
-        <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#a78bfa"></span><span data-en="Other">Otros</span></div>
-      </div>
-    </div>
-    <div class="mock-inflacion">
-      📊 <span data-en="INDEC inflation July:">Inflación INDEC Julio:</span> <strong style="color:#fbbf24">+6,5%</strong>
-      &nbsp;·&nbsp; <span data-en="Real spending:">Gastos reales:</span> <strong style="color:var(--green)">▼ 2,1%</strong>
-    </div>
-  </div>
-</div>
+</section>
 
 <!-- FEATURES -->
 <div class="divider"></div>
@@ -611,6 +704,17 @@
       <div class="feat-icon">💵</div>
       <h3 data-en="Real multi-currency">Multi-moneda real</h3>
       <p data-en="Log expenses and income in ARS, USD, or EUR. See everything converted to whichever currency you prefer, with the official BNA exchange rate updated automatically.">Registrá gastos e ingresos en ARS, USD o EUR. Ves todo convertido a la moneda que prefieras, con cotización oficial BNA actualizada automáticamente.</p>
+      <div class="mini-convert">
+        <div class="mini-convert-row">
+          <label for="mc-ars">ARS $</label>
+          <input type="number" id="mc-ars" inputmode="decimal" placeholder="10000" data-en-placeholder="10000">
+        </div>
+        <div class="mini-convert-out">
+          <span data-en="≈ USD">≈ USD</span> <strong id="mc-usd">0</strong>
+          <span data-en="≈ EUR">≈ EUR</span> <strong id="mc-eur">0</strong>
+        </div>
+        <div class="mini-convert-note" data-en="Example rate for the demo — the real app updates it automatically every day.">Cotización de ejemplo para la demo — en la app real se actualiza sola todos los días.</div>
+      </div>
     </div>
     <div class="feat-card">
       <div class="feat-icon">✈️</div>
@@ -837,7 +941,7 @@
   }
 
   // Animación sutil al entrar en pantalla
-  const revealEls = document.querySelectorAll(".feat-card, .precio-card, .faq-item, .check-list li, .mockup");
+  const revealEls = document.querySelectorAll(".feat-card, .precio-card, .faq-item, .check-list li, .demo-frame");
   revealEls.forEach(el => el.classList.add("reveal"));
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((entries) => {
@@ -852,6 +956,124 @@
   } else {
     revealEls.forEach(el => el.classList.add("in"));
   }
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Barra de progreso de scroll
+  const scrollBar = document.getElementById("scroll-progress");
+  function updateScrollBar() {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - doc.clientHeight;
+    scrollBar.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + "%";
+  }
+  window.addEventListener("scroll", updateScrollBar, { passive: true });
+  updateScrollBar();
+
+  // Parallax sutil de los blobs del hero, siguiendo el mouse
+  const heroEl = document.getElementById("hero");
+  const blob1 = document.querySelector(".hero-blob-1");
+  const blob2 = document.querySelector(".hero-blob-2");
+  if (heroEl && blob1 && blob2 && !reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    heroEl.addEventListener("mousemove", (e) => {
+      const r = heroEl.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      blob1.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
+      blob2.style.transform = `translate(${x * -24}px, ${y * -24}px)`;
+    });
+  }
+
+  // Demo interactivo: pestañas con autoplay estilo "stories"
+  (function () {
+    const tabs = Array.from(document.querySelectorAll(".demo-tab"));
+    const screens = Array.from(document.querySelectorAll(".demo-screen"));
+    const frame = document.querySelector(".demo-frame");
+    if (!tabs.length || !frame) return;
+
+    const DURATION = 4200;
+    let current = 0;
+    let timer = null;
+    let paused = false;
+
+    function animateCounts(screen) {
+      const els = screen.querySelectorAll("[data-count]");
+      els.forEach((el) => {
+        const target = parseInt(el.dataset.count, 10);
+        const prefix = el.dataset.prefix || "";
+        if (reducedMotion) {
+          el.textContent = prefix + target.toLocaleString("es-AR");
+          return;
+        }
+        const start = performance.now();
+        const dur = 900;
+        function step(now) {
+          const p = Math.min((now - start) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.round(target * eased).toLocaleString("es-AR");
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    function showTab(idx, skipAnim) {
+      current = idx;
+      tabs.forEach((t, i) => {
+        t.classList.toggle("active", i === idx);
+        t.classList.toggle("done", i < idx);
+        t.setAttribute("aria-selected", i === idx ? "true" : "false");
+      });
+      screens.forEach((s, i) => s.classList.toggle("active", i === idx));
+      if (!skipAnim) animateCounts(screens[idx]);
+      restartTimer();
+    }
+
+    function restartTimer() {
+      clearTimeout(timer);
+      if (paused || reducedMotion) return;
+      const fill = tabs[current].querySelector(".demo-tab-fill");
+      if (fill) {
+        fill.style.animation = "none";
+        void fill.offsetWidth;
+        fill.style.animation = "";
+      }
+      timer = setTimeout(() => showTab((current + 1) % tabs.length), DURATION);
+    }
+
+    tabs.forEach((t, i) => t.addEventListener("click", () => showTab(i)));
+    frame.addEventListener("mouseenter", () => { paused = true; clearTimeout(timer); });
+    frame.addEventListener("mouseleave", () => { paused = false; restartTimer(); });
+
+    let started = false;
+    if ("IntersectionObserver" in window) {
+      const demoObs = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !started) {
+            started = true;
+            showTab(0, true);
+          }
+        });
+      }, { threshold: 0.3 });
+      demoObs.observe(frame);
+    } else {
+      showTab(0, true);
+    }
+  })();
+
+  // Mini-conversor en vivo (hook interactivo en la card de multi-moneda)
+  (function () {
+    const arsInput = document.getElementById("mc-ars");
+    const usdOut = document.getElementById("mc-usd");
+    const eurOut = document.getElementById("mc-eur");
+    if (!arsInput || !usdOut || !eurOut) return;
+    const RATE_USD = 1450;
+    const RATE_EUR = 1580;
+    arsInput.addEventListener("input", () => {
+      const v = parseFloat(arsInput.value) || 0;
+      usdOut.textContent = (v / RATE_USD).toLocaleString("es-AR", { maximumFractionDigits: 2 });
+      eurOut.textContent = (v / RATE_EUR).toLocaleString("es-AR", { maximumFractionDigits: 2 });
+    });
+  })();
 </script>
 </body>
 </html>
