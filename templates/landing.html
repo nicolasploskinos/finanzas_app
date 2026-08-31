@@ -155,22 +155,22 @@
     .btn-secondary:hover { background: var(--surface3); transform: translateY(-2px); }
     .hero-note { margin-top: 18px; font-size: 13px; color: var(--muted); }
     .hero-shot-peek {
-      display: block; margin-top: 48px; width: 100%; max-width: 940px;
-      height: 260px; overflow: hidden; position: relative;
-      border-radius: 16px 16px 0 0; border: 1px solid var(--border); border-bottom: none;
-      box-shadow: 0 -10px 50px rgba(0,0,0,.3); cursor: pointer;
+      display: flex; justify-content: center; margin-top: 44px; width: 100%;
+      height: 300px; overflow: hidden; position: relative; cursor: pointer;
     }
     .hero-shot-peek img {
-      display: block; width: 100%; height: auto;
+      display: block; width: 290px; height: auto; flex-shrink: 0;
+      border-radius: 22px; border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
       transition: transform .4s ease;
     }
     .hero-shot-peek:hover img { transform: translateY(-6px); }
     .hero-shot-peek::after {
-      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100px;
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 110px;
       background: linear-gradient(to bottom, transparent, var(--bg));
       pointer-events: none;
     }
-    @media (max-width: 640px) { .hero-shot-peek { height: 170px; } }
+    @media (max-width: 640px) { .hero-shot-peek { height: 210px; } .hero-shot-peek img { width: 220px; } }
 
     /* ── INTERACTIVE DEMO ── */
     .demo-section { display: flex; flex-direction: column; align-items: center; padding: 10px 20px 70px; }
@@ -178,7 +178,7 @@
     .demo-frame {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 22px; padding: 22px;
-      max-width: 760px; width: 100%;
+      max-width: 480px; width: 100%;
       box-shadow: 0 40px 80px rgba(0,0,0,.5);
     }
     .demo-chrome { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
@@ -423,7 +423,7 @@
     <span class="item">⚡ <span data-en="Nothing to install, ready in 2 minutes">Sin instalar nada, listo en 2 minutos</span></span>
   </div>
   <a href="#demo" class="hero-shot-peek" aria-label="Ver cómo funciona la app">
-    <img src="/static/screenshots/dashboard.png" alt="Dashboard real de Montor" loading="eager" width="1440" height="900">
+    <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor, desde el celular" loading="eager" width="780" height="1688">
   </a>
 </section>
 
@@ -431,7 +431,7 @@
 <section class="demo-section" id="demo">
   <div class="section-label" data-en="Real screenshots">Capturas reales</div>
   <h2 data-en="This is the actual app — not a mockup">Así es la app de verdad, no un mockup</h2>
-  <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando — tocá una pestaña, o simplemente esperá y mirá.</p>
+  <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running on a phone — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando desde el celular — tocá una pestaña, o simplemente esperá y mirá.</p>
 
   <div class="demo-frame">
     <div class="demo-chrome"><span></span><span></span><span></span></div>
@@ -458,7 +458,7 @@
         <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
           <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
         </div>
-        <img class="demo-shot" src="/static/screenshots/nueva-transaccion.png" alt="Formulario real de nueva transacción en Montor" loading="lazy" width="760" height="900">
+        <img class="demo-shot" src="/static/screenshots/nueva-transaccion-mobile.png" alt="Formulario real de nueva transacción en Montor, desde el celular" loading="lazy" width="780" height="1688">
       </div>
 
       <!-- SCREEN 1: dashboard real -->
@@ -466,7 +466,7 @@
         <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
           Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
         </div>
-        <img class="demo-shot" src="/static/screenshots/dashboard.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos" loading="lazy" width="1440" height="900">
+        <img class="demo-shot" src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde el celular" loading="lazy" width="780" height="1688">
       </div>
 
       <!-- SCREEN 2: resumen mensual + IA real -->
@@ -474,7 +474,7 @@
         <div class="demo-step" data-en="A <strong>category chart</strong> and an AI-written paragraph on how your month went — both generated live, not staged.">
           Un <strong>gráfico por categoría</strong> y un párrafo escrito por IA sobre cómo viene tu mes — ambos generados en vivo, no armados a mano.
         </div>
-        <img class="demo-shot" src="/static/screenshots/resumen-ia.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA" loading="lazy" width="1000" height="880">
+        <img class="demo-shot" src="/static/screenshots/resumen-ia-mobile.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde el celular" loading="lazy" width="780" height="1688">
       </div>
 
     </div>
