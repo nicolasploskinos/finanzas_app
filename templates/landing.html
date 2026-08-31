@@ -156,21 +156,36 @@
     .hero-note { margin-top: 18px; font-size: 13px; color: var(--muted); }
     .hero-shot-peek {
       display: flex; justify-content: center; margin-top: 44px; width: 100%;
-      height: 300px; overflow: hidden; position: relative; cursor: pointer;
+      height: 320px; overflow: hidden; position: relative; cursor: pointer;
     }
-    .hero-shot-peek img {
-      display: block; width: 290px; height: auto; flex-shrink: 0;
-      border-radius: 22px; border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+    .hero-shot-peek .phone-frame {
+      width: 280px; flex-shrink: 0;
       transition: transform .4s ease;
     }
-    .hero-shot-peek:hover img { transform: translateY(-6px); }
+    .hero-shot-peek:hover .phone-frame { transform: translateY(-6px); }
     .hero-shot-peek::after {
       content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 110px;
       background: linear-gradient(to bottom, transparent, var(--bg));
       pointer-events: none;
     }
-    @media (max-width: 640px) { .hero-shot-peek { height: 210px; } .hero-shot-peek img { width: 220px; } }
+    @media (max-width: 640px) { .hero-shot-peek { height: 230px; } .hero-shot-peek .phone-frame { width: 210px; } }
+
+    /* ── PHONE FRAME (marco tipo celular alrededor de las capturas) ── */
+    .phone-frame {
+      position: relative; margin: 0 auto;
+      background: linear-gradient(155deg, #2a2a38, #0a0a12);
+      border-radius: 34px; padding: 9px;
+      box-shadow: 0 0 0 1.5px rgba(255,255,255,.08) inset, 0 24px 60px rgba(0,0,0,.5);
+    }
+    .phone-frame img {
+      display: block; width: 100%; height: auto;
+      border-radius: 25px;
+    }
+    .phone-notch {
+      position: absolute; top: 21px; left: 50%; transform: translateX(-50%);
+      width: 76px; height: 20px; background: #000; border-radius: 14px; z-index: 2;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+    }
 
     /* ── INTERACTIVE DEMO ── */
     .demo-section { display: flex; flex-direction: column; align-items: center; padding: 10px 20px 70px; }
@@ -212,11 +227,7 @@
     .demo-screen.active { display: block; }
     @keyframes demoIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { .demo-screen { animation: none; } }
-    .demo-shot {
-      display: block; width: 100%; height: auto;
-      border-radius: 14px; border: 1px solid var(--border);
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
-    }
+    .demo-screen .phone-frame { max-width: 300px; }
 
     /* ── MINI CONVERTER (hook) ── */
     .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -423,7 +434,10 @@
     <span class="item">⚡ <span data-en="Nothing to install, ready in 2 minutes">Sin instalar nada, listo en 2 minutos</span></span>
   </div>
   <a href="#demo" class="hero-shot-peek" aria-label="Ver cómo funciona la app">
-    <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor, desde el celular" loading="eager" width="780" height="1688">
+    <div class="phone-frame">
+      <span class="phone-notch"></span>
+      <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor, desde el celular" loading="eager" width="780" height="1688">
+    </div>
   </a>
 </section>
 
@@ -458,7 +472,10 @@
         <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
           <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
         </div>
-        <img class="demo-shot" src="/static/screenshots/nueva-transaccion-mobile.png" alt="Formulario real de nueva transacción en Montor, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="phone-frame">
+          <span class="phone-notch"></span>
+          <img src="/static/screenshots/nueva-transaccion-mobile.png" alt="Formulario real de nueva transacción en Montor, desde el celular" loading="lazy" width="780" height="1688">
+        </div>
       </div>
 
       <!-- SCREEN 1: dashboard real -->
@@ -466,7 +483,10 @@
         <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
           Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
         </div>
-        <img class="demo-shot" src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="phone-frame">
+          <span class="phone-notch"></span>
+          <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde el celular" loading="lazy" width="780" height="1688">
+        </div>
       </div>
 
       <!-- SCREEN 2: resumen mensual + IA real -->
@@ -474,7 +494,10 @@
         <div class="demo-step" data-en="A <strong>category chart</strong> and an AI-written paragraph on how your month went — both generated live, not staged.">
           Un <strong>gráfico por categoría</strong> y un párrafo escrito por IA sobre cómo viene tu mes — ambos generados en vivo, no armados a mano.
         </div>
-        <img class="demo-shot" src="/static/screenshots/resumen-ia-mobile.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="phone-frame">
+          <span class="phone-notch"></span>
+          <img src="/static/screenshots/resumen-ia-mobile.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde el celular" loading="lazy" width="780" height="1688">
+        </div>
       </div>
 
     </div>
