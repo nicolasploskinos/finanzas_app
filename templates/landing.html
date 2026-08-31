@@ -467,12 +467,6 @@
     /* ── DIVIDER ── */
     .divider { height: 1px; background: var(--border); max-width: 1240px; margin: 0 auto; }
 
-    /* ── SCROLL REVEAL ── */
-    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
-    .reveal.in { opacity: 1; transform: translateY(0); }
-    @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity: 1; transform: none; transition: none; }
-    }
   </style>
 </head>
 <body>
@@ -939,23 +933,6 @@
   }
   if (localStorage.getItem("lang-landing") === "en") {
     applyLang("en");
-  }
-
-  // Animación sutil al entrar en pantalla
-  const revealEls = document.querySelectorAll(".feat-card, .precio-card, .faq-item, .check-list li, .demo-frame");
-  revealEls.forEach(el => el.classList.add("reveal"));
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("in");
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    revealEls.forEach(el => io.observe(el));
-  } else {
-    revealEls.forEach(el => el.classList.add("in"));
   }
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
