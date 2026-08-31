@@ -68,14 +68,15 @@
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px; height: 60px;
+      padding: 0 32px; height: 68px;
     }
-    .nav-logo { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .nav-logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+    .nav-logo svg { width: 28px; height: 28px; }
     .nav-logo span { color: var(--blue); }
     .nav-cta {
       background: var(--blue-dark); color: #fff;
       border: none; border-radius: 10px;
-      padding: 9px 20px; font-size: 14px; font-weight: 700;
+      padding: 11px 22px; font-size: 15px; font-weight: 700;
       cursor: pointer; text-decoration: none; transition: background .2s;
     }
     .nav-cta:hover { background: var(--blue); }
@@ -90,7 +91,7 @@
       background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
       position: relative; overflow: hidden;
     }
-    .hero-blob {
+    .hero .hero-blob {
       position: absolute; border-radius: 50%; pointer-events: none;
       filter: blur(50px); transition: transform .5s cubic-bezier(.2,.7,.3,1);
       will-change: transform;
@@ -113,10 +114,10 @@
       margin-bottom: 28px;
     }
     .hero h1 {
-      font-size: clamp(32px, 6vw, 64px);
+      font-size: clamp(36px, 5.2vw, 78px);
       font-weight: 900; line-height: 1.1;
-      max-width: 720px; margin-bottom: 20px;
-      letter-spacing: -1.5px;
+      max-width: 1120px; margin-bottom: 26px;
+      letter-spacing: -2px;
     }
     .hero h1 em {
       font-style: normal;
@@ -124,21 +125,21 @@
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
     .hero p {
-      font-size: clamp(16px, 2.5vw, 20px);
-      color: var(--muted); max-width: 520px;
-      margin-bottom: 40px;
+      font-size: clamp(18px, 2vw, 24px);
+      color: var(--muted); max-width: 660px;
+      margin-bottom: 44px;
     }
-    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
     .trust-strip {
-      display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;
-      margin-top: 32px; font-size: 13px; color: var(--muted); font-weight: 600;
+      display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+      margin-top: 36px; font-size: 14.5px; color: var(--muted); font-weight: 600;
     }
     .trust-strip span.item { display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary {
       display: inline-block;
       background: var(--blue-dark); color: #fff;
-      border-radius: 14px; padding: 16px 36px;
-      font-size: 17px; font-weight: 800;
+      border-radius: 14px; padding: 19px 42px;
+      font-size: 18.5px; font-weight: 800;
       text-decoration: none; transition: all .2s;
       box-shadow: 0 0 40px rgba(59,130,246,.35);
     }
@@ -147,8 +148,8 @@
       display: inline-block;
       background: var(--surface2); color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px 36px;
-      font-size: 17px; font-weight: 700;
+      border-radius: 14px; padding: 19px 42px;
+      font-size: 18.5px; font-weight: 700;
       text-decoration: none; transition: all .2s;
     }
     .btn-secondary:hover { background: var(--surface3); transform: translateY(-2px); }
@@ -263,8 +264,8 @@
     .demo-section .section-sub { margin-bottom: 34px; }
     .demo-frame {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 22px; padding: 18px;
-      max-width: 420px; width: 100%;
+      border-radius: 22px; padding: 22px;
+      max-width: 460px; width: 100%;
       box-shadow: 0 40px 80px rgba(0,0,0,.5);
     }
     .demo-chrome { display: flex; gap: 6px; margin-bottom: 16px; }
@@ -316,43 +317,43 @@
     .mini-convert-note { font-size: 10px; color: var(--muted); margin-top: 8px; }
 
     /* ── FEATURES ── */
-    .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
-    .section, .demo-section { scroll-margin-top: 70px; }
+    .section { padding: 90px 24px; max-width: 1240px; margin: 0 auto; }
+    .section, .demo-section { scroll-margin-top: 78px; }
     .section-label {
-      text-align: center; font-size: 12px; font-weight: 800;
+      text-align: center; font-size: 13px; font-weight: 800;
       color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    .section h2 {
-      text-align: center; font-size: clamp(26px, 4vw, 42px);
-      font-weight: 900; letter-spacing: -1px;
       margin-bottom: 14px;
     }
+    .section h2 {
+      text-align: center; font-size: clamp(28px, 3.6vw, 48px);
+      font-weight: 900; letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
     .section-sub {
-      text-align: center; color: var(--muted); font-size: 17px;
-      max-width: 560px; margin: 0 auto 60px;
+      text-align: center; color: var(--muted); font-size: 18px;
+      max-width: 620px; margin: 0 auto 64px;
     }
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
     }
     .feat-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px; padding: 28px 24px;
+      border-radius: 18px; padding: 30px 26px;
       transition: border-color .2s, transform .2s;
     }
     .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
     .feat-icon {
-      width: 54px; height: 54px; border-radius: 16px;
+      width: 58px; height: 58px; border-radius: 16px;
       background: rgba(96,165,250,.12);
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px; margin-bottom: 16px;
+      font-size: 28px; margin-bottom: 18px;
       transition: transform .25s;
     }
     .feat-card:hover .feat-icon { transform: scale(1.08) rotate(-4deg); }
-    .feat-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-    .feat-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .feat-card h3 { font-size: 19px; font-weight: 800; margin-bottom: 9px; }
+    .feat-card p  { font-size: 14.5px; color: var(--muted); line-height: 1.65; }
 
     /* ── PARA QUIÉN ── */
     .para-quien {
@@ -360,10 +361,10 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
-    .check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 480px; }
+    .check-list { list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
     .check-list li {
       display: flex; align-items: flex-start; gap: 10px;
-      font-size: 16px;
+      font-size: 17px;
     }
     .check-list li::before {
       content: "✓"; color: var(--green);
@@ -381,12 +382,12 @@
     /* ── PRECIOS ── */
     .precios-grid {
       display: grid; grid-template-columns: 1fr 1fr;
-      gap: 20px; max-width: 760px; margin: 0 auto;
+      gap: 24px; max-width: 840px; margin: 0 auto;
     }
     @media (max-width: 620px) { .precios-grid { grid-template-columns: 1fr; } }
     .precio-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 22px; padding: 32px 28px; text-align: center;
+      border-radius: 22px; padding: 36px 30px; text-align: center;
       position: relative;
     }
     .precio-card.pro {
@@ -396,15 +397,15 @@
     .precio-badge {
       display: inline-block;
       background: var(--green); color: #000;
-      border-radius: 100px; padding: 4px 14px;
-      font-size: 12px; font-weight: 800; margin-bottom: 16px;
+      border-radius: 100px; padding: 5px 16px;
+      font-size: 13px; font-weight: 800; margin-bottom: 18px;
     }
     .precio-badge.pro { background: var(--yellow); }
     .precio-num {
-      font-size: 52px; font-weight: 900; line-height: 1;
+      font-size: 58px; font-weight: 900; line-height: 1;
       color: var(--green); margin-bottom: 4px;
     }
-    .precio-sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .precio-sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
     .precio-ciclos { display: flex; gap: 10px; margin: 18px 0 22px; }
     .precio-ciclo-box { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 14px 8px; position: relative; }
     .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(251,191,36,.08); }
@@ -417,22 +418,22 @@
       background: var(--green); color: #000; font-size: 10px; font-weight: 800;
       padding: 3px 10px; border-radius: 100px; white-space: nowrap;
     }
-    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+    .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 11px; margin-bottom: 30px; }
+    .precio-features li { display: flex; align-items: center; gap: 9px; font-size: 14.5px; }
     .precio-features li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
     .precio-features li.no::before { content: "✗"; color: var(--muted); }
     .precio-features li.no { color: var(--muted); }
 
     /* ── CTA FINAL ── */
     .cta-final {
-      text-align: center; padding: 100px 20px;
+      text-align: center; padding: 110px 20px;
       background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,.1), transparent);
     }
     .cta-final h2 {
-      font-size: clamp(28px, 5vw, 52px); font-weight: 900;
-      letter-spacing: -1px; margin-bottom: 16px;
+      font-size: clamp(30px, 5vw, 58px); font-weight: 900;
+      letter-spacing: -1px; margin-bottom: 18px;
     }
-    .cta-final p { color: var(--muted); font-size: 18px; margin-bottom: 40px; }
+    .cta-final p { color: var(--muted); font-size: 19px; margin-bottom: 44px; }
 
     /* ── FAQ ── */
     .faq-item {
@@ -440,7 +441,7 @@
       border-radius: 14px; overflow: hidden;
     }
     .faq-q {
-      padding: 18px 20px; font-size: 16px; font-weight: 700;
+      padding: 20px 22px; font-size: 17px; font-weight: 700;
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       user-select: none;
     }
@@ -448,8 +449,8 @@
     .faq-chev { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; margin-left: 12px; }
     .faq-q.open .faq-chev { transform: rotate(180deg); }
     .faq-a {
-      display: none; padding: 0 20px 18px;
-      font-size: 15px; color: var(--muted); line-height: 1.7;
+      display: none; padding: 0 22px 20px;
+      font-size: 15.5px; color: var(--muted); line-height: 1.7;
       border-top: 1px solid var(--border);
     }
     .faq-a.open { display: block; }
@@ -457,14 +458,14 @@
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
-      text-align: center; padding: 28px 20px;
-      font-size: 13px; color: var(--muted);
+      text-align: center; padding: 32px 20px;
+      font-size: 14px; color: var(--muted);
     }
     footer a { color: var(--muted); text-decoration: none; }
     footer a:hover { color: var(--text); }
 
     /* ── DIVIDER ── */
-    .divider { height: 1px; background: var(--border); max-width: 1100px; margin: 0 auto; }
+    .divider { height: 1px; background: var(--border); max-width: 1240px; margin: 0 auto; }
 
     /* ── SCROLL REVEAL ── */
     .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
@@ -861,7 +862,7 @@
 <section class="section" id="faq">
   <div class="section-label">FAQ</div>
   <h2 data-en="Frequently asked questions">Preguntas frecuentes</h2>
-  <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+  <div style="max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
