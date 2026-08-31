@@ -200,8 +200,8 @@
     .demo-section .section-sub { margin-bottom: 34px; }
     .demo-frame {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 22px; padding: 26px;
-      max-width: 560px; width: 100%;
+      border-radius: 22px; padding: 32px;
+      max-width: 1020px; width: 100%;
       box-shadow: 0 40px 80px rgba(0,0,0,.5);
     }
     .demo-chrome { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
@@ -226,16 +226,36 @@
     @keyframes demofill { from { width: 0%; } to { width: 100%; } }
     @media (prefers-reduced-motion: reduce) { .demo-tab.active .demo-tab-fill { animation: none; width: 60%; } }
     .demo-step {
-      font-size: 16.5px; color: var(--muted); background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 12px;
-      padding: 13px 15px; margin-bottom: 14px; line-height: 1.6;
+      font-size: 19px; color: var(--text); background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 22px; margin-bottom: 20px; line-height: 1.55;
     }
     .demo-step strong { color: var(--blue); }
+    .demo-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .demo-bullets li {
+      font-size: 16.5px; color: var(--muted); line-height: 1.4;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .demo-bullets li::before {
+      content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0;
+    }
+    .demo-highlight {
+      margin-top: 22px; padding: 16px 18px; font-size: 15.5px; font-weight: 600;
+      color: var(--text); background: rgba(96,165,250,.1);
+      border: 1px solid rgba(96,165,250,.25); border-radius: 12px; line-height: 1.5;
+    }
     .demo-screen { display: none; animation: demoIn .4s ease; }
-    .demo-screen.active { display: block; }
+    .demo-screen.active {
+      display: flex; align-items: flex-start; gap: 44px;
+    }
+    .demo-info { flex: 1; min-width: 0; }
     @keyframes demoIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { .demo-screen { animation: none; } }
-    .demo-screen .phone-frame { max-width: 360px; }
+    .demo-screen .phone-frame { max-width: 270px; width: 100%; flex-shrink: 0; }
+    @media (max-width: 820px) {
+      .demo-screen.active { flex-direction: column; gap: 26px; }
+      .demo-screen .phone-frame { max-width: 320px; }
+    }
 
     /* ── MINI CONVERTER (hook) ── */
     .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -253,6 +273,7 @@
 
     /* ── FEATURES ── */
     .section { padding: 90px 24px; max-width: 1340px; margin: 0 auto; }
+    @media (max-width: 640px) { .section { padding: 56px 20px; } }
     .section, .demo-section { scroll-margin-top: 78px; }
     .section-label {
       text-align: center; font-size: 14.5px; font-weight: 800;
@@ -269,14 +290,16 @@
       max-width: 660px; margin: 0 auto 64px;
     }
     .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
+      column-count: 4; column-gap: 24px;
     }
+    @media (max-width: 1080px) { .features-grid { column-count: 3; } }
+    @media (max-width: 820px)  { .features-grid { column-count: 2; } }
+    @media (max-width: 560px)  { .features-grid { column-count: 1; } }
     .feat-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 18px; padding: 32px 28px;
       transition: border-color .2s, transform .2s;
+      display: inline-block; width: 100%; break-inside: avoid; margin-bottom: 24px;
     }
     .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
     .feat-icon {
@@ -373,6 +396,7 @@
       text-align: center; padding: 110px 20px;
       background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,.1), transparent);
     }
+    @media (max-width: 640px) { .cta-final { padding: 64px 20px; } }
     .cta-final h2 {
       font-size: clamp(32px, 5.4vw, 62px); font-weight: 900;
       letter-spacing: -1px; margin-bottom: 20px;
@@ -486,8 +510,17 @@
 
       <!-- SCREEN 0: formulario real -->
       <div class="demo-screen active" id="demo-screen-0" role="tabpanel" aria-labelledby="demo-tab-0">
-        <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
-          <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
+        <div class="demo-info">
+          <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
+            <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
+          </div>
+          <ul class="demo-bullets">
+            <li data-en="Category autocomplete based on your own history">Categoría con autocompletado según tu historial</li>
+            <li data-en="Past or future date, with automatic historical exchange rate">Fecha pasada o futura, con cotización histórica automática</li>
+            <li data-en="Tag it to a trip, so it's tracked separately in dollars">Etiquetalo a un viaje, así se sigue aparte en dólares</li>
+            <li data-en="Weekly or monthly repeat, so you never load it twice">Repetición semanal o mensual, sin cargarlo de nuevo</li>
+          </ul>
+          <div class="demo-highlight" data-en="⚡ It saves instantly — no page reload, no waiting.">⚡ Se guarda al instante — sin recargar la página, sin esperas.</div>
         </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
@@ -497,8 +530,17 @@
 
       <!-- SCREEN 1: dashboard real -->
       <div class="demo-screen" id="demo-screen-1" role="tabpanel" aria-labelledby="demo-tab-1">
-        <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
-          Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
+        <div class="demo-info">
+          <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
+            Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
+          </div>
+          <ul class="demo-bullets">
+            <li data-en="Budgets by category with a progress bar">Presupuestos por categoría con barra de progreso</li>
+            <li data-en="Search bar and filters by date or range">Buscador y filtros por fecha o rango</li>
+            <li data-en="Recurring expenses like rent or subscriptions, added by themselves">Gastos recurrentes como el alquiler o suscripciones, agregados solos</li>
+            <li data-en="Full history with the Pro plan">Historial completo con el plan Pro</li>
+          </ul>
+          <div class="demo-highlight" data-en="🇦🇷 The BNA official exchange rate, refreshed automatically.">🇦🇷 La cotización oficial BNA, actualizada sola.</div>
         </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
@@ -508,8 +550,17 @@
 
       <!-- SCREEN 2: resumen mensual + IA real -->
       <div class="demo-screen" id="demo-screen-2" role="tabpanel" aria-labelledby="demo-tab-2">
-        <div class="demo-step" data-en="A <strong>category chart</strong> and an AI-written paragraph on how your month went — both generated live, not staged.">
-          Un <strong>gráfico por categoría</strong> y un párrafo escrito por IA sobre cómo viene tu mes — ambos generados en vivo, no armados a mano.
+        <div class="demo-info">
+          <div class="demo-step" data-en="A <strong>category chart</strong> and an AI-written paragraph on how your month went — both generated live, not staged.">
+            Un <strong>gráfico por categoría</strong> y un párrafo escrito por IA sobre cómo viene tu mes — ambos generados en vivo, no armados a mano.
+          </div>
+          <ul class="demo-bullets">
+            <li data-en="Automatic comparison against last month">Comparación automática con el mes anterior</li>
+            <li data-en="Real INDEC inflation applied to your spending">Inflación real del INDEC aplicada a tu gasto</li>
+            <li data-en="A donut chart of what you spent on, by category">Un gráfico de torta de en qué gastaste, por categoría</li>
+            <li data-en="In whichever language you pick, Spanish or English">En el idioma que elijas, español o inglés</li>
+          </ul>
+          <div class="demo-highlight" data-en="🤖 Written fresh by AI each month — never a canned template.">🤖 Escrito de cero por IA cada mes — nunca una plantilla armada.</div>
         </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
@@ -727,6 +778,13 @@
     </div>
 
   </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <h2 data-en="Ready to stop guessing where your money went?">¿Listo para dejar de adivinar en qué se te fue la plata?</h2>
+  <p data-en="Free forever, no card required. Set up your first transaction in under 2 minutes.">Gratis para siempre, sin tarjeta. Cargá tu primera transacción en menos de 2 minutos.</p>
+  <a href="/montor/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
 </section>
 
 <!-- FOOTER -->
