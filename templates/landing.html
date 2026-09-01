@@ -321,7 +321,8 @@
     .demo-screen.active { display: flex; }
     @keyframes demoIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { .demo-screen { animation: none; } }
-    .demo-screen .phone-frame { max-width: 380px; width: 100%; }
+    .demo-shot { width: 100%; border-radius: 0 0 10px 10px; overflow: hidden; }
+    .demo-shot img { display: block; width: 100%; height: auto; }
 
     /* ── MINI CONVERTER (hook) ── */
     .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -690,7 +691,7 @@
 <section class="demo-section" id="demo">
   <div class="section-label"><span class="num">01</span> — <span data-en="Real screenshots">Capturas reales</span></div>
   <h2 data-en="This is the actual app — not a mockup">Así es la app de verdad, no un mockup</h2>
-  <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running on a phone — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando desde el celular — tocá una pestaña, o simplemente esperá y mirá.</p>
+  <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running on a computer — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando desde la computadora — tocá una pestaña, o simplemente esperá y mirá.</p>
 
   <div class="demo-frame">
     <div class="demo-chrome">
@@ -738,25 +739,22 @@
 
       <!-- SCREEN 0: formulario real -->
       <div class="demo-screen active" id="demo-screen-0" role="tabpanel" aria-labelledby="demo-tab-0">
-        <div class="phone-frame">
-          <span class="phone-notch"></span>
-          <img src="/static/screenshots/nueva-transaccion-mobile.png" alt="Formulario real de nueva transacción en Montor, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="demo-shot">
+          <img src="/static/screenshots/nueva-transaccion-desktop.png" alt="Formulario real de nueva transacción en Montor, desde la computadora" loading="lazy" width="3360" height="2000">
         </div>
       </div>
 
       <!-- SCREEN 1: dashboard real -->
       <div class="demo-screen" id="demo-screen-1" role="tabpanel" aria-labelledby="demo-tab-1">
-        <div class="phone-frame">
-          <span class="phone-notch"></span>
-          <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="demo-shot">
+          <img src="/static/screenshots/dashboard-desktop.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde la computadora" loading="lazy" width="3360" height="2000">
         </div>
       </div>
 
       <!-- SCREEN 2: resumen mensual + IA real -->
       <div class="demo-screen" id="demo-screen-2" role="tabpanel" aria-labelledby="demo-tab-2">
-        <div class="phone-frame">
-          <span class="phone-notch"></span>
-          <img src="/static/screenshots/resumen-ia-mobile.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde el celular" loading="lazy" width="780" height="1688">
+        <div class="demo-shot">
+          <img src="/static/screenshots/resumen-ia-desktop.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde la computadora" loading="lazy" width="3360" height="2000">
         </div>
       </div>
 
