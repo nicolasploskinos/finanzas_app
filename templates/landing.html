@@ -136,13 +136,6 @@
       width: 26px; height: 26px; border-radius: 50%;
       background: var(--blue); color: #fff; font-size: 13px; font-weight: 900;
     }
-    .hero-cursor {
-      display: inline-block; width: 8px; height: .8em; background: var(--blue);
-      margin-left: 4px; vertical-align: -0.08em; border-radius: 1px;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { .hero-cursor { animation: none; } }
     .hero-visual {
       display: block; flex-shrink: 0; text-decoration: none;
       transform: rotate(-7deg); transition: transform .4s ease;
@@ -162,7 +155,6 @@
       .hero-visual { transform: rotate(-3deg); margin-top: 8px; }
       .hero-visual .phone-frame { width: 230px; }
       .hero h1 { letter-spacing: -1.5px; }
-      .hero-cursor { width: 5px; }
     }
     .hero .hero-blob {
       position: absolute; border-radius: 50%; pointer-events: none;
@@ -617,7 +609,7 @@
       <h1>
         <span class="line" data-en="Control">Controlá</span>
         <span class="line accent" data-en="your finances">tus finanzas</span>
-        <span class="line" data-en="without the hassle">sin complicaciones<span class="hero-cursor"></span></span>
+        <span class="line" data-en="without the hassle">sin complicaciones</span>
       </h1>
       <p data-en="Track income and expenses in ARS, USD, and EUR. The official BNA exchange rate updates itself.">Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
       <div class="hero-btns">
