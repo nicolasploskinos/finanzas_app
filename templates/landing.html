@@ -248,11 +248,34 @@
       max-width: 1100px; width: 100%;
       box-shadow: 0 40px 80px rgba(0,0,0,.5);
     }
-    .demo-chrome { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-    .demo-chrome span { width: 10px; height: 10px; border-radius: 50%; opacity: .55; flex-shrink: 0; }
-    .demo-chrome span:nth-child(1) { background: var(--red); }
-    .demo-chrome span:nth-child(2) { background: var(--yellow); }
-    .demo-chrome span:nth-child(3) { background: var(--green); }
+    /* Barra de ventana estilo Chrome/Windows (pestaña + botones _ [] X a la
+       derecha, más una barra de direcciones abajo) en vez de los 3 puntitos
+       de una ventana de Mac. */
+    .demo-chrome {
+      margin: -32px -32px 20px; border-radius: 22px 22px 0 0; overflow: hidden;
+      background: var(--surface2);
+    }
+    .demo-chrome-titlebar { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 0 14px; }
+    .demo-chrome-tab {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border-radius: 8px 8px 0 0;
+      padding: 9px 16px; font-size: 13px; font-weight: 600; color: var(--text);
+    }
+    .demo-chrome-tab-icon { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+    .demo-chrome-tab-x { color: var(--muted); font-size: 13px; margin-left: 10px; }
+    .demo-chrome-winctl { display: flex; }
+    .demo-chrome-btn {
+      width: 42px; height: 34px; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 12px;
+    }
+    .demo-chrome-btn-close:hover { background: #e81123; color: #fff; }
+    .demo-chrome-addr { display: flex; align-items: center; gap: 14px; background: var(--surface); padding: 8px 16px; }
+    .demo-chrome-nav { color: var(--muted); font-size: 15px; line-height: 1; }
+    .demo-chrome-url {
+      flex: 1; background: var(--surface2); border-radius: 100px;
+      padding: 6px 14px; font-size: 12px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
     .demo-tabs { display: flex; gap: 10px; margin-bottom: 18px; }
     .demo-tab {
       flex: 1; background: none; border: none; cursor: pointer;
@@ -288,18 +311,13 @@
       color: var(--text); background: rgba(79,140,247,.1);
       border: 1px solid rgba(79,140,247,.25); border-radius: 12px; line-height: 1.5;
     }
-    .demo-screen { display: none; animation: demoIn .4s ease; }
-    .demo-screen.active {
-      display: flex; align-items: flex-start; gap: 44px;
-    }
-    .demo-info { flex: 1; min-width: 0; }
+    /* Sin columna de texto al lado: la captura sola, centrada, es el
+       contenido — el marco de navegador de arriba ya da el contexto. */
+    .demo-screen { display: none; animation: demoIn .4s ease; justify-content: center; }
+    .demo-screen.active { display: flex; }
     @keyframes demoIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { .demo-screen { animation: none; } }
-    .demo-screen .phone-frame { max-width: 340px; width: 100%; flex-shrink: 0; }
-    @media (max-width: 900px) {
-      .demo-screen.active { flex-direction: column; gap: 26px; }
-      .demo-screen .phone-frame { max-width: 340px; }
-    }
+    .demo-screen .phone-frame { max-width: 380px; width: 100%; }
 
     /* ── MINI CONVERTER (hook) ── */
     .mini-convert { margin-top: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -645,7 +663,31 @@
   <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running on a phone — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando desde el celular — tocá una pestaña, o simplemente esperá y mirá.</p>
 
   <div class="demo-frame">
-    <div class="demo-chrome"><span></span><span></span><span></span></div>
+    <div class="demo-chrome">
+      <div class="demo-chrome-titlebar">
+        <div class="demo-chrome-tab">
+          <svg class="demo-chrome-tab-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+            <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor"/>
+            <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor"/>
+            <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
+          </svg>
+          <span>Montor</span>
+          <span class="demo-chrome-tab-x">✕</span>
+        </div>
+        <div class="demo-chrome-winctl">
+          <span class="demo-chrome-btn">─</span>
+          <span class="demo-chrome-btn">▢</span>
+          <span class="demo-chrome-btn demo-chrome-btn-close">✕</span>
+        </div>
+      </div>
+      <div class="demo-chrome-addr">
+        <span class="demo-chrome-nav">←</span>
+        <span class="demo-chrome-nav">→</span>
+        <span class="demo-chrome-nav">⟳</span>
+        <div class="demo-chrome-url">🔒 montor.app</div>
+      </div>
+    </div>
 
     <div class="demo-tabs" role="tablist" aria-label="Demo Montor">
       <button class="demo-tab active" type="button" role="tab" aria-selected="true" aria-controls="demo-screen-0" id="demo-tab-0" data-tab="0">
@@ -666,18 +708,6 @@
 
       <!-- SCREEN 0: formulario real -->
       <div class="demo-screen active" id="demo-screen-0" role="tabpanel" aria-labelledby="demo-tab-0">
-        <div class="demo-info">
-          <div class="demo-step" data-en="You <strong>pick</strong> the type, currency, and amount. Tag it to a trip or make it recurring.">
-            <strong>Elegís</strong> tipo, moneda y monto. Podés etiquetarlo a un viaje o dejarlo recurrente.
-          </div>
-          <ul class="demo-bullets">
-            <li data-en="Category autocomplete based on your own history">Categoría con autocompletado según tu historial</li>
-            <li data-en="Past or future date, with automatic historical exchange rate">Fecha pasada o futura, con cotización histórica automática</li>
-            <li data-en="Tag it to a trip, so it's tracked separately in dollars">Etiquetalo a un viaje, así se sigue aparte en dólares</li>
-            <li data-en="Weekly or monthly repeat, so you never load it twice">Repetición semanal o mensual, sin cargarlo de nuevo</li>
-          </ul>
-          <div class="demo-highlight" data-en="⚡ It saves instantly — no page reload, no waiting.">⚡ Se guarda al instante — sin recargar la página, sin esperas.</div>
-        </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
           <img src="/static/screenshots/nueva-transaccion-mobile.png" alt="Formulario real de nueva transacción en Montor, desde el celular" loading="lazy" width="780" height="1688">
@@ -686,18 +716,6 @@
 
       <!-- SCREEN 1: dashboard real -->
       <div class="demo-screen" id="demo-screen-1" role="tabpanel" aria-labelledby="demo-tab-1">
-        <div class="demo-info">
-          <div class="demo-step" data-en="Everything <strong>converts itself</strong>, at the day's official rate. Income, expenses, and balance — in whichever currency you pick.">
-            Todo <strong>se convierte solo</strong>, con la cotización oficial del día. Ingresos, gastos y saldo, en la moneda que elijas.
-          </div>
-          <ul class="demo-bullets">
-            <li data-en="Budgets by category with a progress bar">Presupuestos por categoría con barra de progreso</li>
-            <li data-en="Search bar and filters by date or range">Buscador y filtros por fecha o rango</li>
-            <li data-en="Recurring expenses like rent or subscriptions, added by themselves">Gastos recurrentes como el alquiler o suscripciones, agregados solos</li>
-            <li data-en="Full history with the Pro plan">Historial completo con el plan Pro</li>
-          </ul>
-          <div class="demo-highlight" data-en="🇦🇷 The BNA official exchange rate, refreshed automatically.">🇦🇷 La cotización oficial BNA, actualizada sola.</div>
-        </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
           <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor con saldo consolidado, presupuestos y movimientos, desde el celular" loading="lazy" width="780" height="1688">
@@ -706,18 +724,6 @@
 
       <!-- SCREEN 2: resumen mensual + IA real -->
       <div class="demo-screen" id="demo-screen-2" role="tabpanel" aria-labelledby="demo-tab-2">
-        <div class="demo-info">
-          <div class="demo-step" data-en="A <strong>category chart</strong> and an AI-written paragraph on how your month went — both generated live, not staged.">
-            Un <strong>gráfico por categoría</strong> y un párrafo escrito por IA sobre cómo viene tu mes — ambos generados en vivo, no armados a mano.
-          </div>
-          <ul class="demo-bullets">
-            <li data-en="Automatic comparison against last month">Comparación automática con el mes anterior</li>
-            <li data-en="Real INDEC inflation applied to your spending">Inflación real del INDEC aplicada a tu gasto</li>
-            <li data-en="A donut chart of what you spent on, by category">Un gráfico de torta de en qué gastaste, por categoría</li>
-            <li data-en="In whichever language you pick, Spanish or English">En el idioma que elijas, español o inglés</li>
-          </ul>
-          <div class="demo-highlight" data-en="🤖 Written fresh by AI each month — never a canned template.">🤖 Escrito de cero por IA cada mes — nunca una plantilla armada.</div>
-        </div>
         <div class="phone-frame">
           <span class="phone-notch"></span>
           <img src="/static/screenshots/resumen-ia-mobile.png" alt="Resumen mensual real de Montor con gráfico por categoría y resumen escrito por IA, desde el celular" loading="lazy" width="780" height="1688">
