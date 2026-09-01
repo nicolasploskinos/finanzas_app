@@ -65,6 +65,7 @@
     .header-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; min-width: 0; }
     .header-username { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
     .header-actions { display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
+    .header-avatar { display: none; }
 
     /* Balance por moneda */
     .bal-moneda { padding: 12px 12px 4px; }
@@ -288,6 +289,17 @@
     /* Trial banner */
     .trial-banner { background: linear-gradient(135deg,rgba(var(--blue-rgb),.15),rgba(var(--blue-rgb),.04)); border-bottom: 1px solid rgba(var(--blue-rgb),.25); padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
+    /* Barra de iconos (solo escritorio) */
+    .icon-rail { display: none; }
+    .icon-rail-btn {
+      width: 40px; height: 40px; border-radius: 12px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; color: var(--muted); font-size: 17px;
+      text-decoration: none; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .icon-rail-btn:hover { background: var(--surface); color: var(--text); }
+    .icon-rail-btn.active { background: var(--blue); color: #fff; }
+
     /* Stats */
     .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
     .stats-card { background: var(--surface2); border-radius: 12px; padding: 12px; min-width: 0; }
@@ -300,7 +312,33 @@
        ganen en la cascada a las de arriba sin necesitar !important. */
     @media (min-width: 900px) {
       body { max-width: min(95vw, 1800px); }
-      #tab-resumen { display: flex; align-items: flex-start; gap: 28px; padding-top: 8px; }
+      #tab-resumen { display: flex; align-items: flex-start; gap: 20px; padding-top: 8px; }
+
+      .icon-rail {
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+        background: var(--surface2); border: 1px solid var(--border);
+        border-radius: 20px; padding: 14px 8px;
+        position: sticky; top: 92px; flex: 0 0 56px;
+      }
+
+      .header-avatar {
+        display: flex; align-items: center; justify-content: center;
+        width: 38px; height: 38px; border-radius: 50%;
+        background: var(--blue); color: #fff; font-weight: 800; font-size: 15px; flex-shrink: 0;
+      }
+
+      /* Tarjetas más "premium": esquinas más redondeadas, sombra con más
+         cuerpo y una leve elevación al pasar el mouse, como en dashboards
+         de escritorio con look editorial. */
+      .cons-section, .presup-section, .cot-card, .cot-wrap, .tx, .stats-card, .cons-card {
+        border-radius: 20px;
+      }
+      .cons-section, .cot-card, .cot-wrap, .tx {
+        box-shadow: 0 4px 20px rgba(0,0,0,.18);
+        transition: transform .15s ease, box-shadow .15s ease;
+      }
+      .tx:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+
       .col-izq {
         display: flex; flex-direction: column; gap: 16px;
         flex: 0 0 420px; position: sticky; top: 92px;
@@ -423,7 +461,10 @@
     <p id="fecha-hoy"></p>
   </div>
   <div class="header-right">
-    <div class="header-username" data-en="Hi, {{ username }}">Hola, {{ username }}</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="header-avatar">{{ (username or "?")[:1]|upper }}</span>
+      <div class="header-username" data-en="Hi, {{ username }}">Hola, {{ username }}</div>
+    </div>
     <div class="header-actions">
       {% if not is_pro %}
       <button onclick="abrirModalPro()" style="font-size:11px;font-weight:700;background:var(--yellow);color:#000;border-radius:6px;padding:3px 8px;border:none;cursor:pointer;white-space:nowrap;">⭐ Pro</button>
@@ -446,6 +487,12 @@
 {% endif %}
 
 <div id="tab-resumen">
+  <div class="icon-rail">
+    <span class="icon-rail-btn active" title="Inicio">🏠</span>
+    <button class="icon-rail-btn" onclick="abrirModal()" title="Nueva transacción" aria-label="Nueva transacción">➕</button>
+    <a class="icon-rail-btn" href="/montor/viajes" title="Viajes" aria-label="Viajes">✈️</a>
+    <button class="icon-rail-btn" onclick="document.getElementById('busqueda').focus()" title="Buscar" aria-label="Buscar">🔍</button>
+  </div>
   <div class="col-izq">
 
   <!-- Total consolidado -->
