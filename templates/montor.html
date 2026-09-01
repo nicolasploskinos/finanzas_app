@@ -341,14 +341,14 @@
         display: flex; flex-direction: column; align-items: center; gap: 12px;
         background: var(--surface2); border: 1px solid var(--border);
         border-radius: 22px; padding: 16px 10px;
-        position: sticky; top: 100px; flex: 0 0 64px;
+        position: sticky; top: 76px; flex: 0 0 64px;
       }
       .icon-rail-btn { width: 44px; height: 44px; font-size: 19px; border-radius: 14px; }
 
       .header-avatar {
         display: flex; align-items: center; justify-content: center;
-        width: 44px; height: 44px; border-radius: 50%;
-        background: var(--blue); color: #fff; font-weight: 800; font-size: 17px; flex-shrink: 0;
+        width: 34px; height: 34px; border-radius: 50%;
+        background: var(--blue); color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;
       }
 
       /* En escritorio "Viajes" ya vive en la barra de iconos: repetirlo en
@@ -370,7 +370,7 @@
 
       .col-izq {
         display: flex; flex-direction: column; gap: 20px;
-        position: sticky; top: 100px;
+        position: sticky; top: 76px;
         background: var(--surface2); border: 1px solid var(--border);
         border-radius: 22px; padding: 24px;
       }
@@ -391,7 +391,7 @@
       }
       @media (min-width: 1300px) {
         #tab-resumen { grid-template-columns: 64px 380px 1fr 340px; }
-        .col-drcha { grid-column: 4; grid-row: 1; display: flex; flex-direction: column; position: sticky; top: 100px; }
+        .col-drcha { grid-column: 4; grid-row: 1; display: flex; flex-direction: column; position: sticky; top: 76px; }
       }
 
       .multimon-card {
@@ -444,24 +444,24 @@
       .col-drcha .cot-wrap--whatsapp { border-left-color: var(--green); }
       .col-drcha .cot-card         { border-left-color: var(--blue); }
 
-      header { padding: 20px 32px; }
+      header { padding: 10px 28px; }
       /* El header estaba "amontonado en las puntas": logo pegado al borde
          izquierdo, avatar+acciones pegados al derecho, con un hueco enorme
          en el medio en pantallas anchas. Se acota el ancho del contenido
          (en vez de ocupar los 1920px del body) y las acciones pasan de
          apilarse en dos filas a una sola fila junto al nombre. */
-      .header-inner { max-width: 1500px; margin: 0 auto; gap: 32px; }
-      .header-right { flex-direction: row; align-items: center; gap: 24px; }
-      .header-id { gap: 12px; }
-      .header-actions { gap: 20px; }
+      .header-inner { max-width: 1500px; margin: 0 auto; gap: 24px; }
+      .header-right { flex-direction: row; align-items: center; gap: 16px; }
+      .header-id { gap: 8px; }
+      .header-actions { gap: 12px; }
 
-      /* El usuario pidió el doble de tamaño para el texto de estas
-         acciones puntualmente (quedaba ilegible al lado del resto ya
-         agrandado del header). */
-      .hdr-pro-badge { font-size: 22px; padding: 8px 16px !important; border-radius: 10px !important; }
-      .hdr-lang-btn  { font-size: 22px; }
-      .hdr-logout    { font-size: 22px; padding: 6px 0 6px 20px !important; }
-      .hdr-icon-btn  { font-size: 30px; }
+      /* Despues de agrandarlo (para que se leyera) quedo demasiado alto;
+         se vuelve a un tamaño compacto pero sin caer en el 11px original
+         que era ilegible. */
+      .hdr-pro-badge { font-size: 13px; padding: 4px 10px !important; border-radius: 8px !important; }
+      .hdr-lang-btn  { font-size: 13px; }
+      .hdr-logout    { font-size: 13px; padding: 6px 0 6px 12px !important; }
+      .hdr-icon-btn  { font-size: 17px; }
 
       /* Recurrentes y WhatsApp (panel derecho): el contenido se arma con
          estilos inline pensados para mobile (11-13px), ilegibles ya
@@ -475,10 +475,10 @@
       #wa-desvinculado p, #wa-vinculado p { font-size: 17px !important; line-height: 1.6; }
       #wa-codigo-box > div { font-size: 16px !important; }
       #wa-codigo-box a { font-size: 18px !important; }
-      header h1 { font-size: 28px; }
-      header p  { font-size: 16px; }
-      .header-logo-icon { width: 32px; height: 32px; }
-      .header-username { font-size: 20px; max-width: none; }
+      header h1 { font-size: 20px; }
+      header p  { font-size: 12px; }
+      .header-logo-icon { width: 24px; height: 24px; }
+      .header-username { font-size: 15px; max-width: none; }
       .cons-title { font-size: 16px; }
       .cons-btn { font-size: 17px; }
       .cons-card-label { font-size: 14px; }
@@ -605,7 +605,7 @@
         <button class="cons-btn"        id="cbtn-EUR" onclick="setConsolidado('EUR')">€ EUR</button>
       </div>
     </div>
-    <div style="height:44px;margin:2px 0 12px">
+    <div id="cons-spark-wrap" style="height:44px;margin:2px 0 12px">
       <canvas id="cons-spark"></canvas>
     </div>
     <div class="cons-cards">
@@ -1012,6 +1012,17 @@
     requestAnimationFrame(() => ajustarTextoAhora(el, min));
   }
 
+  // La tipografía Inter (Google Fonts) puede terminar de descargarse
+  // después de que ajustarTexto ya midió el ancho con la fuente de
+  // respaldo del sistema — como Inter tiene métricas distintas, el
+  // resultado quedaba con el último caracter cortado. Se vuelve a ajustar
+  // todo lo que se auto-achica en cuanto la fuente real está lista.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      document.querySelectorAll(".stats-card-value, .cons-card-value").forEach(el => ajustarTexto(el));
+    });
+  }
+
   let datos = [];
   let tipoActual       = "Gasto";
   let monedaActual     = "ARS";
@@ -1157,9 +1168,10 @@
   let sparkChart = null;
   function renderSparkline() {
     const canvas = document.getElementById("cons-spark");
+    const wrap = document.getElementById("cons-spark-wrap");
     if (!canvas || typeof Chart === "undefined") return;
     const lista = filtrados().slice().sort((a, b) => a.fecha.localeCompare(b.fecha));
-    if (!lista.length) { canvas.style.display = "none"; return; }
+    if (!lista.length) { if (wrap) wrap.style.display = "none"; return; }
 
     // Saldo acumulado día a día (en ARS, luego convertido a la moneda
     // consolidada elegida) — no es un balance de cuenta real, es la suma
@@ -1172,12 +1184,16 @@
       porDia[t.fecha] = (porDia[t.fecha] || 0) + delta;
     });
     const fechas = Object.keys(porDia).sort();
-    if (!fechas.length) { canvas.style.display = "none"; return; }
+    // Sin la fecha de al menos un movimiento no hay curva que trazar; se
+    // esconde todo el contenedor (no solo el canvas) para que no quede un
+    // hueco vacío del alto fijo del gráfico.
+    if (!fechas.length) { if (wrap) wrap.style.display = "none"; return; }
 
     let acc = 0;
     const puntos = fechas.map(f => { acc += porDia[f]; return fromARS(acc, monedaConsol); });
     const ultimos = puntos.slice(-30);
 
+    if (wrap) wrap.style.display = "";
     canvas.style.display = "";
     const blue = getComputedStyle(document.body).getPropertyValue("--blue").trim() || "#4f8cf7";
     if (sparkChart) sparkChart.destroy();

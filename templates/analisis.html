@@ -169,11 +169,12 @@
 
   <div class="analisis-content">
     <div class="periodo-pills">
-      <button class="periodo-btn" data-p="1m" onclick="setPeriodo('1m')" data-en="This month">Este mes</button>
+      <button class="periodo-btn active" data-p="1m" onclick="setPeriodo('1m')" data-en="This month">Este mes</button>
+      <button class="periodo-btn" data-p="mes_pasado" onclick="setPeriodo('mes_pasado')" data-en="Last month">Mes pasado</button>
       <button class="periodo-btn" data-p="3m" onclick="setPeriodo('3m')" data-en="3 months">3 meses</button>
       <button class="periodo-btn" data-p="6m" onclick="setPeriodo('6m')" data-en="6 months">6 meses</button>
       <button class="periodo-btn" data-p="1a" onclick="setPeriodo('1a')" data-en="This year">Este año</button>
-      <button class="periodo-btn active" data-p="todo" onclick="setPeriodo('todo')" data-en="All">Todo</button>
+      <button class="periodo-btn" data-p="todo" onclick="setPeriodo('todo')" data-en="All">Todo</button>
     </div>
     <div class="filtros">
       <select id="f-tipo" onchange="render(window.__datosAnalisis)">
@@ -275,23 +276,28 @@
   const MESES_CORTOS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   let chartMensual = null, chartTendencia = null;
-  let periodoActivo = "todo";
+  let periodoActivo = "1m";
   const hoy = new Date();
 
   function normalizar(s) {
     return (s || "").toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   }
 
-  // Mismos periodos y misma cuenta que el panel principal (montor.html):
-  // "3m"/"6m" cuentan el mes actual + los 2/5 anteriores, "1a" arranca en
-  // enero, "todo" no recorta por fecha.
-  function desdePeriodo() {
-    if (periodoActivo === "todo") return null;
-    const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    if (periodoActivo === "3m") d.setMonth(d.getMonth() - 2);
-    else if (periodoActivo === "6m") d.setMonth(d.getMonth() - 5);
-    else if (periodoActivo === "1a") d.setMonth(0);
-    return d;
+  // Mismos periodos que el panel principal (montor.html) — "3m"/"6m"
+  // cuentan el mes actual + los 2/5 anteriores, "1a" arranca en enero,
+  // "todo" no recorta por fecha — mas "mes_pasado", propio de Analisis:
+  // el ultimo mes calendario completo, sin el mes en curso.
+  function rangoPeriodo() {
+    if (periodoActivo === "todo") return { desde: null, hasta: null };
+    const desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    let hasta = null;
+    if (periodoActivo === "mes_pasado") {
+      desde.setMonth(desde.getMonth() - 1);
+      hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 0); // ultimo dia del mes anterior
+    } else if (periodoActivo === "3m") desde.setMonth(desde.getMonth() - 2);
+    else if (periodoActivo === "6m") desde.setMonth(desde.getMonth() - 5);
+    else if (periodoActivo === "1a") desde.setMonth(0);
+    return { desde, hasta };
   }
 
   function setPeriodo(p) {
@@ -301,12 +307,14 @@
   }
 
   function filtrados(datos) {
-    const desde  = desdePeriodo();
+    const { desde, hasta } = rangoPeriodo();
     const tipo   = document.getElementById("f-tipo").value;
     const moneda = document.getElementById("f-moneda").value;
     const cat    = document.getElementById("f-cat").value;
     return datos.filter(t => {
-      if (desde) { const f = new Date(t.fecha + "T00:00:00"); if (f < desde) return false; }
+      const f = new Date(t.fecha + "T00:00:00");
+      if (desde && f < desde) return false;
+      if (hasta && f > hasta) return false;
       if (tipo   && t.tipo !== tipo)                              return false;
       if (moneda && (t.moneda || "ARS") !== moneda)               return false;
       if (cat    && normalizar(t.categoria) !== normalizar(cat))  return false;
@@ -327,22 +335,25 @@
       cats.map(c => `<option value="${c}" ${c === val ? "selected" : ""}>${c}</option>`).join("");
   }
 
-  // Cuantos meses mostrar en los graficos, segun el periodo elegido: para
-  // "todo" se calcula desde la transaccion mas vieja del set ya filtrado
-  // por tipo/moneda/categoria (sin el propio recorte de periodo).
-  function mesesParaPeriodo(lista) {
-    if (periodoActivo === "1m") return 1;
-    if (periodoActivo === "3m") return 3;
-    if (periodoActivo === "6m") return 6;
-    if (periodoActivo === "1a") return hoy.getMonth() + 1;
+  // Cuantos meses mostrar en los graficos y en que mes terminan (endOffset:
+  // 0 = terminan en el mes en curso, 1 = terminan el mes pasado), segun el
+  // periodo elegido. Para "todo" se calcula desde la transaccion mas vieja
+  // del set ya filtrado por tipo/moneda/categoria (sin el propio recorte
+  // de periodo).
+  function rangoMeses(lista) {
+    if (periodoActivo === "mes_pasado") return { n: 1, endOffset: 1 };
+    if (periodoActivo === "1m") return { n: 1, endOffset: 0 };
+    if (periodoActivo === "3m") return { n: 3, endOffset: 0 };
+    if (periodoActivo === "6m") return { n: 6, endOffset: 0 };
+    if (periodoActivo === "1a") return { n: hoy.getMonth() + 1, endOffset: 0 };
     let minFecha = null;
     lista.forEach(t => {
       const f = new Date(t.fecha + "T00:00:00");
       if (!minFecha || f < minFecha) minFecha = f;
     });
-    if (!minFecha) return 1;
+    if (!minFecha) return { n: 1, endOffset: 0 };
     const n = (hoy.getFullYear() - minFecha.getFullYear()) * 12 + (hoy.getMonth() - minFecha.getMonth()) + 1;
-    return Math.max(1, Math.min(n, 60));
+    return { n: Math.max(1, Math.min(n, 60)), endOffset: 0 };
   }
 
   async function init() {
@@ -375,12 +386,12 @@
       return true;
     });
     const lista = filtrados(datos);
-    const nMeses = mesesParaPeriodo(sinRecortarFecha);
+    const { n: nMeses, endOffset } = rangoMeses(sinRecortarFecha);
 
     // ── KPIs + serie mensual ──
     const meses = [];
     for (let i = nMeses - 1; i >= 0; i--) {
-      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - endOffset - i, 1);
       meses.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: `${mesesCortos[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`, ing: 0, gas: 0 });
     }
     const porMes = {};
@@ -405,9 +416,16 @@
       }
     });
 
-    const mesesConDatos = meses.filter(m => m.ing || m.gas).length || 1;
     const balanceNeto = ingTotal - gasTotal;
-    const promedioMensual = gasTotal / mesesConDatos;
+
+    // El promedio mensual de gasto nunca cuenta el mes en curso (todavia
+    // no termino, asi que promedia bajo) — siempre corta en el ultimo mes
+    // ya terminado, sin importar el periodo elegido.
+    const mesActualKey = `${hoy.getFullYear()}-${hoy.getMonth()}`;
+    const mesesTerminados = meses.filter(m => m.key !== mesActualKey);
+    const gastoMesesTerminados = mesesTerminados.reduce((s, m) => s + m.gas, 0);
+    const mesesConDatos = mesesTerminados.filter(m => m.ing || m.gas).length || 1;
+    const promedioMensual = gastoMesesTerminados / mesesConDatos;
 
     document.getElementById("kpi-grid").innerHTML = `
       <div class="kpi-card ingresos">
