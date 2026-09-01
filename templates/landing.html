@@ -68,12 +68,22 @@
       background: rgba(15,15,26,.88);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px;
       padding: 0 32px; height: 68px;
     }
     .nav-logo { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
     .nav-logo svg { width: 30px; height: 30px; }
     .nav-logo span { color: var(--blue); }
+    .nav-links {
+      display: none; align-items: center; justify-content: center; gap: 8px;
+    }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 14px; font-weight: 700; white-space: nowrap;
+      padding: 8px 12px; border-radius: 100px; transition: color .2s, background .2s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--surface2); }
+    @media (min-width: 1080px) { .nav-links { display: flex; } }
     .nav-cta {
       background: var(--blue-dark); color: #fff;
       border: none; border-radius: 10px;
@@ -300,7 +310,7 @@
     /* ── FEATURES ── */
     .section { padding: 90px 24px; max-width: 1340px; margin: 0 auto; }
     @media (max-width: 640px) { .section { padding: 56px 20px; } }
-    .section, .demo-section { scroll-margin-top: 78px; }
+    .section, .demo-section, .para-quien { scroll-margin-top: 78px; }
     .section-label {
       text-align: center; font-size: 14.5px; font-weight: 800;
       color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
@@ -521,6 +531,13 @@
       <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
     </svg>
     <span>Montor</span>
+  </div>
+  <div class="nav-links">
+    <a href="#demo" data-en="Screenshots">Capturas</a>
+    <a href="#features" data-en="Features">Funciones</a>
+    <a href="#para-quien" data-en="Who it's for">Para quién</a>
+    <a href="#precio" data-en="Pricing">Precio</a>
+    <a href="#faq">FAQ</a>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     <button id="btn-lang" onclick="toggleLang()" style="background:none;border:none;cursor:pointer;font-size:13px;font-weight:800;line-height:1;padding:6px 10px;color:var(--muted);border:1px solid var(--border);border-radius:8px;" title="Switch language">EN</button>
@@ -759,7 +776,7 @@
 </section>
 
 <!-- PARA QUIÉN -->
-<div class="para-quien">
+<div class="para-quien" id="para-quien">
   <div class="section">
     <div class="two-col">
       <div>
