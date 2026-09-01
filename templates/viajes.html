@@ -140,11 +140,34 @@
     .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); padding: 11px 22px; border-radius: 100px; font-size: 13px; font-weight: 700; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.3); border: 1px solid var(--border); }
     .toast.show { opacity: 1; }
 
+    /* Barra de iconos: la misma de montor.html, para que quede siempre
+       visible sin importar en que pagina de la app estes. Oculta en
+       mobile (ahi no hay lugar y la navegacion es la de siempre). */
+    .icon-rail { display: none; }
+    .icon-rail-btn {
+      width: 40px; height: 40px; border-radius: 12px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; color: var(--muted); font-size: 17px;
+      text-decoration: none; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .icon-rail-btn:hover { background: var(--surface); color: var(--text); }
+    .icon-rail-btn.active { background: var(--blue); color: #fff; }
+    .viajes-content { min-width: 0; flex: 1; }
+
     /* Escritorio: más ancho y letra más grande (mobile queda igual). Igual
        que en montor.html, esto va al final a proposito para ganarle en la
        cascada a las reglas de arriba sin necesitar !important. */
     @media (min-width: 900px) {
-      body { max-width: min(95vw, 1400px); }
+      body { max-width: min(95vw, 1600px); }
+
+      .viajes-shell { display: flex; align-items: flex-start; gap: 24px; padding-top: 10px; }
+      .icon-rail {
+        display: flex; flex-direction: column; align-items: center; gap: 12px;
+        background: var(--surface2); border: 1px solid var(--border);
+        border-radius: 22px; padding: 16px 10px;
+        position: sticky; top: 100px; flex: 0 0 64px;
+      }
+      .icon-rail-btn { width: 44px; height: 44px; font-size: 19px; border-radius: 14px; }
 
       /* Mismo criterio "premium" que montor.html: tarjetas más redondeadas,
          con sombra y una leve elevación al pasar el mouse. */
@@ -155,25 +178,33 @@
       }
       .viaje-card:hover, .tx:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 
-      header h1 { font-size: 20px; }
-      .viaje-card-nombre { font-size: 19px; }
-      .viaje-card-fechas { font-size: 13px; }
-      .empty-state { font-size: 16px; }
-      .presup-bar-name { font-size: 13px; }
-      .presup-bar-amt { font-size: 19px; }
-      .detalle-nombre { font-size: 26px; }
-      .detalle-fechas { font-size: 14px; }
-      .cons-card-label { font-size: 12px; }
-      .cons-card-value { font-size: 28px; }
-      .chart-title { font-size: 13px; }
-      .tx-cat  { font-size: 16px; }
-      .tx-fecha { font-size: 12px; }
-      .tx-monto { font-size: 17px; }
+      header { padding: 20px 32px; }
+      header h1 { font-size: 24px; }
+      .back-btn { font-size: 26px; }
+      .header-actions button, .header-actions a { font-size: 22px !important; }
+      .empty-state { font-size: 18px; }
+      .presup-bar-name { font-size: 16px; }
+      .presup-bar-amt { font-size: 22px; }
+      .detalle-nombre { font-size: 32px; }
+      .detalle-fechas { font-size: 17px; }
+      .cons-card-label { font-size: 14px; }
+      .cons-card-value { font-size: 32px; }
+      .chart-title { font-size: 16px; }
+      .tx-cat  { font-size: 19px; }
+      .tx-fecha { font-size: 15px; }
+      .tx-monto { font-size: 20px; }
 
-      /* Lista de viajes: grilla en vez de una sola columna angosta,
-         para usar el ancho disponible sin dejar hueco vacio al lado. */
-      #viajes-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-      .viaje-card { margin-bottom: 0; }
+      /* Lista de viajes: grilla en vez de una sola columna angosta, para
+         usar el ancho disponible sin dejar hueco vacio al lado. auto-fit
+         (no auto-fill) es clave: con pocos viajes, auto-fill deja columnas
+         vacias invisibles y la tarjeta real queda angosta en una esquina
+         con todo el resto de la fila desperdiciado; auto-fit colapsa esas
+         columnas vacias y estira las tarjetas reales para ocupar el
+         espacio. */
+      #viajes-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 420px)); gap: 20px; justify-content: start; }
+      .viaje-card { margin-bottom: 0; padding: 26px; }
+      .viaje-card-nombre { font-size: 26px; }
+      .viaje-card-fechas { font-size: 16px; margin-bottom: 18px; }
 
       /* Detalle de viaje: layout de dos columnas, mismo criterio que el
          dashboard principal (col-izq/col-der en montor.html). */
@@ -214,6 +245,15 @@
   <a href="/montor" data-en="Back to Montor">Volver a Montor</a>
 </div>
 {% else %}
+
+<div class="viajes-shell">
+  <div class="icon-rail">
+    <a class="icon-rail-btn" href="/montor" title="Inicio" aria-label="Inicio">🏠</a>
+    <a class="icon-rail-btn" href="/montor?add=1" title="Nueva transacción" aria-label="Nueva transacción">➕</a>
+    <span class="icon-rail-btn active" title="Viajes">✈️</span>
+    <a class="icon-rail-btn" href="/montor/analisis" title="Análisis" aria-label="Análisis">📈</a>
+  </div>
+  <div class="viajes-content">
 
 <!-- Vista lista -->
 <div id="vista-lista">
@@ -267,6 +307,9 @@
 
       <div id="det-tx-lista"></div>
     </div>
+  </div>
+</div>
+
   </div>
 </div>
 

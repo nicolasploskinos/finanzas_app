@@ -51,6 +51,12 @@ def viajes_page():
     return render_template("viajes.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
 
 
+@bp.route("/montor/analisis")
+@core.login_required
+def analisis_page():
+    return render_template("analisis.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
+
+
 @bp.route("/montor/login")
 def login_page():
     if "user_id" in session:
