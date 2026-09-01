@@ -316,7 +316,11 @@
          ensancha, si no queda un hueco enorme al lado con el limite de
          900px pensado para laptops. */
       @media (min-width: 1500px) {
-        #lista { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+        /* align-items:start: sin esto, el grid estira cada .tx-wrap a la
+           altura de la fila, y el fondo rojo de "deslizar para borrar"
+           (que deberia quedar escondido detras de la tarjeta) asoma por
+           abajo cuando la tarjeta vecina de la fila es mas alta. */
+        #lista { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; align-items: start; }
         .mes-header { grid-column: 1 / -1; }
         .tx-wrap { margin-bottom: 0; }
         .busqueda-wrap { max-width: 1300px; }
