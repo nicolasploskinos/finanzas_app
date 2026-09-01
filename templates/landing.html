@@ -94,10 +94,46 @@
       min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center;
-      padding: 100px 20px 60px;
+      padding: 130px 24px 60px;
       background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
       position: relative; overflow: hidden;
+    }
+    .hero-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 48px; max-width: 1420px; width: 100%; margin: 0 auto;
+    }
+    .hero-copy { flex: 1; min-width: 0; max-width: 680px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 26px;
+    }
+    .hero-eyebrow .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 11px; font-weight: 900;
+    }
+    .hero-cursor {
+      display: inline-block; width: 8px; height: .8em; background: var(--blue);
+      margin-left: 4px; vertical-align: -0.08em; border-radius: 1px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .hero-cursor { animation: none; } }
+    .hero-visual {
+      display: block; flex-shrink: 0; text-decoration: none;
+      transform: rotate(-7deg); transition: transform .4s ease;
+    }
+    .hero-visual:hover { transform: rotate(-3deg) translateY(-8px); }
+    .hero-visual .phone-frame { width: 300px; }
+    @media (max-width: 980px) {
+      .hero-inner { flex-direction: column; text-align: center; }
+      .hero-copy { max-width: 100%; text-align: center; }
+      .hero-eyebrow { justify-content: center; }
+      .hero-visual { transform: rotate(-3deg); margin-top: 8px; }
+      .hero-visual .phone-frame { width: 230px; }
+      .hero h1 { letter-spacing: -1.5px; }
+      .hero-cursor { width: 5px; }
     }
     .hero .hero-blob {
       position: absolute; border-radius: 50%; pointer-events: none;
@@ -114,33 +150,30 @@
     }
     .hero > * { position: relative; }
     @media (prefers-reduced-motion: reduce) { .hero-blob { transition: none; } }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25);
-      color: var(--blue); border-radius: 100px;
-      padding: 5px 14px; font-size: 13px; font-weight: 600;
-      margin-bottom: 28px;
-    }
     .hero h1 {
-      font-size: clamp(38px, 5.8vw, 86px);
-      font-weight: 900; line-height: 1.1;
-      max-width: 1180px; margin-bottom: 28px;
-      letter-spacing: -2px;
+      font-size: clamp(42px, 6.4vw, 100px);
+      font-weight: 900; line-height: .98;
+      margin-bottom: 30px;
+      letter-spacing: -3px;
     }
-    .hero h1 em {
-      font-style: normal;
+    .hero h1 .line { display: block; }
+    .hero h1 .accent {
+      font-style: italic;
       background: linear-gradient(135deg, var(--blue), #a78bfa);
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
     .hero p {
-      font-size: clamp(19px, 2.3vw, 27px);
-      color: var(--muted); max-width: 700px;
-      margin-bottom: 46px;
+      font-size: clamp(18px, 1.6vw, 22px);
+      color: var(--muted); max-width: 520px;
+      margin-bottom: 42px;
     }
-    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-start; }
     .trust-strip {
-      display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
-      margin-top: 36px; font-size: 17px; color: var(--muted); font-weight: 600;
+      display: flex; gap: 28px; flex-wrap: wrap; justify-content: flex-start;
+      margin-top: 34px; font-size: 15px; color: var(--muted); font-weight: 600;
+    }
+    @media (max-width: 980px) {
+      .hero-btns, .trust-strip { justify-content: center; }
     }
     .trust-strip span.item { display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary {
@@ -161,22 +194,6 @@
       text-decoration: none; transition: all .2s;
     }
     .btn-secondary:hover { background: var(--surface3); transform: translateY(-2px); }
-    .hero-note { margin-top: 18px; font-size: 13px; color: var(--muted); }
-    .hero-shot-peek {
-      display: flex; justify-content: center; margin-top: 46px; width: 100%;
-      height: 350px; overflow: hidden; position: relative; cursor: pointer;
-    }
-    .hero-shot-peek .phone-frame {
-      width: 320px; flex-shrink: 0;
-      transition: transform .4s ease;
-    }
-    .hero-shot-peek:hover .phone-frame { transform: translateY(-6px); }
-    .hero-shot-peek::after {
-      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 110px;
-      background: linear-gradient(to bottom, transparent, var(--bg));
-      pointer-events: none;
-    }
-    @media (max-width: 640px) { .hero-shot-peek { height: 240px; } .hero-shot-peek .phone-frame { width: 230px; } }
 
     /* ── PHONE FRAME (marco tipo celular alrededor de las capturas) ── */
     .phone-frame {
@@ -195,8 +212,17 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,.06);
     }
 
-    /* ── INTERACTIVE DEMO ── */
-    .demo-section { display: flex; flex-direction: column; align-items: center; padding: 10px 20px 70px; }
+    /* ── INTERACTIVE DEMO (seccion de contraste, siempre oscura aunque el
+       resto de la pagina este en modo claro — mismos tokens, redefinidos
+       localmente, asi todo lo de adentro los hereda sin tocar cada regla) ── */
+    .demo-section {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 100px 20px 100px; margin-top: 40px;
+      background: #05050a;
+      --bg: #05050a; --surface: #15151f; --surface2: #1d1d2b; --surface3: #262638;
+      --text: #f1f5f9; --muted: #99a3b8; --border: #2a2a3d;
+    }
+    .demo-section .section-label { color: var(--blue); }
     .demo-section .section-sub { margin-bottom: 34px; }
     .demo-frame {
       background: var(--surface); border: 1px solid var(--border);
@@ -279,6 +305,50 @@
       text-align: center; font-size: 14.5px; font-weight: 800;
       color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
       margin-bottom: 14px;
+    }
+    .section-label .num { color: var(--muted); font-weight: 700; }
+
+    /* ── MARQUEE ── */
+    .marquee {
+      overflow: hidden; background: var(--surface);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+    }
+    .marquee-track {
+      display: flex; align-items: center; gap: 32px; width: max-content;
+      animation: marquee-scroll 32s linear infinite;
+    }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+    .marquee-track span {
+      font-size: clamp(20px, 2.8vw, 32px); font-weight: 800;
+      letter-spacing: -.5px; color: var(--text); white-space: nowrap;
+    }
+    .marquee-track span.dot { color: var(--blue); font-weight: 900; }
+    @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+    /* ── HERO TILES (bloques vividos) ── */
+    .hero-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 900px) { .hero-tiles { grid-template-columns: 1fr; } }
+    .hero-tile {
+      border-radius: 26px; padding: 38px 32px; min-height: 260px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      color: #fff; position: relative; overflow: hidden;
+      transition: transform .25s ease;
+    }
+    .hero-tile:hover { transform: translateY(-4px); }
+    .hero-tile-icon { font-size: 38px; margin-bottom: 16px; }
+    .hero-tile h3 {
+      font-size: 22px; font-weight: 900; text-transform: uppercase;
+      letter-spacing: -.5px; line-height: 1.15; margin-bottom: 10px;
+    }
+    .hero-tile p { font-size: 15px; line-height: 1.55; opacity: .92; }
+    .tile-blue   { background: linear-gradient(155deg, #60a5fa, #2563eb); }
+    .tile-purple { background: linear-gradient(155deg, #c4b5fd, #7c3aed); }
+    .tile-green  { background: linear-gradient(155deg, #6ee7a8, #16a34a); }
+    .grid-mini-label {
+      font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin: 8px 0 20px;
     }
     .section h2 {
       text-align: center; font-size: clamp(30px, 4vw, 52px);
@@ -463,28 +533,53 @@
 <section class="hero" id="hero">
   <div class="hero-blob hero-blob-1"></div>
   <div class="hero-blob hero-blob-2"></div>
-  <h1 data-en="Take control of your finances in <em>pesos, dollars, and euros</em>, without the hassle">Controlá tus finanzas en <em>pesos, dólares y euros</em>, sin complicaciones</h1>
-  <p data-en="Track income and expenses in ARS, USD, and EUR. The official BNA exchange rate updates itself.">Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
-  <div class="hero-btns">
-    <a href="/montor/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
-    <a href="#demo" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
-  </div>
-  <div class="trust-strip">
-    <span class="item">🔒 <span data-en="Password-protected access">Acceso protegido con contraseña</span></span>
-    <span class="item">🇦🇷 <span data-en="Official BNA exchange rate">Cotización oficial BNA</span></span>
-    <span class="item">⚡ <span data-en="Nothing to install, ready in 2 minutes">Sin instalar nada, listo en 2 minutos</span></span>
-  </div>
-  <a href="#demo" class="hero-shot-peek" aria-label="Ver cómo funciona la app">
-    <div class="phone-frame">
-      <span class="phone-notch"></span>
-      <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor, desde el celular" loading="eager" width="780" height="1688">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <div class="hero-eyebrow"><span class="num">$</span> <span data-en="Personal finance app for Argentina">App de finanzas para Argentina</span></div>
+      <h1>
+        <span class="line" data-en="Control">Controlá</span>
+        <span class="line accent" data-en="your finances">tus finanzas</span>
+        <span class="line" data-en="without the hassle">sin complicaciones<span class="hero-cursor"></span></span>
+      </h1>
+      <p data-en="Track income and expenses in ARS, USD, and EUR. The official BNA exchange rate updates itself.">Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola.</p>
+      <div class="hero-btns">
+        <a href="/montor/login" class="btn-primary" data-en="I want free access →">Quiero acceso gratis →</a>
+        <a href="#demo" class="btn-secondary" data-en="See how it works">Ver cómo funciona</a>
+      </div>
+      <div class="trust-strip">
+        <span class="item">🔒 <span data-en="Password-protected access">Acceso protegido con contraseña</span></span>
+        <span class="item">🇦🇷 <span data-en="Official BNA exchange rate">Cotización oficial BNA</span></span>
+        <span class="item">⚡ <span data-en="Nothing to install, ready in 2 minutes">Sin instalar nada, listo en 2 minutos</span></span>
+      </div>
     </div>
-  </a>
+    <a href="#demo" class="hero-visual" aria-label="Ver cómo funciona la app">
+      <div class="phone-frame">
+        <span class="phone-notch"></span>
+        <img src="/static/screenshots/dashboard-mobile.png" alt="Dashboard real de Montor, desde el celular" loading="eager" width="780" height="1688">
+      </div>
+    </a>
+  </div>
 </section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span data-en="Real multi-currency">Multi-moneda real</span><span class="dot">•</span>
+    <span data-en="Official BNA exchange rate">Cotización oficial BNA</span><span class="dot">•</span>
+    <span data-en="Recurring expenses">Gastos recurrentes</span><span class="dot">•</span>
+    <span data-en="AI-written summary">Resumen con IA</span><span class="dot">•</span>
+    <span data-en="Trips in dollars">Viajes en dólares</span><span class="dot">•</span>
+    <span data-en="Real multi-currency">Multi-moneda real</span><span class="dot">•</span>
+    <span data-en="Official BNA exchange rate">Cotización oficial BNA</span><span class="dot">•</span>
+    <span data-en="Recurring expenses">Gastos recurrentes</span><span class="dot">•</span>
+    <span data-en="AI-written summary">Resumen con IA</span><span class="dot">•</span>
+    <span data-en="Trips in dollars">Viajes en dólares</span><span class="dot">•</span>
+  </div>
+</div>
 
 <!-- DEMO INTERACTIVO -->
 <section class="demo-section" id="demo">
-  <div class="section-label" data-en="Real screenshots">Capturas reales</div>
+  <div class="section-label"><span class="num">01</span> — <span data-en="Real screenshots">Capturas reales</span></div>
   <h2 data-en="This is the actual app — not a mockup">Así es la app de verdad, no un mockup</h2>
   <p class="section-sub" data-en="No stock photos here. Every screen below is a live screenshot of Montor running on a phone — click a tab, or just wait and watch.">Nada de fotos de stock. Cada pantalla de acá abajo es una captura real de Montor andando desde el celular — tocá una pestaña, o simplemente esperá y mirá.</p>
 
@@ -575,14 +670,34 @@
 <!-- FEATURES -->
 <div class="divider"></div>
 <section class="section" id="features">
-  <div class="section-label" data-en="Why Montor">Por qué Montor</div>
+  <div class="section-label"><span class="num">02</span> — <span data-en="Why Montor">Por qué Montor</span></div>
   <h2 data-en="Everything you need, nothing you don't">Todo lo que necesitás, nada que no</h2>
   <p class="section-sub" data-en="Built for people juggling more than one currency who don't want to overcomplicate it.">Diseñado para argentinos que manejan más de una moneda y no quieren complicarse.</p>
+
+  <div class="hero-tiles">
+    <div class="hero-tile tile-blue">
+      <div class="hero-tile-icon">💵</div>
+      <h3 data-en="Real multi-currency">MULTI-MONEDA REAL</h3>
+      <p data-en="ARS, USD, and EUR converted automatically at the official BNA rate.">ARS, USD y EUR convertidos automáticamente a la cotización oficial BNA.</p>
+    </div>
+    <div class="hero-tile tile-purple">
+      <div class="hero-tile-icon">✈️</div>
+      <h3 data-en="TRIPS, IN DOLLARS">VIAJES, EN DÓLARES</h3>
+      <p data-en="Tag expenses to a trip and see the total spent, no matter what currency you logged them in.">Etiquetá gastos a un viaje y mirá el total gastado, sin importar en qué moneda los cargaste.</p>
+    </div>
+    <div class="hero-tile tile-green">
+      <div class="hero-tile-icon">🤖</div>
+      <h3 data-en="AI MONTHLY SUMMARY">RESUMEN MENSUAL CON IA</h3>
+      <p data-en="A paragraph written fresh every month, interpreting how you're doing — not a template.">Un párrafo escrito de cero cada mes, interpretando cómo venís — no una plantilla.</p>
+    </div>
+  </div>
+  <div class="grid-mini-label" data-en="And there's more:">Y además:</div>
+
   <div class="features-grid">
     <div class="feat-card">
-      <div class="feat-icon">💵</div>
-      <h3 data-en="Real multi-currency">Multi-moneda real</h3>
-      <p data-en="Log expenses and income in ARS, USD, or EUR. See everything converted to whichever currency you prefer, with the official BNA exchange rate updated automatically.">Registrá gastos e ingresos en ARS, USD o EUR. Ves todo convertido a la moneda que prefieras, con cotización oficial BNA actualizada automáticamente.</p>
+      <div class="feat-icon">💱</div>
+      <h3 data-en="Try the conversion live">Probá la conversión en vivo</h3>
+      <p data-en="Type an amount and see it converted, exactly like the app does it.">Escribí un monto y mirá cómo se convierte, igual que en la app.</p>
       <div class="mini-convert">
         <div class="mini-convert-row">
           <label for="mc-ars">ARS $</label>
@@ -594,11 +709,6 @@
         </div>
         <div class="mini-convert-note" data-en="Example rate for the demo — the real app updates it automatically every day.">Cotización de ejemplo para la demo — en la app real se actualiza sola todos los días.</div>
       </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">✈️</div>
-      <h3 data-en="Trips tracked separately, in dollars">Viajes aparte, en dólares</h3>
-      <p data-en="Create a trip and tag the expenses that belong to it, no matter what currency you logged them in. You'll see the total spent converted to dollars, with a category chart and a date filter.">Armá un viaje y etiquetá los gastos que le correspondan, sin importar en qué moneda los cargaste. Vas a ver el total gastado convertido a dólares, con gráfico por categoría y filtro por fecha.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🎯</div>
@@ -641,11 +751,6 @@
       <p data-en="A category spending chart and automatic comparison against last month. We add INDEC's inflation index so you can see if your spending grew more or less than prices did.">Gráfico de gastos por categoría y comparación automática con el mes anterior. Sumamos el índice de inflación del INDEC para que veas si tu gasto subió más o menos que los precios.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">🤖</div>
-      <h3 data-en="AI-written monthly summary">Resumen mensual con IA</h3>
-      <p data-en="A short paragraph, written by AI, interpreting how your month went compared to the last one and where your spending is concentrated — no need to read charts.">Un párrafo corto, escrito por IA, que interpreta cómo viene tu mes comparado con el anterior y en qué se concentra tu gasto — sin tener que leer gráficos.</p>
-    </div>
-    <div class="feat-card">
       <div class="feat-icon">🔐</div>
       <h3 data-en="Your data, only yours">Tus datos, solo tuyos</h3>
       <p data-en="We don't share your information with anyone. We don't sell data. If you delete your account, all your records are erased. Password-protected access.">No compartimos tu información con nadie. No vendemos datos. Si borrás tu cuenta, se eliminan todos tus registros. Acceso protegido con contraseña.</p>
@@ -658,7 +763,7 @@
   <div class="section">
     <div class="two-col">
       <div>
-        <div class="section-label" data-en="Who it's for">Para quién es</div>
+        <div class="section-label"><span class="num">03</span> — <span data-en="Who it's for">Para quién es</span></div>
         <h2 style="text-align:left" data-en="Is this for you?">¿Esto es para vos?</h2>
         <p style="color:var(--muted);font-size:19px;margin-bottom:30px;" data-en="If any of these sound familiar, yes.">Si alguno de estos te suena familiar, sí.</p>
         <ul class="check-list">
@@ -677,7 +782,7 @@
 <!-- PRECIO -->
 <div class="divider"></div>
 <section class="section" id="precio">
-  <div class="section-label" data-en="Pricing">Precio</div>
+  <div class="section-label"><span class="num">04</span> — <span data-en="Pricing">Precio</span></div>
   <h2 data-en="Start free, no card required">Empezá gratis, sin tarjeta</h2>
   <p class="section-sub" data-en="The app is free forever. Pro unlocks advanced features if you need them.">La app es gratuita para siempre. Pro desbloquea funciones avanzadas si las necesitás.</p>
   <div class="precios-grid">
@@ -738,7 +843,7 @@
 <!-- FAQ -->
 <div class="divider"></div>
 <section class="section" id="faq">
-  <div class="section-label">FAQ</div>
+  <div class="section-label"><span class="num">05</span> — FAQ</div>
   <h2 data-en="Frequently asked questions">Preguntas frecuentes</h2>
   <div style="max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
 
