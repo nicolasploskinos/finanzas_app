@@ -135,7 +135,13 @@
       transform: rotate(-7deg); transition: transform .4s ease;
     }
     .hero-visual:hover { transform: rotate(-3deg) translateY(-8px); }
-    .hero-visual .phone-frame { width: 300px; }
+    .hero-visual .phone-frame { width: 300px; animation: float 5.5s ease-in-out infinite; }
+    .hero-visual:hover .phone-frame { animation-play-state: paused; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-visual .phone-frame { animation: none; } }
     @media (max-width: 980px) {
       .hero-inner { flex-direction: column; text-align: center; }
       .hero-copy { max-width: 100%; text-align: center; }
@@ -344,10 +350,20 @@
       border-radius: 26px; padding: 38px 32px; min-height: 260px;
       display: flex; flex-direction: column; justify-content: flex-end;
       color: #fff; position: relative; overflow: hidden;
-      transition: transform .25s ease;
+      transition: transform .25s ease, box-shadow .25s ease;
+      transform-style: preserve-3d; perspective: 800px;
+      --tiltX: 0deg; --tiltY: 0deg;
     }
-    .hero-tile:hover { transform: translateY(-4px); }
-    .hero-tile-icon { font-size: 38px; margin-bottom: 16px; }
+    .hero-tile:hover {
+      transform: translateY(-4px) rotateX(var(--tiltX)) rotateY(var(--tiltY));
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-tile:hover { transform: none; } }
+    .hero-tile-icon {
+      font-size: 38px; margin-bottom: 16px;
+      transition: transform .3s ease;
+    }
+    .hero-tile:hover .hero-tile-icon { transform: scale(1.15) translateZ(20px); }
     .hero-tile h3 {
       font-size: 22px; font-weight: 900; text-transform: uppercase;
       letter-spacing: -.5px; line-height: 1.15; margin-bottom: 10px;
@@ -506,14 +522,40 @@
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
-      text-align: center; padding: 36px 20px;
-      font-size: 16.5px; color: var(--muted);
+      padding: 64px 24px 32px;
     }
-    footer a { color: var(--muted); text-decoration: none; }
-    footer a:hover { color: var(--text); }
+    .footer-inner {
+      max-width: 1340px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px;
+      padding-bottom: 40px;
+    }
+    @media (max-width: 780px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-brand { display: flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+    .footer-brand span { color: var(--blue); }
+    .footer-tagline { color: var(--muted); font-size: 15px; max-width: 260px; line-height: 1.6; }
+    .footer-col-title { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .footer-col { display: flex; flex-direction: column; gap: 12px; }
+    .footer-col a { color: var(--text); text-decoration: none; font-size: 15.5px; font-weight: 600; transition: color .2s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom {
+      max-width: 1340px; margin: 0 auto; padding-top: 28px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+      font-size: 14.5px; color: var(--muted);
+    }
 
     /* ── DIVIDER ── */
     .divider { height: 1px; background: var(--border); max-width: 1340px; margin: 0 auto; }
+
+    /* ── REVEAL ON SCROLL ──
+       A proposito nunca toca opacity: si el observer no llega a disparar
+       (herramienta de captura que no scrollea de verdad, etc.) el contenido
+       sigue perfectamente visible, apenas 28px mas abajo de su lugar final -
+       nunca puede quedar invisible como paso con un mecanismo anterior. */
+    .reveal { transform: translateY(28px); transition: transform .7s cubic-bezier(.16,.84,.32,1); }
+    .reveal.in { transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) { .reveal { transition: none; transform: none; } }
 
   </style>
 </head>
@@ -830,12 +872,12 @@
       <div class="precio-ciclos">
         <div class="precio-ciclo-box">
           <div class="precio-ciclo-label" data-en="Monthly">Mensual</div>
-          <div class="precio-ciclo-monto">$6.000<span data-en="/mo">/mes</span></div>
+          <div class="precio-ciclo-monto"><span class="count-up" data-count="6000">$6.000</span><span data-en="/mo">/mes</span></div>
         </div>
         <div class="precio-ciclo-box destacado">
           <div class="precio-ciclo-badge" data-en="2 months free">2 meses gratis</div>
           <div class="precio-ciclo-label" data-en="Yearly">Anual</div>
-          <div class="precio-ciclo-monto">$60.000<span data-en="/yr">/año</span></div>
+          <div class="precio-ciclo-monto"><span class="count-up" data-count="60000">$60.000</span><span data-en="/yr">/año</span></div>
         </div>
       </div>
       <p class="precio-sub" data-en="Secure payments with Mercado Pago — choose your billing cycle after signing up">Pagos seguros con Mercado Pago — elegís el ciclo de pago al registrarte</p>
@@ -911,7 +953,41 @@
 
 <!-- FOOTER -->
 <footer>
-  <p>💰 Montor &nbsp;·&nbsp; <a href="/montor" data-en="Sign in">Acceder</a> &nbsp;·&nbsp; <a href="/privacidad" data-en="Privacy">Privacidad</a> &nbsp;·&nbsp; <a href="/terminos" data-en="Terms">Términos</a> &nbsp;·&nbsp; <span data-en="Made in Argentina 🇦🇷">Hecho en Argentina 🇦🇷</span></p>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="color:var(--blue); flex-shrink:0;">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+          <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor"/>
+          <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor"/>
+          <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
+        </svg>
+        <span>Montor</span>
+      </div>
+      <p class="footer-tagline" data-en="Control your expenses and income in pesos, dollars, and euros. Built for Argentina.">Controlá tus gastos e ingresos en pesos, dólares y euros. Hecha para la economía argentina.</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" data-en="Product">Producto</div>
+      <a href="#demo" data-en="Screenshots">Capturas</a>
+      <a href="#features" data-en="Features">Funciones</a>
+      <a href="#precio" data-en="Pricing">Precio</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" data-en="Legal">Legal</div>
+      <a href="/privacidad" data-en="Privacy">Privacidad</a>
+      <a href="/terminos" data-en="Terms">Términos</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" data-en="Account">Cuenta</div>
+      <a href="/montor" data-en="Sign in">Acceder</a>
+      <a href="/montor/login" data-en="Start free">Empezar gratis</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span data-en="© 2026 Montor. All rights reserved.">© 2026 Montor. Todos los derechos reservados.</span>
+    <span data-en="Made in Argentina 🇦🇷">Hecho en Argentina 🇦🇷</span>
+  </div>
 </footer>
 
 <script>
@@ -971,6 +1047,23 @@
       const y = (e.clientY - r.top) / r.height - 0.5;
       blob1.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
       blob2.style.transform = `translate(${x * -24}px, ${y * -24}px)`;
+    });
+  }
+
+  // Tilt 3D en las tiles vividas, siguiendo el cursor
+  if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    document.querySelectorAll(".hero-tile").forEach((tile) => {
+      tile.addEventListener("mousemove", (e) => {
+        const r = tile.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        tile.style.setProperty("--tiltX", (y * -10) + "deg");
+        tile.style.setProperty("--tiltY", (x * 10) + "deg");
+      });
+      tile.addEventListener("mouseleave", () => {
+        tile.style.setProperty("--tiltX", "0deg");
+        tile.style.setProperty("--tiltY", "0deg");
+      });
     });
   }
 
@@ -1042,6 +1135,68 @@
       usdOut.textContent = (v / RATE_USD).toLocaleString("es-AR", { maximumFractionDigits: 2 });
       eurOut.textContent = (v / RATE_EUR).toLocaleString("es-AR", { maximumFractionDigits: 2 });
     });
+  })();
+
+  // Aparición sutil al hacer scroll (desplazamiento, nunca opacidad — ver
+  // el comentario junto a la regla .reveal en el <style>).
+  (function () {
+    if (reducedMotion) return;
+    const groups = document.querySelectorAll(".features-grid, .hero-tiles, .precios-grid, #faq > div, .demo-frame");
+    groups.forEach((group) => {
+      const items = group.matches(".demo-frame") ? [group] : Array.from(group.children);
+      items.forEach((el, i) => {
+        el.classList.add("reveal");
+        el.style.transitionDelay = (i % 4) * 70 + "ms";
+      });
+    });
+    const revealEls = document.querySelectorAll(".reveal");
+    if (!revealEls.length) return;
+
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+      revealEls.forEach((el) => io.observe(el));
+    } else {
+      revealEls.forEach((el) => el.classList.add("in"));
+    }
+  })();
+
+  // Precios: los montos cuentan de 0 al valor real la primera vez que entran en pantalla.
+  (function () {
+    const nums = document.querySelectorAll(".count-up");
+    if (!nums.length) return;
+    if (reducedMotion) return; // el valor final ya está en el HTML, no hace falta animar
+
+    function animateCount(el) {
+      const target = parseInt(el.dataset.count, 10);
+      const start = performance.now();
+      const dur = 1100;
+      function step(now) {
+        const p = Math.min((now - start) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = "$" + Math.round(target * eased).toLocaleString("es-AR");
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      nums.forEach((el) => io.observe(el));
+    }
   })();
 </script>
 </body>
