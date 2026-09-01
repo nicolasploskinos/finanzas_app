@@ -22,6 +22,8 @@
       --green: #34d399;
       --red: #f0576a;
       --yellow: #f5b95c;
+      --violet: #9d7bf5;
+      --teal: #2dd4bf;
       --text: #eef1f8;
       --muted: #8a92a6;
       --border: #262a3a;
@@ -36,6 +38,8 @@
       --green: #1f9d6f;
       --red: #d64a5c;
       --yellow: #b8791f;
+      --violet: #6d54c9;
+      --teal: #1a9186;
       --text: #1c2033;
       --muted: #6b7182;
       --border: #dfe3ee;
@@ -519,25 +523,51 @@
     }
     .cta-final p { color: var(--muted); font-size: 21px; margin-bottom: 46px; }
 
-    /* ── FAQ ── */
+    /* ── FAQ ──
+       Cada pregunta tiene un acento de color distinto (mismo lenguaje que
+       los modulos del dashboard), un boton "+" circular que gira a "×" al
+       abrir, y la respuesta se despliega con una animacion de alto real
+       (grid-template-rows 0fr -> 1fr) en vez del display:none/block seco
+       de antes. */
+    .faq-list { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
     .faq-item {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
+      border-left: 4px solid var(--faq-accent, var(--blue));
+      border-radius: 18px; overflow: hidden;
+      transition: box-shadow .25s ease, transform .25s ease, border-color .2s ease;
     }
+    .faq-item:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.18); }
+    .faq-item:nth-child(1) { --faq-accent: var(--blue); }
+    .faq-item:nth-child(2) { --faq-accent: var(--violet); }
+    .faq-item:nth-child(3) { --faq-accent: var(--teal); }
+    .faq-item:nth-child(4) { --faq-accent: var(--yellow); }
+    .faq-item:nth-child(5) { --faq-accent: var(--green); }
     .faq-q {
-      padding: 24px 26px; font-size: 20px; font-weight: 700;
+      padding: 22px 30px; font-size: 19px; font-weight: 700;
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-      user-select: none;
+      gap: 20px; user-select: none; transition: background .2s;
     }
     .faq-q:hover { background: var(--surface2); }
-    .faq-chev { color: var(--muted); font-size: 13px; transition: transform .2s; flex-shrink: 0; margin-left: 12px; }
-    .faq-q.open .faq-chev { transform: rotate(180deg); }
-    .faq-a {
-      display: none; padding: 0 26px 24px;
-      font-size: 18px; color: var(--muted); line-height: 1.75;
-      border-top: 1px solid var(--border);
+    .faq-toggle {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface2); color: var(--text);
+      font-size: 18px; line-height: 1; font-weight: 400;
+      transition: transform .3s cubic-bezier(.2,.8,.3,1.2), background .2s, color .2s;
     }
-    .faq-a.open { display: block; }
+    .faq-q.open .faq-toggle { transform: rotate(135deg); background: var(--faq-accent, var(--blue)); color: #fff; }
+    .faq-a-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+    .faq-a-wrap.open { grid-template-rows: 1fr; }
+    .faq-a-wrap > div { overflow: hidden; }
+    .faq-a {
+      padding: 6px 30px 30px;
+      font-size: 17px; line-height: 1.8;
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+    .faq-a::before { content: ""; display: block; height: 1px; background: var(--border); margin: 0 0 18px; }
+    @media (prefers-reduced-motion: reduce) {
+      .faq-item, .faq-toggle, .faq-a-wrap { transition: none; }
+    }
 
     /* ── FOOTER ── */
     footer {
@@ -912,41 +942,51 @@
 <section class="section" id="faq">
   <div class="section-label"><span class="num">05</span> — FAQ</div>
   <h2 data-en="Frequently asked questions">Preguntas frecuentes</h2>
-  <div style="max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+  <div class="faq-list">
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        <span data-en="Is it safe to log my expenses here?">¿Es seguro cargar mis gastos acá?</span> <span class="faq-chev">▼</span>
+        <span data-en="Is it safe to log my expenses here?">¿Es seguro cargar mis gastos acá?</span> <span class="faq-toggle">+</span>
       </div>
-      <div class="faq-a" data-en="Yes. We don't store bank data or your account passwords — only the amounts and categories you enter. The database is encrypted and your information isn't shared with anyone.">Sí. No guardamos datos bancarios ni contraseñas de tus cuentas — solo los montos y categorías que vos ingresás. La base de datos está cifrada y tu información no se comparte con nadie.</div>
+      <div class="faq-a-wrap"><div>
+        <div class="faq-a" data-en="Yes. We don't store bank data or your account passwords — only the amounts and categories you enter. The database is encrypted and your information isn't shared with anyone.">Sí. No guardamos datos bancarios ni contraseñas de tus cuentas — solo los montos y categorías que vos ingresás. La base de datos está cifrada y tu información no se comparte con nadie.</div>
+      </div></div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        <span data-en="Can I cancel Pro whenever I want?">¿Puedo cancelar Pro cuando quiera?</span> <span class="faq-chev">▼</span>
+        <span data-en="Can I cancel Pro whenever I want?">¿Puedo cancelar Pro cuando quiera?</span> <span class="faq-toggle">+</span>
       </div>
-      <div class="faq-a" data-en="Yes, you can cancel anytime from Mercado Pago. No contracts or minimum periods. When you cancel, your account goes back to the free plan and you keep your data.">Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.</div>
+      <div class="faq-a-wrap"><div>
+        <div class="faq-a" data-en="Yes, you can cancel anytime from Mercado Pago. No contracts or minimum periods. When you cancel, your account goes back to the free plan and you keep your data.">Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.</div>
+      </div></div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        <span data-en="How does the dollar exchange rate get updated?">¿Cómo se actualiza la cotización del dólar?</span> <span class="faq-chev">▼</span>
+        <span data-en="How does the dollar exchange rate get updated?">¿Cómo se actualiza la cotización del dólar?</span> <span class="faq-toggle">+</span>
       </div>
-      <div class="faq-a" data-en="Automatically every time you open the app. We use the official Banco Nación (BNA) rate via the bluelytics.com.ar API.">Automáticamente cada vez que abrís la app. Usamos la cotización oficial del Banco Nación (BNA) vía la API de bluelytics.com.ar.</div>
+      <div class="faq-a-wrap"><div>
+        <div class="faq-a" data-en="Automatically every time you open the app. We use the official Banco Nación (BNA) rate via the bluelytics.com.ar API.">Automáticamente cada vez que abrís la app. Usamos la cotización oficial del Banco Nación (BNA) vía la API de bluelytics.com.ar.</div>
+      </div></div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        <span data-en="What happens if I delete my account?">¿Qué pasa si borro mi cuenta?</span> <span class="faq-chev">▼</span>
+        <span data-en="What happens if I delete my account?">¿Qué pasa si borro mi cuenta?</span> <span class="faq-toggle">+</span>
       </div>
-      <div class="faq-a" data-en="All your data is permanently deleted. We don't keep copies or backups of deleted accounts.">Se eliminan todos tus datos permanentemente. No guardamos copias ni hacemos backups de cuentas borradas.</div>
+      <div class="faq-a-wrap"><div>
+        <div class="faq-a" data-en="All your data is permanently deleted. We don't keep copies or backups of deleted accounts.">Se eliminan todos tus datos permanentemente. No guardamos copias ni hacemos backups de cuentas borradas.</div>
+      </div></div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        <span data-en="Does it work on my phone?">¿Funciona en el celular?</span> <span class="faq-chev">▼</span>
+        <span data-en="Does it work on my phone?">¿Funciona en el celular?</span> <span class="faq-toggle">+</span>
       </div>
-      <div class="faq-a" data-en="Yes, it's designed mobile-first. It works in any browser (Chrome, Safari, etc.) with nothing to install. There's also a desktop version for Windows.">Sí, está diseñada primero para móvil. Funciona en cualquier navegador (Chrome, Safari, etc.) sin necesidad de instalar nada. También tiene versión de escritorio para Windows.</div>
+      <div class="faq-a-wrap"><div>
+        <div class="faq-a" data-en="Yes, it's designed mobile-first. It works in any browser (Chrome, Safari, etc.) with nothing to install. There's also a desktop version for Windows.">Sí, está diseñada primero para móvil. Funciona en cualquier navegador (Chrome, Safari, etc.) sin necesidad de instalar nada. También tiene versión de escritorio para Windows.</div>
+      </div></div>
     </div>
 
   </div>
