@@ -234,15 +234,11 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,.06);
     }
 
-    /* ── INTERACTIVE DEMO (seccion de contraste, siempre oscura aunque el
-       resto de la pagina este en modo claro — mismos tokens, redefinidos
-       localmente, asi todo lo de adentro los hereda sin tocar cada regla) ── */
+    /* ── INTERACTIVE DEMO ── */
     .demo-section {
       display: flex; flex-direction: column; align-items: center;
       padding: 100px 20px 100px; margin-top: 40px;
-      background: #05050a;
-      --bg: #05050a; --surface: #15151f; --surface2: #1d1d2b; --surface3: #262638;
-      --text: #f1f5f9; --muted: #99a3b8; --border: #2a2a3d;
+      background: var(--bg);
     }
     .demo-section .section-label { color: var(--blue); }
     .demo-section .section-sub { margin-bottom: 34px; }
