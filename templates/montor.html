@@ -60,6 +60,9 @@
       box-shadow: 0 2px 12px rgba(0,0,0,.15);
     }
     .header-inner { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .header-left { min-width: 0; overflow: hidden; flex-shrink: 1; }
+    .header-left p { overflow: hidden; text-overflow: ellipsis; }
+    .header-right { flex-shrink: 0; }
     header h1 { font-size: 16px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }
     .header-brand { display: flex; align-items: center; gap: 6px; }
     .header-logo-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--blue); }
@@ -543,7 +546,7 @@
 
 <header>
   <div class="header-inner">
-  <div>
+  <div class="header-left">
     <div class="header-brand">
       <svg class="header-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
@@ -567,6 +570,7 @@
       <span class="hdr-pro-badge" style="font-weight:700;background:var(--green);color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
       <a href="/montor/viajes" title="Viajes" aria-label="Viajes" class="header-viajes-link hdr-icon-btn" style="text-decoration:none;padding:6px;">✈️</a>
+      <a href="/montor/analisis" title="Análisis" aria-label="Análisis" class="header-viajes-link hdr-icon-btn" style="text-decoration:none;padding:6px;">📈</a>
       <button onclick="toggleLang()" id="btn-lang" class="hdr-lang-btn" aria-label="Switch language" style="background:none;border:none;cursor:pointer;font-weight:800;color:var(--muted);padding:6px 8px;" title="Switch language">EN</button>
       <button onclick="toggleModo()" id="btn-modo" class="hdr-icon-btn" aria-label="Cambiar modo claro/oscuro" style="background:none;border:none;cursor:pointer;padding:6px;" title="Cambiar modo">🌙</button>
       <a href="#" onclick="cerrarSesion()" class="hdr-logout" style="color:var(--muted);text-decoration:none;white-space:nowrap;border-left:1px solid var(--border);padding:6px 0 6px 10px;" data-en="Log out">Salir</a>

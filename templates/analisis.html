@@ -51,6 +51,27 @@
     .locked h2 { color: var(--text); font-size: 18px; margin-bottom: 8px; }
     .locked a { display: inline-block; margin-top: 16px; background: var(--blue); color: #fff; text-decoration: none; padding: 12px 26px; border-radius: 12px; font-weight: 700; }
 
+    /* Filtros: mismas clases/estilos que el panel principal (montor.html),
+       para que se sientan como el mismo control en cualquier pagina. */
+    .periodo-pills { padding: 0 0 10px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .periodo-pills::-webkit-scrollbar { display: none; }
+    .periodo-btn {
+      background: var(--surface); color: var(--muted);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 7px 14px; font-size: 12px; font-weight: 600; flex-shrink: 0;
+      cursor: pointer; transition: all .15s;
+    }
+    .periodo-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .filtros { padding: 0 0 16px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .filtros::-webkit-scrollbar { display: none; }
+    .filtros select {
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 7px 14px; font-size: 12px; font-weight: 600; flex-shrink: 0;
+      appearance: none; -webkit-appearance: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+
     .icon-rail { display: none; }
     .icon-rail-btn {
       width: 40px; height: 40px; border-radius: 12px; border: none;
@@ -90,6 +111,8 @@
       header h1 { font-size: 24px; }
       .back-btn { font-size: 26px; }
       .header-actions button { font-size: 22px !important; }
+      .periodo-btn { font-size: 16px; padding: 10px 20px; }
+      .filtros select { font-size: 16px; padding: 10px 20px; }
 
       .analisis-shell { display: flex; align-items: flex-start; gap: 24px; padding-top: 10px; }
       .icon-rail {
@@ -145,6 +168,30 @@
   </div>
 
   <div class="analisis-content">
+    <div class="periodo-pills">
+      <button class="periodo-btn" data-p="1m" onclick="setPeriodo('1m')" data-en="This month">Este mes</button>
+      <button class="periodo-btn" data-p="3m" onclick="setPeriodo('3m')" data-en="3 months">3 meses</button>
+      <button class="periodo-btn" data-p="6m" onclick="setPeriodo('6m')" data-en="6 months">6 meses</button>
+      <button class="periodo-btn" data-p="1a" onclick="setPeriodo('1a')" data-en="This year">Este año</button>
+      <button class="periodo-btn active" data-p="todo" onclick="setPeriodo('todo')" data-en="All">Todo</button>
+    </div>
+    <div class="filtros">
+      <select id="f-tipo" onchange="render(window.__datosAnalisis)">
+        <option value="" data-en="All">Todo</option>
+        <option value="Gasto" data-en="Expense">Gasto</option>
+        <option value="Ingreso" data-en="Income">Ingreso</option>
+      </select>
+      <select id="f-moneda" onchange="render(window.__datosAnalisis)">
+        <option value="" data-en="All">Todas</option>
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+      </select>
+      <select id="f-cat" onchange="render(window.__datosAnalisis)">
+        <option value="" data-en="All categories">Todas las categorías</option>
+      </select>
+    </div>
+
     <div class="kpi-grid" id="kpi-grid"></div>
 
     <div class="an-grid">
@@ -188,6 +235,7 @@
     balance_neto:     { es: "Balance neto", en: "Net balance" },
     promedio_mensual: { es: "Promedio mensual de gasto", en: "Avg. monthly spend" },
     sin_categoria:    { es: "Sin categoría", en: "No category" },
+    todas_categorias: { es: "Todas las categorías", en: "All categories" },
   };
   function applyLang(lang) {
     document.querySelectorAll("[data-en]").forEach(el => {
@@ -227,6 +275,75 @@
   const MESES_CORTOS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   let chartMensual = null, chartTendencia = null;
+  let periodoActivo = "todo";
+  const hoy = new Date();
+
+  function normalizar(s) {
+    return (s || "").toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  // Mismos periodos y misma cuenta que el panel principal (montor.html):
+  // "3m"/"6m" cuentan el mes actual + los 2/5 anteriores, "1a" arranca en
+  // enero, "todo" no recorta por fecha.
+  function desdePeriodo() {
+    if (periodoActivo === "todo") return null;
+    const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    if (periodoActivo === "3m") d.setMonth(d.getMonth() - 2);
+    else if (periodoActivo === "6m") d.setMonth(d.getMonth() - 5);
+    else if (periodoActivo === "1a") d.setMonth(0);
+    return d;
+  }
+
+  function setPeriodo(p) {
+    periodoActivo = p;
+    document.querySelectorAll(".periodo-btn").forEach(b => b.classList.toggle("active", b.dataset.p === p));
+    render(window.__datosAnalisis);
+  }
+
+  function filtrados(datos) {
+    const desde  = desdePeriodo();
+    const tipo   = document.getElementById("f-tipo").value;
+    const moneda = document.getElementById("f-moneda").value;
+    const cat    = document.getElementById("f-cat").value;
+    return datos.filter(t => {
+      if (desde) { const f = new Date(t.fecha + "T00:00:00"); if (f < desde) return false; }
+      if (tipo   && t.tipo !== tipo)                              return false;
+      if (moneda && (t.moneda || "ARS") !== moneda)               return false;
+      if (cat    && normalizar(t.categoria) !== normalizar(cat))  return false;
+      return true;
+    });
+  }
+
+  function actualizarCatFiltro(datos) {
+    const sel = document.getElementById("f-cat");
+    const val = sel.value;
+    const seen = new Map();
+    datos.forEach(t => {
+      const c = (t.categoria || "").trim();
+      if (c && !seen.has(normalizar(c))) seen.set(normalizar(c), c);
+    });
+    const cats = [...seen.values()].sort((a, b) => a.localeCompare(b));
+    sel.innerHTML = `<option value="" data-en="All categories">${tr("todas_categorias")}</option>` +
+      cats.map(c => `<option value="${c}" ${c === val ? "selected" : ""}>${c}</option>`).join("");
+  }
+
+  // Cuantos meses mostrar en los graficos, segun el periodo elegido: para
+  // "todo" se calcula desde la transaccion mas vieja del set ya filtrado
+  // por tipo/moneda/categoria (sin el propio recorte de periodo).
+  function mesesParaPeriodo(lista) {
+    if (periodoActivo === "1m") return 1;
+    if (periodoActivo === "3m") return 3;
+    if (periodoActivo === "6m") return 6;
+    if (periodoActivo === "1a") return hoy.getMonth() + 1;
+    let minFecha = null;
+    lista.forEach(t => {
+      const f = new Date(t.fecha + "T00:00:00");
+      if (!minFecha || f < minFecha) minFecha = f;
+    });
+    if (!minFecha) return 1;
+    const n = (hoy.getFullYear() - minFecha.getFullYear()) * 12 + (hoy.getMonth() - minFecha.getMonth()) + 1;
+    return Math.max(1, Math.min(n, 60));
+  }
 
   async function init() {
     let datos = [];
@@ -235,6 +352,7 @@
       datos = await r.json();
     } catch { datos = []; }
     window.__datosAnalisis = datos;
+    actualizarCatFiltro(datos);
     render(datos);
   }
 
@@ -243,10 +361,25 @@
     const lang = document.documentElement.lang === "en" ? "en" : "es";
     const mesesCortos = lang === "en" ? MESES_CORTOS_EN : MESES_CORTOS_ES;
 
-    // ── KPIs + serie mensual (ultimos 12 meses calendario) ──
-    const hoy = new Date();
+    // Los selects de tipo/moneda/categoria se aplican siempre; el recorte
+    // por fecha del periodo se aplica aparte para "todo" (sin recorte)
+    // vs. el resto, asi mesesParaPeriodo puede mirar el set sin recortar
+    // para saber desde donde arranca el historial real.
+    const sinRecortarFecha = datos.filter(t => {
+      const tipo = document.getElementById("f-tipo").value;
+      const moneda = document.getElementById("f-moneda").value;
+      const cat = document.getElementById("f-cat").value;
+      if (tipo   && t.tipo !== tipo)                              return false;
+      if (moneda && (t.moneda || "ARS") !== moneda)               return false;
+      if (cat    && normalizar(t.categoria) !== normalizar(cat))  return false;
+      return true;
+    });
+    const lista = filtrados(datos);
+    const nMeses = mesesParaPeriodo(sinRecortarFecha);
+
+    // ── KPIs + serie mensual ──
     const meses = [];
-    for (let i = 11; i >= 0; i--) {
+    for (let i = nMeses - 1; i >= 0; i--) {
       const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
       meses.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: `${mesesCortos[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`, ing: 0, gas: 0 });
     }
@@ -256,7 +389,7 @@
     let ingTotal = 0, gasTotal = 0;
     const porCategoria = {};
 
-    datos.forEach(t => {
+    lista.forEach(t => {
       const ars = toARS(t);
       if (ars === null) return;
       const f = new Date(t.fecha + "T00:00:00");
