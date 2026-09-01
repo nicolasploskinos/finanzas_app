@@ -308,15 +308,18 @@
         border-radius: 20px; padding: 20px;
       }
       .col-der { display: block; flex: 1; min-width: 0; }
-      .busqueda-wrap { max-width: 760px; }
+      .busqueda-wrap { max-width: 900px; }
 
       /* Pantallas muy anchas: la lista de transacciones pasa a dos
          columnas en vez de quedar una sola fila larga con un hueco vacio
-         entre el texto y el monto. */
+         entre el texto y el monto. La barra de busqueda tambien se
+         ensancha, si no queda un hueco enorme al lado con el limite de
+         900px pensado para laptops. */
       @media (min-width: 1500px) {
         #lista { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
         .mes-header { grid-column: 1 / -1; }
         .tx-wrap { margin-bottom: 0; }
+        .busqueda-wrap { max-width: 1300px; }
       }
 
       /* Acentos de color por seccion: la misma idea que ya usa la lista de

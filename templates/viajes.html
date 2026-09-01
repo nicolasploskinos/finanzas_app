@@ -137,23 +137,41 @@
     .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); padding: 11px 22px; border-radius: 100px; font-size: 13px; font-weight: 700; z-index: 400; opacity: 0; transition: opacity .3s; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.3); border: 1px solid var(--border); }
     .toast.show { opacity: 1; }
 
-    /* Escritorio: más ancho y letra más grande (mobile queda igual). */
+    /* Escritorio: más ancho y letra más grande (mobile queda igual). Igual
+       que en montor.html, esto va al final a proposito para ganarle en la
+       cascada a las reglas de arriba sin necesitar !important. */
     @media (min-width: 900px) {
-      body { max-width: 860px; }
+      body { max-width: min(95vw, 1400px); }
       header h1 { font-size: 20px; }
       .viaje-card-nombre { font-size: 19px; }
       .viaje-card-fechas { font-size: 13px; }
       .empty-state { font-size: 16px; }
       .presup-bar-name { font-size: 13px; }
       .presup-bar-amt { font-size: 19px; }
-      .detalle-nombre { font-size: 24px; }
+      .detalle-nombre { font-size: 26px; }
       .detalle-fechas { font-size: 14px; }
-      .cons-card-label { font-size: 11px; }
-      .cons-card-value { font-size: 25px; }
-      .chart-title { font-size: 12px; }
+      .cons-card-label { font-size: 12px; }
+      .cons-card-value { font-size: 28px; }
+      .chart-title { font-size: 13px; }
       .tx-cat  { font-size: 16px; }
       .tx-fecha { font-size: 12px; }
       .tx-monto { font-size: 17px; }
+
+      /* Lista de viajes: grilla en vez de una sola columna angosta,
+         para usar el ancho disponible sin dejar hueco vacio al lado. */
+      #viajes-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+      .viaje-card { margin-bottom: 0; }
+
+      /* Detalle de viaje: layout de dos columnas, mismo criterio que el
+         dashboard principal (col-izq/col-der en montor.html). */
+      .detalle-layout { display: flex; align-items: flex-start; gap: 28px; }
+      .detalle-izq {
+        flex: 0 0 360px; position: sticky; top: 20px;
+        display: flex; flex-direction: column; gap: 16px;
+      }
+      .detalle-der { flex: 1; min-width: 0; }
+      .cons-cards { margin-bottom: 0; }
+      .chart-wrap { margin-bottom: 0; }
 
       .overlay { align-items: center; }
       .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
@@ -192,45 +210,51 @@
 
 <!-- Vista detalle -->
 <div id="vista-detalle">
-  <div class="detalle-header">
-    <div class="detalle-nombre" id="det-nombre"></div>
-    <div class="detalle-fechas" id="det-fechas"></div>
-    <div class="detalle-acciones">
-      <button onclick="abrirModalViaje(viajeActual)" data-en="Edit">Editar</button>
-      <button class="borrar" onclick="borrarViajeActual()" data-en="Delete">Eliminar</button>
+  <div class="detalle-layout">
+    <div class="detalle-izq">
+      <div class="detalle-header">
+        <div class="detalle-nombre" id="det-nombre"></div>
+        <div class="detalle-fechas" id="det-fechas"></div>
+        <div class="detalle-acciones">
+          <button onclick="abrirModalViaje(viajeActual)" data-en="Edit">Editar</button>
+          <button class="borrar" onclick="borrarViajeActual()" data-en="Delete">Eliminar</button>
+        </div>
+      </div>
+
+      <div class="cons-cards" id="det-totales"></div>
+
+      <div class="chart-wrap">
+        <div class="chart-title" onclick="toggleChartCat()">
+          <span data-en="Spend by category (USD)">Gasto por categoría (USD)</span>
+          <span id="chart-cat-chev">▼</span>
+        </div>
+        <div id="chart-cat-body" style="display:none;padding-top:10px">
+          <canvas id="det-chart-cat" height="180"></canvas>
+          <div class="chart-empty" id="det-chart-cat-empty" style="display:none" data-en="No expenses recorded">Sin gastos registrados</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detalle-der">
+      <div class="det-filtros">
+        <select id="det-f-cat" onchange="renderTxLista()">
+          <option value="" data-en="All categories">Todas las categorías</option>
+        </select>
+      </div>
+
+      <div style="padding:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
+        <input type="date" id="det-f-dia-desde" onchange="renderTxLista()" title="Desde qué día"
+          style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+        <span style="color:var(--muted);font-size:12px" data-en="to">a</span>
+        <input type="date" id="det-f-dia-hasta" onchange="renderTxLista()" title="Hasta qué día (opcional, para ver un rango)"
+          style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
+        <button id="det-btn-clear-dia" onclick="limpiarDetDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
+      </div>
+
+      <div id="det-tx-lista"></div>
     </div>
   </div>
-
-  <div class="cons-cards" id="det-totales"></div>
-
-  <div class="chart-wrap">
-    <div class="chart-title" onclick="toggleChartCat()">
-      <span data-en="Spend by category (USD)">Gasto por categoría (USD)</span>
-      <span id="chart-cat-chev">▼</span>
-    </div>
-    <div id="chart-cat-body" style="display:none;padding-top:10px">
-      <canvas id="det-chart-cat" height="180"></canvas>
-      <div class="chart-empty" id="det-chart-cat-empty" style="display:none" data-en="No expenses recorded">Sin gastos registrados</div>
-    </div>
-  </div>
-
-  <div class="det-filtros">
-    <select id="det-f-cat" onchange="renderTxLista()">
-      <option value="" data-en="All categories">Todas las categorías</option>
-    </select>
-  </div>
-
-  <div style="padding:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span style="font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0" data-en="📅 View specific days:">📅 Ver días puntuales:</span>
-    <input type="date" id="det-f-dia-desde" onchange="renderTxLista()" title="Desde qué día"
-      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <span style="color:var(--muted);font-size:12px" data-en="to">a</span>
-    <input type="date" id="det-f-dia-hasta" onchange="renderTxLista()" title="Hasta qué día (opcional, para ver un rango)"
-      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600">
-    <button id="det-btn-clear-dia" onclick="limpiarDetDia()" style="display:none;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:0" data-en="Clear ×">Limpiar ×</button>
-  </div>
-
-  <div id="det-tx-lista"></div>
 </div>
 
 <!-- Modal Viaje -->
