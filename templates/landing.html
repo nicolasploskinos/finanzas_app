@@ -79,11 +79,11 @@
     }
     .nav-links a {
       color: var(--muted); text-decoration: none;
-      font-size: 14px; font-weight: 700; white-space: nowrap;
-      padding: 8px 12px; border-radius: 100px; transition: color .2s, background .2s;
+      font-size: 18px; font-weight: 700; white-space: nowrap;
+      padding: 9px 14px; border-radius: 100px; transition: color .2s, background .2s;
     }
     .nav-links a:hover { color: var(--text); background: var(--surface2); }
-    @media (min-width: 1080px) { .nav-links { display: flex; } }
+    @media (min-width: 1180px) { .nav-links { display: flex; } }
     .nav-cta {
       background: var(--blue-dark); color: #fff;
       border: none; border-radius: 10px;
@@ -115,13 +115,13 @@
     .hero-copy { flex: 1; min-width: 0; max-width: 680px; }
     .hero-eyebrow {
       display: inline-flex; align-items: center; gap: 10px;
-      font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+      font-size: 16px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
       color: var(--muted); margin-bottom: 26px;
     }
     .hero-eyebrow .num {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--blue); color: #fff; font-size: 11px; font-weight: 900;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 13px; font-weight: 900;
     }
     .hero-cursor {
       display: inline-block; width: 8px; height: .8em; background: var(--blue);
@@ -251,7 +251,7 @@
       padding: 0 0 10px; color: var(--muted); font-family: inherit; text-align: left;
     }
     .demo-tab-label {
-      font-size: 14.5px; font-weight: 800; letter-spacing: .2px;
+      font-size: 16.5px; font-weight: 800; letter-spacing: .2px;
       display: block; margin-bottom: 8px; transition: color .2s;
     }
     .demo-tab.active .demo-tab-label, .demo-tab.done .demo-tab-label { color: var(--text); }
@@ -305,15 +305,15 @@
     .mini-convert-out { display: flex; justify-content: space-between; gap: 10px; font-size: 16px; font-weight: 700; flex-wrap: wrap; }
     .mini-convert-out span { color: var(--muted); font-weight: 600; }
     .mini-convert-out strong { color: var(--text); font-weight: 800; }
-    .mini-convert-note { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .mini-convert-note { font-size: 14.5px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
 
     /* ── FEATURES ── */
     .section { padding: 90px 24px; max-width: 1340px; margin: 0 auto; }
     @media (max-width: 640px) { .section { padding: 56px 20px; } }
     .section, .demo-section, .para-quien { scroll-margin-top: 78px; }
     .section-label {
-      text-align: center; font-size: 14.5px; font-weight: 800;
-      color: var(--blue); letter-spacing: 2px; text-transform: uppercase;
+      text-align: center; font-size: 16.5px; font-weight: 800;
+      color: var(--blue); letter-spacing: 1.5px; text-transform: uppercase;
       margin-bottom: 14px;
     }
     .section-label .num { color: var(--muted); font-weight: 700; }
@@ -357,7 +357,7 @@
     .tile-purple { background: linear-gradient(155deg, #c4b5fd, #7c3aed); }
     .tile-green  { background: linear-gradient(155deg, #6ee7a8, #16a34a); }
     .grid-mini-label {
-      font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+      font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
       color: var(--muted); margin: 8px 0 20px;
     }
     .section h2 {
@@ -445,7 +445,7 @@
       display: inline-block;
       background: var(--green); color: #000;
       border-radius: 100px; padding: 6px 18px;
-      font-size: 14.5px; font-weight: 800; margin-bottom: 20px;
+      font-size: 16px; font-weight: 800; margin-bottom: 20px;
     }
     .precio-badge.pro { background: var(--yellow); }
     .precio-num {
@@ -456,13 +456,13 @@
     .precio-ciclos { display: flex; gap: 10px; margin: 18px 0 22px; }
     .precio-ciclo-box { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 15px 8px; position: relative; }
     .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(251,191,36,.08); }
-    .precio-ciclo-label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 5px; }
+    .precio-ciclo-label { font-size: 14.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 5px; }
     .precio-ciclo-box.destacado .precio-ciclo-label { color: var(--yellow); }
-    .precio-ciclo-monto { font-size: 24px; font-weight: 900; }
-    .precio-ciclo-monto span { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .precio-ciclo-monto { font-size: 26px; font-weight: 900; }
+    .precio-ciclo-monto span { font-size: 14.5px; font-weight: 600; color: var(--muted); }
     .precio-ciclo-badge {
       position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-      background: var(--green); color: #000; font-size: 12px; font-weight: 800;
+      background: var(--green); color: #000; font-size: 13.5px; font-weight: 800;
       padding: 3px 10px; border-radius: 100px; white-space: nowrap;
     }
     .precio-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 13px; margin-bottom: 32px; }
