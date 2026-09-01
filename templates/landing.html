@@ -13,36 +13,36 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f0f1a;
-      --surface: #1a1a2e;
-      --surface2: #22223a;
-      --surface3: #2a2a45;
-      --blue: #60a5fa;
-      --blue-dark: #3b82f6;
-      --green: #4ade80;
-      --red: #f87171;
-      --yellow: #fbbf24;
-      --text: #e2e8f0;
-      --muted: #a6b3c6;
-      --border: #2d2d50;
+      --bg: #10121b;
+      --surface: #181b27;
+      --surface2: #212536;
+      --surface3: #2a2f45;
+      --blue: #4f8cf7;
+      --blue-dark: #2f6fe0;
+      --green: #34d399;
+      --red: #f0576a;
+      --yellow: #f5b95c;
+      --text: #eef1f8;
+      --muted: #8a92a6;
+      --border: #262a3a;
     }
     body.light {
-      --bg: #ece3d0;
-      --surface: #f5eede;
-      --surface2: #e4dac1;
-      --surface3: #d9cbab;
-      --blue: #4d6f9e;
-      --blue-dark: #3d5c86;
-      --green: #4c8a5e;
-      --red: #b3543f;
-      --yellow: #ad7c1f;
-      --text: #3a3226;
-      --muted: #675e4f;
-      --border: #d3c6a6;
+      --bg: #eef0f5;
+      --surface: #ffffff;
+      --surface2: #f2f4f9;
+      --surface3: #e6e9f2;
+      --blue: #3f6fd6;
+      --blue-dark: #2f56ad;
+      --green: #1f9d6f;
+      --red: #d64a5c;
+      --yellow: #b8791f;
+      --text: #1c2033;
+      --muted: #6b7182;
+      --border: #dfe3ee;
     }
-    body.light nav { background: rgba(236,227,208,.92); }
-    body.light .btn-primary { box-shadow: 0 0 40px rgba(77,111,158,.2); }
-    body.light .hero { background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(77,111,158,.08), transparent); }
+    body.light nav { background: rgba(238,240,245,.85); }
+    body.light .btn-primary { box-shadow: 0 0 40px rgba(63,111,214,.2); }
+    body.light .hero { background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63,111,214,.08), transparent); }
 
     html { scroll-behavior: smooth; }
 
@@ -58,19 +58,25 @@
     /* ── SCROLL PROGRESS ── */
     #scroll-progress {
       position: fixed; top: 0; left: 0; height: 3px; width: 0%;
-      background: linear-gradient(90deg, var(--blue), #a78bfa);
+      background: linear-gradient(90deg, var(--blue), #9d7bf5);
       z-index: 200; transition: width .1s linear;
     }
 
     /* ── NAV ── */
+    /* Cápsula flotante en vez de barra a lo ancho de toda la pantalla: el
+       mismo lenguaje de "tarjeta redondeada suspendida" que usan las
+       cards del dashboard, aplicado a la navegación. */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(15,15,26,.88);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
+      position: fixed; top: 14px; left: 14px; right: 14px; z-index: 100;
+      max-width: 1400px; margin: 0 auto;
+      background: rgba(16,18,27,.82);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.3);
       display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px;
-      padding: 0 32px; height: 68px;
+      padding: 0 28px; height: 64px;
     }
+    body.light nav { box-shadow: 0 8px 30px rgba(28,32,51,.08); }
     .nav-logo { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
     .nav-logo svg { width: 30px; height: 30px; }
     .nav-logo span { color: var(--blue); }
@@ -105,7 +111,7 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 130px 24px 60px;
-      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(96,165,250,.15), transparent);
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,140,247,.15), transparent);
       position: relative; overflow: hidden;
     }
     .hero-inner {
@@ -157,11 +163,11 @@
       will-change: transform;
     }
     .hero-blob-1 {
-      width: 420px; height: 420px; background: radial-gradient(circle, rgba(167,139,250,.18), transparent 70%);
+      width: 420px; height: 420px; background: radial-gradient(circle, rgba(157,123,245,.18), transparent 70%);
       top: -60px; right: -120px;
     }
     .hero-blob-2 {
-      width: 340px; height: 340px; background: radial-gradient(circle, rgba(74,222,128,.12), transparent 70%);
+      width: 340px; height: 340px; background: radial-gradient(circle, rgba(52,211,153,.12), transparent 70%);
       bottom: 20px; left: -100px;
     }
     .hero > * { position: relative; }
@@ -175,7 +181,7 @@
     .hero h1 .line { display: block; }
     .hero h1 .accent {
       font-style: italic;
-      background: linear-gradient(135deg, var(--blue), #a78bfa);
+      background: linear-gradient(135deg, var(--blue), #9d7bf5);
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
     .hero p {
@@ -198,9 +204,9 @@
       border-radius: 14px; padding: 20px 44px;
       font-size: 20px; font-weight: 800;
       text-decoration: none; transition: all .2s;
-      box-shadow: 0 0 40px rgba(59,130,246,.35);
+      box-shadow: 0 0 40px rgba(47,111,224,.35);
     }
-    .btn-primary:hover { background: var(--blue); transform: translateY(-2px); box-shadow: 0 0 60px rgba(96,165,250,.45); }
+    .btn-primary:hover { background: var(--blue); transform: translateY(-2px); box-shadow: 0 0 60px rgba(79,140,247,.45); }
     .btn-secondary {
       display: inline-block;
       background: var(--surface2); color: var(--text);
@@ -262,7 +268,7 @@
     }
     .demo-tab.active .demo-tab-label, .demo-tab.done .demo-tab-label { color: var(--text); }
     .demo-tab-track { height: 3px; background: var(--surface3); border-radius: 100px; overflow: hidden; }
-    .demo-tab-fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #a78bfa); border-radius: 100px; }
+    .demo-tab-fill { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #9d7bf5); border-radius: 100px; }
     .demo-tab.active .demo-tab-fill { animation: demofill 4.2s linear forwards; }
     .demo-tab.done .demo-tab-fill { width: 100%; }
     @keyframes demofill { from { width: 0%; } to { width: 100%; } }
@@ -283,8 +289,8 @@
     }
     .demo-highlight {
       margin-top: 22px; padding: 16px 18px; font-size: 15.5px; font-weight: 600;
-      color: var(--text); background: rgba(96,165,250,.1);
-      border: 1px solid rgba(96,165,250,.25); border-radius: 12px; line-height: 1.5;
+      color: var(--text); background: rgba(79,140,247,.1);
+      border: 1px solid rgba(79,140,247,.25); border-radius: 12px; line-height: 1.5;
     }
     .demo-screen { display: none; animation: demoIn .4s ease; }
     .demo-screen.active {
@@ -369,9 +375,9 @@
       letter-spacing: -.5px; line-height: 1.15; margin-bottom: 10px;
     }
     .hero-tile p { font-size: 15px; line-height: 1.55; opacity: .92; }
-    .tile-blue   { background: linear-gradient(155deg, #60a5fa, #2563eb); }
-    .tile-purple { background: linear-gradient(155deg, #c4b5fd, #7c3aed); }
-    .tile-green  { background: linear-gradient(155deg, #6ee7a8, #16a34a); }
+    .tile-blue   { background: linear-gradient(155deg, #4f8cf7, #2f6fe0); }
+    .tile-purple { background: linear-gradient(155deg, #b9a3f5, #7c5fe0); }
+    .tile-green  { background: linear-gradient(155deg, #6ee7a8, #1f9d6f); }
     .grid-mini-label {
       font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
       color: var(--muted); margin: 8px 0 20px;
@@ -393,14 +399,14 @@
     @media (max-width: 560px)  { .features-grid { column-count: 1; } }
     .feat-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px; padding: 32px 28px;
+      border-radius: 20px; padding: 32px 28px;
       transition: border-color .2s, transform .2s;
       display: inline-block; width: 100%; break-inside: avoid; margin-bottom: 24px;
     }
     .feat-card:hover { border-color: var(--blue-dark); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
     .feat-icon {
       width: 62px; height: 62px; border-radius: 16px;
-      background: rgba(96,165,250,.12);
+      background: rgba(79,140,247,.12);
       display: flex; align-items: center; justify-content: center;
       font-size: 30px; margin-bottom: 20px;
       transition: transform .25s;
@@ -437,7 +443,7 @@
     }
     .big-emoji-wrap::before {
       content: ""; position: absolute; width: 340px; height: 340px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(96,165,250,.2), transparent 70%);
+      background: radial-gradient(circle, rgba(79,140,247,.2), transparent 70%);
     }
     .big-emoji { font-size: 230px; text-align: center; position: relative; line-height: 1; }
     @media (max-width: 680px) { .big-emoji-wrap { min-height: 220px; } .big-emoji { font-size: 140px; } }
@@ -455,7 +461,7 @@
     }
     .precio-card.pro {
       border-color: var(--yellow);
-      box-shadow: 0 0 40px rgba(251,191,36,.15);
+      box-shadow: 0 0 40px rgba(245,185,92,.15);
     }
     .precio-badge {
       display: inline-block;
@@ -471,7 +477,7 @@
     .precio-sub { color: var(--muted); font-size: 16.5px; margin-bottom: 28px; line-height: 1.5; }
     .precio-ciclos { display: flex; gap: 10px; margin: 18px 0 22px; }
     .precio-ciclo-box { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 15px 8px; position: relative; }
-    .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(251,191,36,.08); }
+    .precio-ciclo-box.destacado { border-color: var(--yellow); background: rgba(245,185,92,.08); }
     .precio-ciclo-label { font-size: 14.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 5px; }
     .precio-ciclo-box.destacado .precio-ciclo-label { color: var(--yellow); }
     .precio-ciclo-monto { font-size: 26px; font-weight: 900; }
@@ -490,7 +496,7 @@
     /* ── CTA FINAL ── */
     .cta-final {
       text-align: center; padding: 110px 20px;
-      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,.1), transparent);
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(79,140,247,.1), transparent);
     }
     @media (max-width: 640px) { .cta-final { padding: 64px 20px; } }
     .cta-final h2 {

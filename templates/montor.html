@@ -14,18 +14,18 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
-      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
-      --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
-      --green-rgb: 74,222,128; --red-rgb: 248,113,113; --blue-rgb: 96,165,250; --yellow-rgb: 251,191,36;
-      --violet: #a78bfa; --teal: #2dd4bf; --violet-rgb: 167,139,250; --teal-rgb: 45,212,191;
+      --bg: #10121b; --surface: #181b27; --surface2: #212536;
+      --green: #34d399; --red: #f0576a; --blue: #4f8cf7;
+      --yellow: #f5b95c; --text: #eef1f8; --muted: #8a92a6; --border: #262a3a;
+      --green-rgb: 52,211,153; --red-rgb: 240,87,106; --blue-rgb: 79,140,247; --yellow-rgb: 245,185,92;
+      --violet: #9d7bf5; --teal: #2dd4bf; --violet-rgb: 157,123,245; --teal-rgb: 45,212,191;
     }
     body.light {
-      --bg: #ece3d0; --surface: #f5eede; --surface2: #e4dac1;
-      --green: #4c8a5e; --red: #b3543f; --blue: #4d6f9e;
-      --yellow: #ad7c1f; --text: #3a3226; --muted: #655b4c; --border: #d3c6a6;
-      --green-rgb: 76,138,94; --red-rgb: 179,84,63; --blue-rgb: 77,111,158; --yellow-rgb: 173,124,31;
-      --violet: #7c5fc4; --teal: #1f8f82; --violet-rgb: 124,95,196; --teal-rgb: 31,143,130;
+      --bg: #eef0f5; --surface: #ffffff; --surface2: #f2f4f9;
+      --green: #1f9d6f; --red: #d64a5c; --blue: #3f6fd6;
+      --yellow: #b8791f; --text: #1c2033; --muted: #6b7182; --border: #dfe3ee;
+      --green-rgb: 31,157,111; --red-rgb: 214,74,92; --blue-rgb: 63,111,214; --yellow-rgb: 184,121,31;
+      --violet: #6d54c9; --teal: #1a9186; --violet-rgb: 109,84,201; --teal-rgb: 26,145,134;
     }
 
     body {
@@ -36,7 +36,7 @@
 
     /* En mobile los "wrappers" de columna no existen visualmente: sus hijos
        quedan directamente en el flujo, uno debajo del otro, como siempre. */
-    .col-izq, .col-der { display: contents; }
+    .col-izq, .col-der, .col-drcha { display: contents; }
 
     #busqueda { font-size: 13px; }
     #import-resumen { font-size: 13px; }
@@ -91,6 +91,16 @@
 
     /* Cotizaciones */
     .cot-card { margin: 0 12px 8px; background: var(--surface); border-radius: 14px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+    /* Multi-moneda */
+    .multimon-card { margin: 0 12px 8px; background: var(--surface); border-radius: 14px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .multimon-title { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+    .multimon-grid { display: flex; flex-direction: column; gap: 8px; }
+    .multimon-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border-radius: 10px; padding: 9px 12px; }
+    .multimon-mon { font-size: 12px; font-weight: 800; color: var(--muted); }
+    .multimon-val { font-size: 14px; font-weight: 800; }
+    .multimon-val.green { color: var(--green); }
+    .multimon-val.red   { color: var(--red); }
     .cot-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
     .cot-title  { font-size: 12px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .cot-rates  { font-size: 12px; color: var(--blue); font-weight: 600; }
@@ -312,7 +322,10 @@
        ganen en la cascada a las de arriba sin necesitar !important. */
     @media (min-width: 900px) {
       body { max-width: min(95vw, 1800px); }
-      #tab-resumen { display: flex; align-items: flex-start; gap: 20px; padding-top: 8px; }
+      #tab-resumen {
+        display: grid; grid-template-columns: 56px 360px 1fr; align-items: start;
+        gap: 20px; padding-top: 8px;
+      }
 
       .icon-rail {
         display: flex; flex-direction: column; align-items: center; gap: 10px;
@@ -341,19 +354,54 @@
 
       .col-izq {
         display: flex; flex-direction: column; gap: 16px;
-        flex: 0 0 420px; position: sticky; top: 92px;
+        position: sticky; top: 92px;
         background: var(--surface2); border: 1px solid var(--border);
         border-radius: 20px; padding: 20px;
       }
-      .col-der { display: block; flex: 1; min-width: 0; }
+      .col-der { display: block; min-width: 0; }
       .busqueda-wrap { max-width: 900px; }
+
+      /* Cuarta columna ("Multi-moneda"): a 900-1299px todavía no hay
+         lugar para una columna fija más, así que ocupa toda la fila de
+         abajo como una mini-grilla; recién a partir de 1300px se convierte
+         en columna angosta fija a la derecha, sticky como col-izq. */
+      .icon-rail { grid-column: 1; grid-row: 1; }
+      .col-izq   { grid-column: 2; grid-row: 1; }
+      .col-der   { grid-column: 3; grid-row: 1; }
+      .col-drcha {
+        grid-column: 2 / -1; grid-row: 2;
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px; align-items: start;
+      }
+      @media (min-width: 1300px) {
+        #tab-resumen { grid-template-columns: 56px 340px 1fr 300px; }
+        .col-drcha { grid-column: 4; grid-row: 1; display: flex; flex-direction: column; position: sticky; top: 92px; }
+      }
+
+      .multimon-card {
+        background: var(--surface2); border: 1px solid var(--border);
+        border-radius: 20px; padding: 16px 18px;
+        border-left-width: 4px; border-left-style: solid; border-left-color: var(--teal);
+      }
+      .multimon-title { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+      .multimon-grid { display: flex; flex-direction: column; gap: 10px; }
+      .multimon-row {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--surface); border-radius: 12px; padding: 10px 14px;
+      }
+      .multimon-mon { font-size: 13px; font-weight: 800; color: var(--muted); }
+      .multimon-val { font-size: 15px; font-weight: 800; }
+      .multimon-val.green { color: var(--green); }
+      .multimon-val.red   { color: var(--red); }
 
       /* Pantallas muy anchas: la lista de transacciones pasa a dos
          columnas en vez de quedar una sola fila larga con un hueco vacio
-         entre el texto y el monto. La barra de busqueda tambien se
-         ensancha, si no queda un hueco enorme al lado con el limite de
-         900px pensado para laptops. */
-      @media (min-width: 1500px) {
+         entre el texto y el monto. El umbral es mas alto que en el layout
+         viejo de 2 columnas: ahora hay una cuarta columna (multi-moneda)
+         restando ancho a la columna central, así que con menos de ~1900px
+         de viewport cada tarjeta queda demasiado angosta y el nombre de
+         categoría se corta con "...". */
+      @media (min-width: 1900px) {
         /* align-items:start: sin esto, el grid estira cada .tx-wrap a la
            altura de la fila, y el fondo rojo de "deslizar para borrar"
            (que deberia quedar escondido detras de la tarjeta) asoma por
@@ -368,16 +416,17 @@
          transacciones (borde de color a la izquierda), aplicada a los
          modulos del sidebar para que se distingan de un vistazo. */
       .col-izq .cons-section,
-      .col-izq .cot-wrap { margin: 0; border-left-width: 4px; border-left-style: solid; }
-      .col-izq .cot-card { margin: 0; border-left-width: 4px; border-left-style: solid; }
+      .col-izq .cot-wrap,
+      .col-drcha .cot-wrap { margin: 0; border-left-width: 4px; border-left-style: solid; }
+      .col-drcha .cot-card { margin: 0; border-left-width: 4px; border-left-style: solid; }
       .col-izq .presup-section { padding: 12px 14px 10px; border-left-width: 4px; border-left-style: solid; background: var(--surface); border-radius: 14px; }
 
       .col-izq .cons-section     { border-left-color: var(--blue); }
       .col-izq .presup-section   { border-left-color: var(--violet); }
       .col-izq .cot-wrap--stats  { border-left-color: var(--teal); }
-      .col-izq .cot-wrap--recur  { border-left-color: var(--yellow); }
-      .col-izq .cot-wrap--whatsapp { border-left-color: var(--green); }
-      .col-izq .cot-card         { border-left-color: var(--blue); }
+      .col-drcha .cot-wrap--recur  { border-left-color: var(--yellow); }
+      .col-drcha .cot-wrap--whatsapp { border-left-color: var(--green); }
+      .col-drcha .cot-card         { border-left-color: var(--blue); }
 
       header h1 { font-size: 24px; }
       header p  { font-size: 14px; }
@@ -419,7 +468,9 @@
       .tx-desc { font-size: 16px; }
       .tx-fecha { font-size: 14px; }
       .tx-monto { font-size: 22px; }
-      .tx-edit { font-size: 19px; padding: 6px; }
+      .tx-edit { font-size: 19px; padding: 8px; border-radius: 50%; background: var(--surface2); opacity: 0; transition: opacity .15s, background .15s; }
+      .tx:hover .tx-edit { opacity: 1; }
+      .tx-edit:hover { background: var(--blue); color: #fff; }
 
       /* Modales: centrados y más grandes en vez de la hoja pegada abajo. */
       .overlay, .pro-overlay { align-items: center; }
@@ -505,6 +556,9 @@
         <button class="cons-btn"        id="cbtn-EUR" onclick="setConsolidado('EUR')">€ EUR</button>
       </div>
     </div>
+    <div style="height:44px;margin:2px 0 12px">
+      <canvas id="cons-spark"></canvas>
+    </div>
     <div class="cons-cards">
       <div class="cons-card">
         <div class="cons-card-label" data-en="Income">Ingresos</div>
@@ -561,6 +615,15 @@
         <div id="ia-resumen-texto" style="display:none;margin-top:10px;font-size:13px;line-height:1.5;color:var(--text);background:var(--surface2);border-radius:10px;padding:10px 12px"></div>
       </div>
     </div>
+  </div>
+
+  </div>
+  <div class="col-drcha">
+
+  <!-- Multi-moneda -->
+  <div class="multimon-card">
+    <div class="multimon-title" data-en="💱 Multi-currency">💱 Multi-moneda</div>
+    <div class="multimon-grid" id="multimon-grid"></div>
   </div>
 
   <!-- Recurrentes -->
@@ -1042,6 +1105,50 @@
     return ars;
   }
 
+  let sparkChart = null;
+  function renderSparkline() {
+    const canvas = document.getElementById("cons-spark");
+    if (!canvas || typeof Chart === "undefined") return;
+    const lista = filtrados().slice().sort((a, b) => a.fecha.localeCompare(b.fecha));
+    if (!lista.length) { canvas.style.display = "none"; return; }
+
+    // Saldo acumulado día a día (en ARS, luego convertido a la moneda
+    // consolidada elegida) — no es un balance de cuenta real, es la suma
+    // corrida de los movimientos filtrados, para mostrar la tendencia.
+    const porDia = {};
+    lista.forEach(t => {
+      const ars = toARS(t);
+      if (ars === null) return;
+      const delta = t.tipo === "Ingreso" ? ars : -ars;
+      porDia[t.fecha] = (porDia[t.fecha] || 0) + delta;
+    });
+    const fechas = Object.keys(porDia).sort();
+    if (!fechas.length) { canvas.style.display = "none"; return; }
+
+    let acc = 0;
+    const puntos = fechas.map(f => { acc += porDia[f]; return fromARS(acc, monedaConsol); });
+    const ultimos = puntos.slice(-30);
+
+    canvas.style.display = "";
+    const blue = getComputedStyle(document.body).getPropertyValue("--blue").trim() || "#4f8cf7";
+    if (sparkChart) sparkChart.destroy();
+    sparkChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: ultimos.map((_, i) => i),
+        datasets: [{
+          data: ultimos, borderColor: blue, borderWidth: 2, pointRadius: 0,
+          tension: .35, fill: true, backgroundColor: blue + "22",
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false } },
+      }
+    });
+  }
+
   function actualizarConsolidado() {
     const lista = filtrados();
     const sinCot = !cotiz.USD || !cotiz.EUR;
@@ -1076,6 +1183,32 @@
     [ingEl, gasEl, netEl].forEach(el => ajustarTexto(el));
     document.getElementById("cons-nota").textContent =
       monedaConsol === "ARS" ? tr("suma_directa_ars") : tr("tipo_cambio_oficial");
+    renderSparkline();
+  }
+
+  // Panel "Multi-moneda": a diferencia del consolidado (que convierte todo a
+  // una sola moneda elegida), esto muestra el saldo real de cada moneda por
+  // separado, sin conversión — para ver de un vistazo cuánto queda "puro" en
+  // pesos, dólares y euros.
+  function actualizarMultiMoneda() {
+    const el = document.getElementById("multimon-grid");
+    if (!el) return;
+    const porMoneda = {};
+    filtrados().forEach(t => {
+      const m = t.moneda || "ARS";
+      if (!porMoneda[m]) porMoneda[m] = 0;
+      porMoneda[m] += (t.tipo === "Ingreso" ? 1 : -1) * Number(t.monto);
+    });
+    const monedas = ["ARS", "USD", "EUR"].filter(m => m in porMoneda);
+    if (!monedas.length) {
+      el.innerHTML = `<div class="presup-empty">${tr("sin_movimientos")}</div>`;
+      return;
+    }
+    el.innerHTML = monedas.map(m => `
+      <div class="multimon-row">
+        <span class="multimon-mon">${m}</span>
+        <span class="multimon-val ${porMoneda[m] >= 0 ? "green" : "red"}">${porMoneda[m] >= 0 ? "+" : "-"}${fmtMon(porMoneda[m], m)}</span>
+      </div>`).join("");
   }
 
   function toggleCot() {
@@ -1190,6 +1323,7 @@
     const monedaFiltro = document.getElementById("f-moneda").value;
 
     actualizarConsolidado();
+    actualizarMultiMoneda();
     actualizarDiaResultado();
     if (typeof renderPresup === "function") renderPresup();
 
@@ -1936,6 +2070,14 @@
   if (ES_PRO) cargarStats();
   cargarPresup();
   if (ES_PRO) cargarViajesSelect();
+
+  // En escritorio hay lugar de sobra: los módulos colapsables del panel
+  // vienen abiertos de entrada en vez de forzar un click extra.
+  if (window.matchMedia("(min-width: 900px)").matches) {
+    if (ES_PRO && !statsOpen) toggleStats();
+    if (!recurOpen) toggleRecur();
+    if (document.getElementById("wa-body") && !waOpen) toggleWhatsapp();
+  }
 
   // ── Viajes (select del modal) ────────────────────────────────────────────────
   let viajesDisponibles = [];

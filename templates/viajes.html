@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#1e1e2e">
+  <meta name="theme-color" content="#10121b">
   <title>Viajes — Montor</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232a2a3e'/><circle cx='50' cy='50' r='36' fill='none' stroke='%2360a5fa' stroke-width='6'/><rect x='34' y='54' width='8' height='18' rx='2' fill='%2360a5fa'/><rect x='46' y='46' width='8' height='26' rx='2' fill='%2360a5fa'/><rect x='58' y='36' width='8' height='36' rx='2' fill='%2360a5fa'/></svg>">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg: #1e1e2e; --surface: #2a2a3e; --surface2: #313148;
-      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
-      --yellow: #fbbf24; --text: #e2e8f0; --muted: #94a3b8; --border: #3f3f5a;
-      --green-rgb: 74,222,128; --red-rgb: 248,113,113; --blue-rgb: 96,165,250; --yellow-rgb: 251,191,36;
+      --bg: #10121b; --surface: #181b27; --surface2: #212536;
+      --green: #34d399; --red: #f0576a; --blue: #4f8cf7;
+      --yellow: #f5b95c; --text: #eef1f8; --muted: #8a92a6; --border: #262a3a;
+      --green-rgb: 52,211,153; --red-rgb: 240,87,106; --blue-rgb: 79,140,247; --yellow-rgb: 245,185,92;
     }
     body.light {
-      --bg: #ece3d0; --surface: #f5eede; --surface2: #e4dac1;
-      --green: #4c8a5e; --red: #b3543f; --blue: #4d6f9e;
-      --yellow: #ad7c1f; --text: #3a3226; --muted: #655b4c; --border: #d3c6a6;
-      --green-rgb: 76,138,94; --red-rgb: 179,84,63; --blue-rgb: 77,111,158; --yellow-rgb: 173,124,31;
+      --bg: #eef0f5; --surface: #ffffff; --surface2: #f2f4f9;
+      --green: #1f9d6f; --red: #d64a5c; --blue: #3f6fd6;
+      --yellow: #b8791f; --text: #1c2033; --muted: #6b7182; --border: #dfe3ee;
+      --green-rgb: 31,157,111; --red-rgb: 214,74,92; --blue-rgb: 63,111,214; --yellow-rgb: 184,121,31;
     }
 
     body {
@@ -142,6 +142,16 @@
        cascada a las reglas de arriba sin necesitar !important. */
     @media (min-width: 900px) {
       body { max-width: min(95vw, 1400px); }
+
+      /* Mismo criterio "premium" que montor.html: tarjetas más redondeadas,
+         con sombra y una leve elevación al pasar el mouse. */
+      .viaje-card, .cons-card, .chart-wrap, .tx { border-radius: 20px; }
+      .viaje-card, .chart-wrap, .tx {
+        box-shadow: 0 4px 20px rgba(0,0,0,.18);
+        transition: transform .15s ease, box-shadow .15s ease;
+      }
+      .viaje-card:hover, .tx:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+
       header h1 { font-size: 20px; }
       .viaje-card-nombre { font-size: 19px; }
       .viaje-card-fechas { font-size: 13px; }
