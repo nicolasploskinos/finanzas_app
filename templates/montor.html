@@ -340,6 +340,11 @@
         background: var(--blue); color: #fff; font-weight: 800; font-size: 15px; flex-shrink: 0;
       }
 
+      /* En escritorio "Viajes" ya vive en la barra de iconos: repetirlo en
+         el header es ruido de mas. En mobile (sin barra de iconos) sigue
+         siendo la unica forma de llegar ahi, asi que ahi se queda. */
+      .header-viajes-link { display: none; }
+
       /* Tarjetas más "premium": esquinas más redondeadas, sombra con más
          cuerpo y una leve elevación al pasar el mouse, como en dashboards
          de escritorio con look editorial. */
@@ -522,7 +527,7 @@
       {% else %}
       <span style="font-size:11px;font-weight:700;background:var(--green);color:#000;border-radius:6px;padding:3px 8px;white-space:nowrap;">✓ Pro</span>
       {% endif %}
-      <a href="/montor/viajes" title="Viajes" aria-label="Viajes" style="font-size:15px;text-decoration:none;padding:6px;">✈️</a>
+      <a href="/montor/viajes" title="Viajes" aria-label="Viajes" class="header-viajes-link" style="font-size:15px;text-decoration:none;padding:6px;">✈️</a>
       <button onclick="toggleLang()" id="btn-lang" aria-label="Switch language" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:800;color:var(--muted);padding:6px 8px;" title="Switch language">EN</button>
       <button onclick="toggleModo()" id="btn-modo" aria-label="Cambiar modo claro/oscuro" style="background:none;border:none;cursor:pointer;font-size:15px;padding:6px;" title="Cambiar modo">🌙</button>
       <a href="#" onclick="cerrarSesion()" style="font-size:11px;color:var(--muted);text-decoration:none;white-space:nowrap;border-left:1px solid var(--border);padding:6px 0 6px 10px;" data-en="Log out">Salir</a>
