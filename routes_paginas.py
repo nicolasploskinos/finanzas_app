@@ -25,12 +25,14 @@ def landing():
 
 @bp.route("/privacidad")
 def privacidad():
-    return render_template("privacidad.html")
+    # Migrada a React (ver templates/spa.html y frontend/).
+    return render_template("spa.html", titulo="Política de Privacidad", v=_spa_version())
 
 
 @bp.route("/terminos")
 def terminos():
-    return render_template("terminos.html")
+    # Migrada a React (ver templates/spa.html y frontend/).
+    return render_template("spa.html", titulo="Términos de Servicio", v=_spa_version())
 
 
 @bp.route("/montor")
