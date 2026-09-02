@@ -4,6 +4,8 @@
   --bg: #1a1917;
   --surface: #242220;
   --surface2: #2d2b28;
+  --surface3: #363330;
+  --blue-dark: #2f6fe0;
   --green: #34d399;
   --red: #f0576a;
   --blue: #4f8cf7;
@@ -23,6 +25,8 @@ body.light {
   --bg: #f3ede2;
   --surface: #fbf7f0;
   --surface2: #ede4d3;
+  --surface3: #e3d8c2;
+  --blue-dark: #2f56ad;
   --green: #1f9d6f;
   --red: #d64a5c;
   --blue: #3f6fd6;

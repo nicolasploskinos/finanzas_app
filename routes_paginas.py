@@ -20,7 +20,17 @@ def _spa_version():
 
 @bp.route("/")
 def landing():
-    return render_template("landing.html")
+    # Migrada a React (ver templates/spa.html y frontend/). titulo_completo
+    # + los meta/og se pasan explícitos porque esta es la única página
+    # pública que de verdad le importa a SEO/compartir en redes.
+    return render_template(
+        "spa.html",
+        titulo_completo="Montor — Control de gastos en ARS, USD y EUR",
+        meta_description="Controlá tus gastos e ingresos en pesos, dólares y euros. Cotización oficial BNA automática. Gratis.",
+        og_title="Montor — Control de gastos en ARS, USD y EUR",
+        og_description="La app que entiende la economía argentina. Manejá pesos y dólares en un solo lugar, con cotización oficial actualizada.",
+        v=_spa_version(),
+    )
 
 
 @bp.route("/privacidad")
