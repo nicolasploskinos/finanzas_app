@@ -96,6 +96,33 @@ export const MSG = {
   no_pudo_cargar_viaje: { es: "No se pudo cargar el viaje", en: "Couldn't load the trip" },
   quitado_del_viaje: { es: "Quitado del viaje", en: "Removed from the trip" },
   quitar_del_viaje: { es: "Quitar del viaje", en: "Remove from the trip" },
+  // Login / registro
+  montor: { es: "Montor", en: "Montor" },
+  administra_ingresos_gastos: {
+    es: "Administrá tus ingresos y gastos",
+    en: "Manage your income and expenses",
+  },
+  ingresar: { es: "Ingresar", en: "Sign in" },
+  registrarse: { es: "Registrarse", en: "Sign up" },
+  usuario: { es: "Usuario", en: "Username" },
+  contrasena: { es: "Contraseña", en: "Password" },
+  crear_cuenta: { es: "Crear cuenta", en: "Create account" },
+  terminos: { es: "Términos", en: "Terms" },
+  politica_privacidad: { es: "Política de Privacidad", en: "Privacy Policy" },
+  invalid_credentials: {
+    es: "Usuario o contraseña incorrectos",
+    en: "Incorrect username or password",
+  },
+  missing_fields: { es: "Completá todos los campos", en: "Fill in all fields" },
+  username_taken: { es: "Ese nombre de usuario ya está en uso", en: "That username is already taken" },
+  weak_password: {
+    es: "La contraseña tiene que tener al menos 8 caracteres",
+    en: "Password must be at least 8 characters",
+  },
+  too_many_attempts: {
+    es: "Demasiados intentos. Probá de nuevo en unos minutos",
+    en: "Too many attempts. Try again in a few minutes",
+  },
 } as const;
 
 export type MsgKey = keyof typeof MSG;

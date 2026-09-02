@@ -92,7 +92,24 @@ export function useQuitarDelViaje(viajeId: number) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: claves.viaje(viajeId) });
       qc.invalidateQueries({ queryKey: claves.viajes, exact: true });
-      qc.invalidateQueries({ queryKey: claves.transacciones });
     },
+  });
+}
+
+export type LoginPayload = { username: string; password: string };
+
+export function useLogin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: LoginPayload) => api.post<{ ok: true }>("/api/montor/login", datos),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.sesion }),
+  });
+}
+
+export function useRegistro() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: LoginPayload) => api.post<{ ok: true }>("/api/montor/register", datos),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.sesion }),
   });
 }

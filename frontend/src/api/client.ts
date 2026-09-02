@@ -9,6 +9,12 @@ export class ApiError extends Error {
   }
 }
 
+// El 401 de estas dos rutas es parte normal de su contrato (credenciales
+// inválidas), no una sesión vencida — así que no dispara el redirect global.
+// Si no se excluyeran, un intento de login fallido rebotaría a /montor/login
+// (donde ya estás) en vez de mostrar el error en el formulario.
+const RUTAS_PUBLICAS_CON_401_ESPERADO = ["/api/montor/login", "/api/montor/register"];
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     credentials: "same-origin",
@@ -19,7 +25,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     // La sesión de Flask vive en una cookie; si venció, la API contesta 401
     // y el lugar donde hay que volver es el login del servidor.
-    if (res.status === 401) window.location.href = "/montor/login";
+    if (res.status === 401 && !RUTAS_PUBLICAS_CON_401_ESPERADO.includes(path)) {
+      window.location.href = "/montor/login";
+    }
     let detalle = res.statusText;
     try {
       const cuerpo = (await res.json()) as { error?: string };

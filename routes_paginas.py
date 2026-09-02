@@ -62,7 +62,8 @@ def analisis_page():
 def login_page():
     if "user_id" in session:
         return redirect("/montor")
-    return render_template("auth.html")
+    # Migrada a React (ver templates/spa.html y frontend/).
+    return render_template("spa.html", titulo="Ingresar", v=_spa_version())
 
 
 @bp.route("/montor/logout")

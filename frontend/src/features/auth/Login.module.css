@@ -1,0 +1,171 @@
+/* position: fixed cubre todo el viewport sin importar el max-width que
+   base.css le impone a <body> en el resto de la app. */
+.bg {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(79, 140, 247, 0.16), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(157, 123, 245, 0.12), transparent),
+    var(--bg);
+}
+:global(body.light) .bg { background: var(--bg); }
+
+.topActions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.topActions button {
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.langBtn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+}
+.modoBtn { border: none; font-size: 20px; line-height: 1; padding: 4px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 400px;
+}
+:global(body.light) .card { box-shadow: 0 20px 60px rgba(28, 32, 51, 0.08); }
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+}
+.logo svg { width: 34px; height: 34px; }
+.h1 { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+
+.tabs {
+  display: flex;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+.tab {
+  flex: 1;
+  padding: 9px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.tab.active { background: var(--blue); color: white; }
+
+@keyframes formFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fadeIn { animation: formFadeIn 0.3s cubic-bezier(0.2, 0.7, 0.3, 1); }
+
+@keyframes errorShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+.shake { animation: errorShake 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fadeIn, .shake { animation: none; }
+}
+
+.campo { margin-bottom: 14px; }
+.campo label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.campo input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 12px 14px;
+  outline: none;
+  font-family: inherit;
+}
+.campo input:focus { border-color: var(--blue); }
+
+.btn {
+  width: 100%;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.btn:active { opacity: 0.85; }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+.error {
+  background: rgba(var(--red-rgb), 0.1);
+  border: 1px solid rgba(var(--red-rgb), 0.3);
+  color: var(--red);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.legal { text-align: center; font-size: 11px; color: var(--muted); margin-top: 12px; }
+.legal a { color: var(--muted); }
+
+@media (min-width: 900px) {
+  .card { max-width: 460px; padding: 44px 40px; }
+  .logo svg { width: 48px; height: 48px; }
+  .h1 { font-size: 24px; }
+  .subtitle { font-size: 14px; }
+  .tab { font-size: 15px; padding: 11px; }
+  .campo label { font-size: 13px; }
+  .campo input { font-size: 17px; padding: 14px 16px; }
+  .btn { font-size: 18px; padding: 17px; }
+  .error { font-size: 14px; }
+}
