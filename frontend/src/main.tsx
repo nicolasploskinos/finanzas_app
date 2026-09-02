@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { App } from "@/App";
 import { PreferenciasProvider } from "@/hooks/usePreferencias";
+import { ToastProvider } from "@/hooks/useToast";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
 
@@ -24,7 +25,9 @@ createRoot(contenedor).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <PreferenciasProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </PreferenciasProvider>
     </QueryClientProvider>
   </StrictMode>,

@@ -4,19 +4,28 @@ import css from "./AppHeader.module.css";
 type Props = {
   icono: string;
   titulo: string;
-  /** A dónde vuelve la flecha. Sigue siendo una página Jinja. */
+  /** A dónde vuelve la flecha. Por defecto al panel, que sigue en Jinja. */
   volverA?: string;
+  /** Si se pasa, la flecha ejecuta esto en vez de navegar (p. ej. volver del
+   *  detalle de un viaje a la lista sin salir de la página). */
+  onVolver?: () => void;
 };
 
-export function AppHeader({ icono, titulo, volverA = "/montor" }: Props) {
+export function AppHeader({ icono, titulo, volverA = "/montor", onVolver }: Props) {
   const { modo, lang, toggleModo, toggleLang } = usePreferencias();
 
   return (
     <header className={css.header}>
       <h1 className={css.title}>
-        <a className={css.back} href={volverA} aria-label="Volver">
-          ←
-        </a>
+        {onVolver ? (
+          <button className={css.back} onClick={onVolver} aria-label="Volver">
+            ←
+          </button>
+        ) : (
+          <a className={css.back} href={volverA} aria-label="Volver">
+            ←
+          </a>
+        )}
         <span>
           {icono} {titulo}
         </span>

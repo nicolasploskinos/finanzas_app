@@ -7,6 +7,17 @@ import montor_server as core
 bp = Blueprint("paginas", __name__)
 
 
+def _spa_version():
+    """mtime del bundle, para invalidar la cache del navegador en cada deploy.
+    El build se commitea (PythonAnywhere no corre Node), así que el archivo
+    siempre está en disco; si falta, devolvemos algo que no cachee."""
+    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "app", "montor.js")
+    try:
+        return str(int(os.path.getmtime(ruta)))
+    except OSError:
+        return "dev"
+
+
 @bp.route("/")
 def landing():
     return render_template("landing.html")
@@ -35,18 +46,8 @@ def index():
 @bp.route("/montor/viajes")
 @core.login_required
 def viajes_page():
-    return render_template("viajes.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
-
-
-def _spa_version():
-    """mtime del bundle, para invalidar la cache del navegador en cada deploy.
-    El build se commitea (PythonAnywhere no corre Node), así que el archivo
-    siempre está en disco; si falta, devolvemos algo que no cachee."""
-    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "app", "montor.js")
-    try:
-        return str(int(os.path.getmtime(ruta)))
-    except OSError:
-        return "dev"
+    # Migrada a React (ver templates/spa.html y frontend/).
+    return render_template("spa.html", titulo="Viajes", v=_spa_version())
 
 
 @bp.route("/montor/analisis")

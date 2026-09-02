@@ -1,0 +1,305 @@
+.shell { display: block; }
+.content { min-width: 0; flex: 1; }
+
+.lista { padding: 14px 12px 100px; }
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  display: block;
+}
+.cardNombre { font-size: 16px; font-weight: 800; }
+.cardFechas { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 12px; }
+.cardGastoLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.cardGastoName { font-weight: 600; font-size: 12px; color: var(--muted); }
+.cardGastoAmt { font-size: 17px; font-weight: 800; }
+.cardSinGasto { font-size: 12px; color: var(--muted); }
+
+.vacio { text-align: center; color: var(--muted); font-size: 14px; padding: 60px 20px; }
+
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 300;
+  border: none;
+  box-shadow: 0 6px 20px rgba(var(--blue-rgb), 0.5);
+  cursor: pointer;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Detalle */
+.detalle { padding: 14px 12px 100px; }
+.detalleHeader { margin-bottom: 16px; }
+.detalleNombre { font-size: 20px; font-weight: 900; }
+.detalleFechas { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.detalleAcciones { display: flex; gap: 10px; margin-top: 10px; }
+.detalleAcciones button {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.detalleAcciones button.borrar { color: var(--red); }
+
+.totales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.totalCard { background: var(--surface); border-radius: 12px; padding: 12px; }
+.totalLabel {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.totalValue { font-size: 21px; font-weight: 800; margin-top: 5px; }
+.totalVacio { font-size: 13px; color: var(--muted); }
+
+.chartWrap {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+.chartTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.chartBody { padding-top: 10px; }
+.chartVacio { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+
+.filtros { margin-bottom: 10px; }
+.filtros select {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-family: inherit;
+}
+.filtroDias {
+  padding: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filtroDiasLabel { font-size: 12px; color: var(--muted); font-weight: 600; flex-shrink: 0; }
+.filtroDias input {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+}
+.filtroDias button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.txWrap { margin-bottom: 8px; }
+.tx {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.txIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.txIcon.gasto { background: rgba(var(--red-rgb), 0.15); color: var(--red); }
+.txIcon.ingreso { background: rgba(var(--green-rgb), 0.15); color: var(--green); }
+.txInfo { flex: 1; min-width: 0; }
+.txCat {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.txFecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.txRight { text-align: right; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+.txMonto { font-size: 15px; font-weight: 800; }
+.txMonto.gasto { color: var(--red); }
+.txMonto.ingreso { color: var(--green); }
+.txQuitar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 17px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.txQuitar:disabled { opacity: 0.4; cursor: default; }
+
+/* Modal */
+.campo { margin-bottom: 14px; }
+.campo label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.campo input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 13px 14px;
+  outline: none;
+  font-family: inherit;
+}
+.campo input:focus { border-color: var(--blue); }
+.campoRow { display: flex; gap: 8px; }
+.campoRow .campo { flex: 1; }
+.btnGuardar {
+  width: 100%;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(var(--blue-rgb), 0.35);
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.btnGuardar:active { opacity: 0.85; }
+.btnGuardar:disabled { opacity: 0.6; cursor: default; }
+
+.estado { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px; }
+
+@media (min-width: 900px) {
+  .shell { display: flex; align-items: flex-start; gap: 24px; padding-top: 10px; }
+  .card, .totalCard, .chartWrap, .tx { border-radius: 20px; }
+  .card, .chartWrap, .tx {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover, .tx:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .vacio { font-size: 18px; }
+  .cardGastoName { font-size: 16px; }
+  .cardGastoAmt { font-size: 22px; }
+  .detalleNombre { font-size: 32px; }
+  .detalleFechas { font-size: 17px; }
+  .totalLabel { font-size: 14px; }
+  .totalValue { font-size: 32px; }
+  .chartTitle { font-size: 16px; }
+  .txCat { font-size: 19px; }
+  .txFecha { font-size: 15px; }
+  .txMonto { font-size: 20px; }
+
+  /* auto-fit (no auto-fill): con pocos viajes, auto-fill deja columnas vacias
+     invisibles y la tarjeta real queda angosta en una esquina, con todo el
+     resto de la fila desperdiciado. */
+  .lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 420px));
+    gap: 20px;
+    justify-content: start;
+    padding: 0 0 100px;
+  }
+  .card { margin-bottom: 0; padding: 26px; }
+  .cardNombre { font-size: 26px; }
+  .cardFechas { font-size: 16px; margin-bottom: 18px; }
+
+  .detalle { padding: 0 0 100px; }
+  .detalleLayout { display: flex; align-items: flex-start; gap: 28px; }
+  .detalleIzq {
+    flex: 0 0 360px;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .detalleDer { flex: 1; min-width: 0; }
+  .totales { margin-bottom: 0; }
+  .chartWrap { margin-bottom: 0; }
+
+  .campo label { font-size: 13px; }
+  .campo input { font-size: 17px; padding: 15px 16px; }
+  .btnGuardar { font-size: 18px; padding: 18px; }
+}

@@ -1,0 +1,53 @@
+/* Se mantiene montado y se anima con opacity/visibility en vez de display,
+   que no es animable. En mobile entra desde abajo como una hoja. */
+.overlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 300;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
+}
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.22s ease;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 20px 20px 44px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  transform: translateY(28px);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+.overlay.open .modal { transform: translateY(0); }
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.titulo { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .modal { transition: none !important; }
+}
+
+@media (min-width: 900px) {
+  .overlay { align-items: center; }
+  .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
+  .handle { display: none; }
+  .titulo { font-size: 24px; }
+}
