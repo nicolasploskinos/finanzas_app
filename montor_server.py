@@ -209,6 +209,28 @@ def _es_pro(user_id):
         return expira > datetime.now(timezone.utc)
     return False
 
+
+def _estado_plan(user_id):
+    """Plan del usuario en un solo lugar: lo usan la página del panel y
+    /api/montor/me (que es de donde lo lee el frontend en React)."""
+    res = db.table("usuarios").select("plan,trial_expira").eq("id", user_id).execute()
+    is_pro = False
+    is_trial = False
+    trial_dias = 0
+    if res.data:
+        u = res.data[0]
+        plan = u.get("plan")
+        trial_expira = u.get("trial_expira")
+        if plan == "pro":
+            is_pro = True
+        elif plan == "trial" and trial_expira:
+            expira = datetime.fromisoformat(trial_expira.replace("Z", "+00:00"))
+            if expira > datetime.now(timezone.utc):
+                is_pro = True
+                is_trial = True
+                trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
+    return {"is_pro": is_pro, "is_trial": is_trial, "trial_dias": trial_dias}
+
 # ── Recurrentes helpers ───────────────────────────────────────────────────────
 
 def _siguiente_fecha(fecha_str, frecuencia):

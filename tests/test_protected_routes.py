@@ -16,6 +16,8 @@ RUTAS_PROTEGIDAS = [
     "/api/montor/recurrentes",
     "/api/montor/stats",
     "/api/montor/resumen-ia",
+    "/montor/analisis",
+    "/api/montor/me",
 ]
 
 

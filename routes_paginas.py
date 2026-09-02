@@ -1,5 +1,5 @@
 """Páginas HTML (no-API): landing, dashboard, login, PWA."""
-from datetime import datetime, timezone
+import os
 from flask import Blueprint, render_template, session, redirect, send_from_directory
 
 import montor_server as core
@@ -25,21 +25,8 @@ def terminos():
 @bp.route("/montor")
 @core.login_required
 def index():
-    user = core.db.table("usuarios").select("plan,trial_expira").eq("id", session["user_id"]).execute().data
-    is_pro = False
-    is_trial = False
-    trial_dias = 0
-    if user:
-        plan = user[0].get("plan")
-        trial_expira = user[0].get("trial_expira")
-        if plan == "pro":
-            is_pro = True
-        elif plan == "trial" and trial_expira:
-            expira = datetime.fromisoformat(trial_expira.replace("Z", "+00:00"))
-            if expira > datetime.now(timezone.utc):
-                is_pro = True
-                is_trial = True
-                trial_dias = max(1, (expira - datetime.now(timezone.utc)).days + 1)
+    plan = core._estado_plan(session["user_id"])
+    is_pro, is_trial, trial_dias = plan["is_pro"], plan["is_trial"], plan["trial_dias"]
     whatsapp_habilitado = session["user_id"] == core._WHATSAPP_USER_ID
     return render_template("montor.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
                             trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
@@ -51,10 +38,23 @@ def viajes_page():
     return render_template("viajes.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
 
 
+def _spa_version():
+    """mtime del bundle, para invalidar la cache del navegador en cada deploy.
+    El build se commitea (PythonAnywhere no corre Node), así que el archivo
+    siempre está en disco; si falta, devolvemos algo que no cachee."""
+    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "app", "montor.js")
+    try:
+        return str(int(os.path.getmtime(ruta)))
+    except OSError:
+        return "dev"
+
+
 @bp.route("/montor/analisis")
 @core.login_required
 def analisis_page():
-    return render_template("analisis.html", username=session["username"], is_pro=core._es_pro(session["user_id"]))
+    # Migrada a React. El resto de las páginas sigue en Jinja; los datos
+    # (usuario, plan, transacciones) los pide el propio frontend por la API.
+    return render_template("spa.html", titulo="Análisis", v=_spa_version())
 
 
 @bp.route("/montor/login")

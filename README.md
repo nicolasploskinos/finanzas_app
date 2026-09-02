@@ -14,8 +14,51 @@ mensual también generado con IA.
 - **Base de datos**: Supabase (Postgres), accedida vía la API REST con la key `anon`
 - **IA**: Google Gemini (`google-genai`) — interpretación de mensajes de WhatsApp, chat de preguntas, resumen mensual
 - **Pagos**: MercadoPago (suscripciones recurrentes, mensual o anual)
-- **Frontend**: HTML + JS vanilla, sin build step (todo vive en `templates/`)
+- **Frontend**: en migración a React + TypeScript (Vite). Las páginas ya migradas
+  viven en `frontend/`; las que faltan siguen siendo Jinja + JS vanilla en `templates/`
 - **Hosting**: PythonAnywhere
+
+## Frontend (migración a React)
+
+El frontend está pasando de Jinja + JS vanilla a **React + TypeScript**, página
+por página. Las dos formas conviven: Flask sirve el cascarón `templates/spa.html`
+para las rutas ya migradas y las plantillas Jinja de siempre para el resto. El
+backend no cambia — todo sale de los mismos endpoints JSON de `/api/montor/…`.
+
+**Migrado hasta ahora:** `/montor/analisis`.
+**Pendiente:** `/montor` (panel), `/montor/viajes`, login y landing.
+
+```
+frontend/
+  src/
+    api/          cliente HTTP tipado + hooks de TanStack Query
+    components/   piezas compartidas (barra lateral, header)
+    features/     una carpeta por página; la lógica pura va en su .ts aparte
+    hooks/        preferencias (tema/idioma), animaciones
+    i18n/         textos ES/EN
+    styles/       tokens de color y estilos base
+```
+
+### Cómo trabajar
+
+```bash
+cd frontend
+npm install
+npm run dev        # http://localhost:5173, con proxy de /api al Flask local
+npm run build      # compila a ../static/app/ (esto es lo que se despliega)
+npm run typecheck  # TypeScript sin generar nada
+```
+
+> **Importante:** PythonAnywhere no corre Node, así que el resultado del build
+> (`static/app/`) **se commitea**. Después de tocar cualquier cosa dentro de
+> `frontend/`, hay que correr `npm run build` y commitear también `static/app/`,
+> si no el deploy sigue sirviendo el bundle viejo. Flask le agrega `?v=<mtime>`
+> al `<script>` para invalidar la cache del navegador en cada deploy.
+
+Para que el frontend sepa quién es el usuario y qué plan tiene sin depender de
+variables de Jinja, existe `GET /api/montor/me`. Es la única ruta con sesión que
+contesta **401 con JSON** en vez de redirigir al login: quien la llama es un
+`fetch`, y un 302 a HTML no le sirve.
 
 ## Estructura del proyecto
 

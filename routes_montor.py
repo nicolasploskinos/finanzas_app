@@ -10,6 +10,21 @@ import montor_server as core
 bp = Blueprint("montor", __name__)
 
 
+@bp.route("/api/montor/me")
+def me():
+    """Datos de sesión que el frontend en React necesita para dibujarse.
+    Contesta 401 en vez de redirigir al login: quien llama es un fetch, no
+    una navegación, y un 302 a HTML no le sirve de nada."""
+    if "user_id" not in session:
+        return jsonify({"error": "no autenticado"}), 401
+    plan = core._estado_plan(session["user_id"])
+    return jsonify({
+        "username": session["username"],
+        "whatsapp_habilitado": session["user_id"] == core._WHATSAPP_USER_ID,
+        **plan,
+    })
+
+
 @bp.route("/api/montor/cotizaciones")
 def cotizaciones():
     return jsonify(core._obtener_cotizaciones())

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#1a1917">
+  <title>{{ titulo }} — Montor</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232a2a3e'/><circle cx='50' cy='50' r='36' fill='none' stroke='%2360a5fa' stroke-width='6'/><rect x='34' y='54' width='8' height='18' rx='2' fill='%2360a5fa'/><rect x='46' y='46' width='8' height='26' rx='2' fill='%2360a5fa'/><rect x='58' y='36' width='8' height='36' rx='2' fill='%2360a5fa'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app/montor.css') }}?v={{ v }}">
+</head>
+<body>
+  <script>
+    // Va acá y no en el <head> a propósito: necesita `document.body`, y tiene
+    // que correr antes del primer pintado para que quien usa modo claro no vea
+    // un destello oscuro mientras carga React. Después React mantiene la clase.
+    try {
+      if (localStorage.getItem("modo") === "light") document.body.classList.add("light");
+      if (localStorage.getItem("lang") === "en") document.documentElement.lang = "en";
+    } catch (e) {}
+  </script>
+  <div id="root"></div>
+  <script type="module" src="{{ url_for('static', filename='app/montor.js') }}?v={{ v }}"></script>
+</body>
+</html>
