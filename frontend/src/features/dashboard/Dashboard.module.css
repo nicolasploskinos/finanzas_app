@@ -794,7 +794,7 @@
   background: linear-gradient(135deg, var(--yellow), var(--red));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.proPrecio { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.proPrecio { text-align: center; font-size: 14px; color: var(--muted); margin-bottom: 20px; }
 .proBeneficios { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
 .proFila {
   display: flex; gap: 12px; background: var(--surface2); border-radius: 14px; padding: 14px;
@@ -802,23 +802,23 @@
 }
 .proFila:hover { border-color: rgba(var(--yellow-rgb), 0.3); }
 .proFilaIcono { font-size: 22px; flex-shrink: 0; }
-.proFilaTexto h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-.proFilaTexto p { font-size: 12px; color: var(--muted); }
+.proFilaTexto h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.proFilaTexto p { font-size: 13px; color: var(--muted); }
 .proFilaTexto span { color: var(--red); }
 .proCiclos { display: flex; gap: 8px; margin-bottom: 20px; }
 .proCicloBtn {
-  flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 12px 8px;
+  flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 14px 8px;
   cursor: pointer; text-align: center; transition: all 0.2s; position: relative; font-family: inherit;
 }
 .proCicloBtn.active { border-color: var(--yellow); background: rgba(var(--yellow-rgb), 0.12); box-shadow: 0 6px 18px rgba(var(--yellow-rgb), 0.2); }
-.proCicloNombre { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+.proCicloNombre { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
 .proCicloBtn.active .proCicloNombre { color: var(--yellow); }
-.proCicloPrecio { font-size: 18px; font-weight: 900; color: var(--text); margin-top: 2px; font-family: "Space Grotesk", inherit; }
-.proCicloPrecio span { font-size: 11px; font-weight: 600; color: var(--muted); }
+.proCicloPrecio { font-size: 20px; font-weight: 900; color: var(--text); margin-top: 4px; font-family: "Space Grotesk", inherit; }
+.proCicloPrecio span { font-size: 12px; font-weight: 600; color: var(--muted); }
 .proCicloBadge {
   position: absolute; top: -9px; right: 8px;
   background: linear-gradient(135deg, var(--green), color-mix(in srgb, var(--green) 65%, black));
-  color: #04241b; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 100px; white-space: nowrap;
+  color: #04241b; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 100px; white-space: nowrap;
 }
 .btnProPagar {
   width: 100%; background: linear-gradient(135deg, var(--yellow), color-mix(in srgb, var(--yellow) 65%, black));
@@ -827,7 +827,7 @@
 }
 .btnProPagar:hover { transform: translateY(-1px); }
 .btnProPagar:active { transform: translateY(0) scale(0.98); }
-.btnProCancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px; font-family: inherit; }
+.btnProCancel { width: 100%; background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 6px; font-family: inherit; }
 .btnProCancel:hover { color: var(--text); }
 
 /* ── Import ── */
@@ -847,7 +847,7 @@
 @media (min-width: 900px) {
   .shell {
     display: grid;
-    grid-template-columns: 292px minmax(0, 1fr) 480px;
+    grid-template-columns: 312px minmax(0, 1fr) 480px;
     align-items: start;
     gap: 20px 28px;
     padding: 10px 28px 20px;
@@ -1015,11 +1015,19 @@
   .btnGuardar { font-size: 20px; padding: 20px; }
   .importResumen { font-size: 17px; }
   .importItem { font-size: 17px; }
-  .proTitulo { font-size: 34px; }
-  .proPrecio { font-size: 17px; }
-  .proFilaIcono { font-size: 30px; }
-  .proFilaTexto h4 { font-size: 18px; }
-  .proFilaTexto p { font-size: 16px; }
+  .proTitulo { font-size: 36px; margin-bottom: 8px; }
+  .proPrecio { font-size: 19px; margin-bottom: 28px; }
+  .proBeneficios { gap: 16px; margin-bottom: 32px; }
+  .proFila { padding: 18px; gap: 16px; border-radius: 16px; }
+  .proFilaIcono { font-size: 32px; }
+  .proFilaTexto h4 { font-size: 19px; margin-bottom: 4px; }
+  .proFilaTexto p { font-size: 16px; line-height: 1.5; }
+  .proCiclos { gap: 12px; margin-bottom: 28px; }
+  .proCicloBtn { padding: 20px 14px; border-radius: 18px; }
+  .proCicloNombre { font-size: 15px; }
+  .proCicloPrecio { font-size: 27px; margin-top: 6px; }
+  .proCicloPrecio span { font-size: 15px; }
+  .proCicloBadge { font-size: 12px; padding: 4px 9px; top: -11px; }
   .btnProPagar { font-size: 20px; padding: 20px; }
   .btnProCancel { font-size: 17px; }
 

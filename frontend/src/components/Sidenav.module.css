@@ -60,7 +60,7 @@
     padding: 24px 18px;
     position: sticky;
     top: 100px;
-    flex: 0 0 292px;
+    flex: 0 0 312px;
     height: calc(100vh - 116px);
     overflow-y: auto;
   }
@@ -81,22 +81,22 @@
     letter-spacing: -0.4px;
   }
   .label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding: 8px 16px 6px;
+    padding: 8px 16px 8px;
   }
-  .nav { display: flex; flex-direction: column; gap: 5px; }
-  .item { font-size: 16px; padding: 14px 16px; gap: 14px; }
-  .ico { font-size: 21px; width: 24px; }
+  .nav { display: flex; flex-direction: column; gap: 6px; }
+  .item { font-size: 19px; padding: 16px 18px; gap: 16px; }
+  .ico { font-size: 24px; width: 27px; }
   .foot { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; gap: 14px; }
   .pro {
     border: none; border-radius: 14px; cursor: pointer;
     background: linear-gradient(135deg, var(--yellow), color-mix(in srgb, var(--yellow) 65%, black));
     color: #fff;
-    font: inherit; font-size: 15px; font-weight: 800; padding: 16px 12px;
+    font: inherit; font-size: 17px; font-weight: 800; padding: 17px 12px;
     box-shadow: 0 6px 18px rgba(var(--yellow-rgb), 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
   }
@@ -115,6 +115,7 @@
     background: none;
     border: none;
     cursor: pointer;
+    color: inherit;
     font: inherit;
     text-align: left;
     border-radius: 14px;
@@ -125,7 +126,7 @@
   .userBtn:hover { background: var(--surface); }
   .userBtn:hover .userChevron { transform: translateX(2px); opacity: 1; }
   .userChevron {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--muted);
     opacity: 0.6;
     flex-shrink: 0;
@@ -135,23 +136,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     flex-shrink: 0;
     background: linear-gradient(135deg, var(--blue), color-mix(in srgb, var(--violet, var(--blue)) 70%, var(--blue)));
     color: #fff;
     font-weight: 800;
-    font-size: 16px;
+    font-size: 18px;
     box-shadow: 0 0 0 2px var(--surface2), 0 0 0 3.5px rgba(var(--blue-rgb), 0.5);
   }
   .userTxt { min-width: 0; flex: 1; }
   .userName {
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 800;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .userPlan { font-size: 13px; font-weight: 700; color: var(--blue); }
+  .userPlan { font-size: 15px; font-weight: 700; color: var(--blue); }
 }
