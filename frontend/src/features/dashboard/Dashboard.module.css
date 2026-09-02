@@ -791,6 +791,47 @@
 .btnEliminarTx { background: none; color: var(--red); box-shadow: none; margin-top: 4px; }
 .btnEliminarTx:hover { background: rgba(var(--red-rgb), 0.1); box-shadow: none; }
 
+/* ── Perfil ── */
+.perfilDivider { height: 1px; background: var(--border); margin: 22px 0 18px; border: none; }
+.perfilSectionTitle { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+.perfilPlanCard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+.perfilPlanEstado { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.perfilPlanFila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.perfilPlanFila span:last-child { color: var(--text); font-weight: 700; }
+.perfilLinkBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 11px;
+  margin-top: 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.perfilLinkBtn:hover { background: rgba(var(--blue-rgb), 0.1); border-color: rgba(var(--blue-rgb), 0.4); }
+.perfilLinkBtn:disabled { opacity: 0.6; cursor: default; }
+.perfilLinkBtn.perfilDanger { color: var(--red); }
+.perfilLinkBtn.perfilDanger:hover { background: rgba(var(--red-rgb), 0.1); border-color: rgba(var(--red-rgb), 0.4); }
+.perfilAyuda { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
 /* ── Modal Pro ── */
 .proOverlay {
   display: flex;
@@ -875,22 +916,33 @@
   border-radius: 12px; color: var(--text); font: inherit; font-weight: 700; padding: 10px 20px; cursor: pointer;
 }
 
+/* El panel usa toda la pantalla (a diferencia del resto de las páginas,
+   todavía acotadas a 1600px vía body en base.css) — se anula ese límite acá
+   en vez de tocar la regla global, así ninguna otra página se ve afectada. */
+body.panelPage {
+  max-width: 100vw;
+  margin: 0;
+}
+
 @media (min-width: 900px) {
   .shell {
     display: grid;
-    grid-template-columns: 248px minmax(0, 1fr) 360px;
+    grid-template-columns: 292px minmax(0, 1fr) 380px;
     align-items: start;
-    gap: 20px 24px;
-    padding-top: 10px;
-    padding-bottom: 20px;
+    gap: 20px 28px;
+    padding: 10px 28px 20px;
   }
   .sidenavArea { grid-column: 1; grid-row: 1 / span 2; }
   .hero { grid-column: 2 / -1; grid-row: 1; }
   .der { grid-column: 2; grid-row: 2; }
   .drcha { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 16px; }
 
+  @media (min-width: 1900px) {
+    .shell { padding-left: 40px; padding-right: 40px; }
+  }
+
   @media (max-width: 1199px) {
-    .shell { grid-template-columns: 232px minmax(0, 1fr); }
+    .shell { grid-template-columns: 260px minmax(0, 1fr); }
     .sidenavArea { grid-row: 1 / span 3; }
     .hero { grid-column: 2; grid-row: 1; }
     .der { grid-column: 2; grid-row: 2; }
@@ -901,7 +953,11 @@
   .headerLeft { justify-content: center; }
   .headerRight { flex-direction: row; align-items: center; gap: 16px; }
   .header { padding: 10px 28px; }
-  .headerInner { max-width: 1500px; margin: 0 auto; gap: 24px; }
+  .headerInner { gap: 24px; }
+
+  @media (min-width: 1900px) {
+    .header { padding-left: 40px; padding-right: 40px; }
+  }
   .headerActions { gap: 12px; }
   .hdrLangBtn { font-size: 13px; }
   .hdrLogout { font-size: 13px; padding: 6px 0 6px 12px; }

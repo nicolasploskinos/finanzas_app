@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import type {
   Cotizaciones,
+  Cuenta,
   ImportPreview,
   InflacionPunto,
   Presupuesto,
@@ -28,6 +29,7 @@ export const claves = {
   stats: (mes: number, anio: number) => ["stats", mes, anio] as const,
   inflacion: ["inflacion"] as const,
   whatsappEstado: ["whatsapp", "estado"] as const,
+  cuenta: ["cuenta"] as const,
 };
 
 export function useSesion() {
@@ -303,5 +305,43 @@ export function useImportConfirm() {
     mutationFn: (transacciones: unknown[]) =>
       api.post<{ ok: boolean; insertados: number }>("/api/montor/import/confirm", { transacciones }),
     onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
+/** Perfil: solo se pide al abrir el modal, no en cada carga del panel. */
+export function useCuenta(habilitado: boolean) {
+  return useQuery({
+    queryKey: claves.cuenta,
+    queryFn: () => api.get<Cuenta>("/api/montor/cuenta"),
+    enabled: habilitado,
+  });
+}
+
+export function useCambiarNombre() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (username: string) => api.put<{ ok: boolean; username: string }>("/api/montor/cuenta/nombre", { username }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: claves.cuenta, exact: true });
+      qc.invalidateQueries({ queryKey: claves.sesion, exact: true });
+    },
+  });
+}
+
+export function useCambiarPassword() {
+  return useMutation({
+    mutationFn: (datos: { actual: string; nueva: string }) =>
+      api.put<{ ok: boolean }>("/api/montor/cuenta/password", datos),
+  });
+}
+
+export function useCancelarSuscripcion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<{ ok: boolean }>("/api/montor/cuenta/cancelar-suscripcion", {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: claves.cuenta, exact: true });
+      qc.invalidateQueries({ queryKey: claves.sesion, exact: true });
+    },
   });
 }

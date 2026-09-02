@@ -159,6 +159,41 @@ const MSG = {
     en: '🎉 <strong>Pro trial</strong> active — you have <strong>{dias}</strong> left',
   },
   suscribirme: { es: "Suscribirme →", en: "Subscribe →" },
+  // Perfil / cuenta
+  perfil: { es: "Mi perfil", en: "My profile" },
+  nombre_de_usuario: { es: "Nombre de usuario", en: "Username" },
+  guardar_nombre: { es: "Guardar nombre", en: "Save name" },
+  nombre_actualizado: { es: "✓ Nombre actualizado", en: "✓ Name updated" },
+  too_short: { es: "Tiene que tener al menos 3 caracteres", en: "Must be at least 3 characters" },
+  cambiar_contrasena: { es: "Cambiar contraseña", en: "Change password" },
+  contrasena_actual: { es: "Contraseña actual", en: "Current password" },
+  contrasena_nueva: { es: "Contraseña nueva", en: "New password" },
+  guardar_contrasena: { es: "Guardar contraseña", en: "Save password" },
+  contrasena_actualizada: { es: "✓ Contraseña actualizada", en: "✓ Password updated" },
+  wrong_password: { es: "La contraseña actual no es correcta", en: "Current password is incorrect" },
+  tu_plan: { es: "Tu plan", en: "Your plan" },
+  plan_pro_activo: { es: "⭐ Pro activo", en: "⭐ Pro active" },
+  plan_gratis_perfil: { es: "Plan gratis", en: "Free plan" },
+  plan_prueba_perfil: { es: "Prueba Pro activa", en: "Pro trial active" },
+  ciclo_mensual: { es: "mensual", en: "monthly" },
+  ciclo_anual: { es: "anual", en: "yearly" },
+  proximo_pago: { es: "Próximo pago", en: "Next payment" },
+  sin_fecha_proximo_pago: {
+    es: "Todavía no tenemos la fecha exacta — se confirma con el primer cobro.",
+    en: "We don't have the exact date yet — it's confirmed with the first charge.",
+  },
+  cambiar_metodo_pago: { es: "Cambiar método de pago", en: "Change payment method" },
+  cambiar_metodo_pago_detalle: {
+    es: "Te lleva a MercadoPago para cargar una tarjeta nueva. La suscripción actual se cancela recién cuando se confirme la nueva.",
+    en: "Takes you to MercadoPago to add a new card. The current subscription is only cancelled once the new one is confirmed.",
+  },
+  cancelar_suscripcion: { es: "Cancelar suscripción", en: "Cancel subscription" },
+  confirm_cancelar_suscripcion: {
+    es: "¿Cancelar tu suscripción Pro? Vas a pasar al plan gratis al instante.",
+    en: "Cancel your Pro subscription? You'll switch to the free plan immediately.",
+  },
+  suscripcion_cancelada: { es: "Suscripción cancelada", en: "Subscription cancelled" },
+  ver_planes_perfil: { es: "Ver planes Pro →", en: "See Pro plans →" },
 } as const;
 
 export type DashMsgKey = keyof typeof MSG;

@@ -19,6 +19,7 @@ import { MultiMonedaCard } from "./MultiMonedaCard";
 import { PresupuestoModal } from "./PresupuestoModal";
 import { PresupuestosCard } from "./PresupuestosCard";
 import { trd } from "./messages";
+import { ProfileModal } from "./ProfileModal";
 import { ProModal } from "./ProModal";
 import { RecurrentesCard } from "./RecurrentesCard";
 import { StatsAccordion } from "./StatsAccordion";
@@ -41,6 +42,15 @@ function fechaHoyTexto(lang: "es" | "en"): string {
 const esEscritorio = () => window.matchMedia("(min-width: 900px)").matches;
 
 export function DashboardPage() {
+  // El panel usa todo el ancho de pantalla, a diferencia del resto de las
+  // páginas (que todavía tienen el body acotado a 1600px). Se marca vía
+  // clase en <body> en vez de en el propio componente porque el límite de
+  // ancho está definido a nivel body en base.css.
+  useEffect(() => {
+    document.body.classList.add(css.panelPage);
+    return () => document.body.classList.remove(css.panelPage);
+  }, []);
+
   const { lang } = usePreferencias();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
@@ -58,6 +68,7 @@ export function DashboardPage() {
   const [editando, setEditando] = useState<Transaccion | null>(null);
   const [presupModalAbierto, setPresupModalAbierto] = useState(false);
   const [proModalAbierto, setProModalAbierto] = useState(false);
+  const [perfilModalAbierto, setPerfilModalAbierto] = useState(false);
 
   // En escritorio hay lugar de sobra: los acordeones vienen abiertos de
   // entrada en vez de forzar un click extra. En mobile, cerrados.
@@ -159,6 +170,7 @@ export function DashboardPage() {
           isPro={isPro}
           onNuevaTransaccion={abrirNuevo}
           onUpgrade={() => setProModalAbierto(true)}
+          onPerfil={() => setPerfilModalAbierto(true)}
           className={css.sidenavArea}
         />
 
@@ -224,6 +236,11 @@ export function DashboardPage() {
         onCerrar={() => setPresupModalAbierto(false)}
       />
       <ProModal abierto={proModalAbierto} onCerrar={() => setProModalAbierto(false)} />
+      <ProfileModal
+        abierto={perfilModalAbierto}
+        onCerrar={() => setPerfilModalAbierto(false)}
+        onVerPlanes={() => setProModalAbierto(true)}
+      />
     </div>
   );
 }

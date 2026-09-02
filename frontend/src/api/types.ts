@@ -108,3 +108,17 @@ export type ImportPreview = {
   transacciones: ImportRow[];
   errores: number;
 };
+
+export type Suscripcion = {
+  ciclo: "mensual" | "anual" | null;
+  proximo_pago: string | null;
+};
+
+export type Cuenta = {
+  username: string;
+  is_pro: boolean;
+  is_trial: boolean;
+  trial_dias: number;
+  trial_expira: string | null;
+  suscripcion: Suscripcion | null;
+};

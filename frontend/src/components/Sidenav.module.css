@@ -53,48 +53,50 @@
   .rail {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 20px 14px;
+    border-radius: 24px;
+    padding: 24px 18px;
     position: sticky;
     top: 100px;
-    flex: 0 0 248px;
+    flex: 0 0 292px;
     height: calc(100vh - 116px);
     overflow-y: auto;
   }
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 8px 16px;
-    margin-bottom: 6px;
+    gap: 12px;
+    padding: 0 8px 18px;
+    margin-bottom: 8px;
     border-bottom: 1px solid var(--border);
     color: var(--blue);
   }
-  .logo { width: 30px; height: 30px; flex-shrink: 0; }
+  .logo { width: 34px; height: 34px; flex-shrink: 0; }
   .brandName {
-    font-size: 22px;
+    font-size: 25px;
     font-weight: 900;
     color: var(--text);
     letter-spacing: -0.4px;
   }
   .label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding: 6px 14px 4px;
+    padding: 8px 16px 6px;
   }
-  .nav { display: flex; flex-direction: column; gap: 4px; }
-  .foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .nav { display: flex; flex-direction: column; gap: 5px; }
+  .item { font-size: 16px; padding: 14px 16px; gap: 14px; }
+  .ico { font-size: 21px; width: 24px; }
+  .foot { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; gap: 14px; }
   .pro {
     border: none; border-radius: 14px; cursor: pointer;
     background: linear-gradient(135deg, var(--yellow), color-mix(in srgb, var(--yellow) 65%, black));
     color: #fff;
-    font: inherit; font-size: 14px; font-weight: 800; padding: 13px 10px;
+    font: inherit; font-size: 15px; font-weight: 800; padding: 16px 12px;
     box-shadow: 0 6px 18px rgba(var(--yellow-rgb), 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
   }
@@ -103,32 +105,53 @@
   .user {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     border-top: 1px solid var(--border);
-    padding: 14px 8px 0;
+    padding: 16px 8px 0;
     min-width: 0;
+  }
+  .userBtn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    border-radius: 14px;
+    margin-top: 2px;
+    padding-bottom: 2px;
+    transition: background 0.2s;
+  }
+  .userBtn:hover { background: var(--surface); }
+  .userBtn:hover .userChevron { transform: translateX(2px); opacity: 1; }
+  .userChevron {
+    font-size: 20px;
+    color: var(--muted);
+    opacity: 0.6;
+    flex-shrink: 0;
+    transition: transform 0.2s, opacity 0.2s;
   }
   .avatar {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     flex-shrink: 0;
     background: linear-gradient(135deg, var(--blue), color-mix(in srgb, var(--violet, var(--blue)) 70%, var(--blue)));
     color: #fff;
     font-weight: 800;
-    font-size: 14px;
+    font-size: 16px;
     box-shadow: 0 0 0 2px var(--surface2), 0 0 0 3.5px rgba(var(--blue-rgb), 0.5);
   }
-  .userTxt { min-width: 0; }
+  .userTxt { min-width: 0; flex: 1; }
   .userName {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .userPlan { font-size: 12px; font-weight: 700; color: var(--blue); }
+  .userPlan { font-size: 13px; font-weight: 700; color: var(--blue); }
 }

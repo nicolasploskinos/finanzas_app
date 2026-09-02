@@ -23,6 +23,9 @@ type Props = {
   onNuevaTransaccion?: () => void;
   /** Solo en el panel: agrega el botón "Pasar a Pro" abajo del todo. */
   onUpgrade?: () => void;
+  /** Solo en el panel: hace clickeable el bloque de usuario/plan de abajo,
+   *  para abrir el perfil (cambiar nombre, contraseña, suscripción). */
+  onPerfil?: () => void;
   /** Para que quien usa este componente pueda ubicarlo en su propio grid
    *  (p.ej. hacer que ocupe dos filas en el panel principal). Un className
    *  externo, no una clase con el mismo nombre en OTRO archivo: por cómo
@@ -32,7 +35,7 @@ type Props = {
   className?: string;
 };
 
-export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade, className = "" }: Props) {
+export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade, onPerfil, className = "" }: Props) {
   const { t } = usePreferencias();
 
   return (
@@ -85,13 +88,24 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
             {t("pasar_a_pro")}
           </button>
         )}
-        <div className={css.user}>
-          <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
-          <div className={css.userTxt}>
-            <div className={css.userName}>{username}</div>
-            <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
+        {onPerfil ? (
+          <button className={`${css.user} ${css.userBtn}`} onClick={onPerfil}>
+            <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
+            <div className={css.userTxt}>
+              <div className={css.userName}>{username}</div>
+              <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
+            </div>
+            <span className={css.userChevron}>›</span>
+          </button>
+        ) : (
+          <div className={css.user}>
+            <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
+            <div className={css.userTxt}>
+              <div className={css.userName}>{username}</div>
+              <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );
