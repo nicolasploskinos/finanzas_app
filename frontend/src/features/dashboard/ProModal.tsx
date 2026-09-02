@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import modalCss from "@/components/Modal.module.css";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
@@ -65,7 +64,7 @@ export function ProModal({ abierto, onCerrar }: { abierto: boolean; onCerrar: ()
 
   return (
     <div
-      className={`${css.proOverlay} ${abierto ? modalCss.open : ""}`}
+      className={`${css.proOverlay} ${abierto ? css.open : ""}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onCerrar();
       }}

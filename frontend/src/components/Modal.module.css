@@ -8,29 +8,31 @@
   z-index: 300;
   align-items: flex-end;
   justify-content: center;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px) saturate(1.1);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
 }
 .overlay.open {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.25s ease;
 }
 
 .modal {
   background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 28px 28px 0 0;
   padding: 20px 20px 44px;
   width: 100%;
   max-width: 480px;
   max-height: 92vh;
   overflow-y: auto;
-  transform: translateY(28px);
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.3);
+  transform: translateY(28px) scale(0.98);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.overlay.open .modal { transform: translateY(0); }
+.overlay.open .modal { transform: translateY(0) scale(1); }
 
 .handle {
   width: 36px;
@@ -39,7 +41,7 @@
   border-radius: 2px;
   margin: 0 auto 20px;
 }
-.titulo { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+.titulo { font-size: 18px; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .overlay, .modal { transition: none !important; }

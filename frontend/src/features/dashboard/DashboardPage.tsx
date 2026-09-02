@@ -121,13 +121,19 @@ export function DashboardPage() {
   };
 
   if (sesion.isPending || transacciones.isPending) {
-    return <div className={css.estado}>{lang === "en" ? "Loading…" : "Cargando…"}</div>;
+    return (
+      <div className={css.theme}>
+        <div className={css.estado}>{lang === "en" ? "Loading…" : "Cargando…"}</div>
+      </div>
+    );
   }
   if (transacciones.isError || !sesion.data) {
     return (
-      <div className={css.estado}>
-        {lang === "en" ? "Could not load the data." : "No se pudieron cargar los datos."}
-        <button onClick={() => transacciones.refetch()}>{lang === "en" ? "Retry" : "Reintentar"}</button>
+      <div className={css.theme}>
+        <div className={css.estado}>
+          {lang === "en" ? "Could not load the data." : "No se pudieron cargar los datos."}
+          <button onClick={() => transacciones.refetch()}>{lang === "en" ? "Retry" : "Reintentar"}</button>
+        </div>
       </div>
     );
   }
@@ -135,7 +141,7 @@ export function DashboardPage() {
   const { username, whatsapp_habilitado: whatsappHabilitado, is_trial: isTrial, trial_dias: trialDias } = sesion.data;
 
   return (
-    <>
+    <div className={css.theme}>
       <DashboardHeader
         username={username}
         isPro={isPro}
@@ -218,6 +224,6 @@ export function DashboardPage() {
         onCerrar={() => setPresupModalAbierto(false)}
       />
       <ProModal abierto={proModalAbierto} onCerrar={() => setProModalAbierto(false)} />
-    </>
+    </div>
   );
 }

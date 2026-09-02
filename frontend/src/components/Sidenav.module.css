@@ -17,24 +17,36 @@
   cursor: pointer;
   padding: 12px 14px;
   border-radius: 14px;
-  transition: background 0.15s, color 0.15s, transform 0.15s;
+  position: relative;
+  transition: background 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1.2);
 }
 .item:hover {
   background: var(--surface);
   color: var(--text);
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
+.item:hover .ico { transform: scale(1.15) rotate(-4deg); }
+.item:active { transform: translateX(3px) scale(0.97); }
 .item.active {
-  background: var(--blue);
+  background: linear-gradient(135deg, var(--blue), color-mix(in srgb, var(--blue) 70%, black));
   color: #fff;
-  box-shadow: 0 6px 18px rgba(var(--blue-rgb), 0.35);
+  box-shadow: 0 8px 20px -4px rgba(var(--blue-rgb), 0.5);
 }
+.item.active .ico { transform: scale(1.05); }
 .ico {
   font-size: 19px;
   line-height: 1;
   width: 22px;
   text-align: center;
   flex-shrink: 0;
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item, .ico { transition: none; }
+  .item:hover, .item:active { transform: none; }
+  .item:hover .ico, .item.active .ico { transform: none; }
 }
 
 @media (min-width: 900px) {
@@ -80,12 +92,14 @@
   .foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
   .pro {
     border: none; border-radius: 14px; cursor: pointer;
-    background: var(--yellow); color: #fff;
+    background: linear-gradient(135deg, var(--yellow), color-mix(in srgb, var(--yellow) 65%, black));
+    color: #fff;
     font: inherit; font-size: 14px; font-weight: 800; padding: 13px 10px;
     box-shadow: 0 6px 18px rgba(var(--yellow-rgb), 0.3);
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .pro:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(var(--yellow-rgb), 0.4); }
+  .pro:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(var(--yellow-rgb), 0.45); }
+  .pro:active { transform: translateY(0) scale(0.98); }
   .user {
     display: flex;
     align-items: center;
@@ -102,10 +116,11 @@
     height: 34px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: var(--blue);
+    background: linear-gradient(135deg, var(--blue), color-mix(in srgb, var(--violet, var(--blue)) 70%, var(--blue)));
     color: #fff;
     font-weight: 800;
     font-size: 14px;
+    box-shadow: 0 0 0 2px var(--surface2), 0 0 0 3.5px rgba(var(--blue-rgb), 0.5);
   }
   .userTxt { min-width: 0; }
   .userName {
