@@ -121,9 +121,23 @@
     .tx-monto.ingreso { color: var(--green); }
     .tx-quitar { background: none; border: none; color: var(--muted); font-size: 17px; cursor: pointer; padding: 4px; line-height: 1; }
 
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
-    .overlay.open { display: flex; }
-    .modal { background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px 44px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; }
+    .overlay {
+      display: flex; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300;
+      align-items: flex-end; justify-content: center; backdrop-filter: blur(4px);
+      opacity: 0; visibility: hidden;
+      transition: opacity .22s ease, visibility 0s linear .22s;
+    }
+    .overlay.open { opacity: 1; visibility: visible; transition: opacity .22s ease; }
+    .modal {
+      background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px 44px;
+      width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto;
+      transform: translateY(28px); transition: transform .28s cubic-bezier(.2,.8,.3,1.1);
+    }
+    .overlay.open .modal { transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) { .overlay, .modal { transition: none !important; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-in { animation: fadeInUp .35s cubic-bezier(.2,.7,.3,1) both; }
+    @media (prefers-reduced-motion: reduce) { .stagger-in { animation: none; } }
     .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
     .modal h2 { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
     .campo { margin-bottom: 14px; }
@@ -495,7 +509,7 @@
       el.innerHTML = `<div class="empty-state">${tr("sin_viajes")}</div>`;
       return;
     }
-    el.innerHTML = viajes.map(v => {
+    el.innerHTML = viajes.map((v, i) => {
       const gastado = (v.gastado && v.gastado.USD) || 0;
       const fila = gastado
         ? `<div class="presup-bar-row">
@@ -506,7 +520,7 @@
            </div>`
         : `<div style="font-size:12px;color:var(--muted)">${tr("sin_gastos_reg_todavia")}</div>`;
       return `
-        <div class="viaje-card" onclick="abrirDetalle(${v.id})">
+        <div class="viaje-card stagger-in" style="animation-delay:${Math.min(i, 10) * 50}ms" onclick="abrirDetalle(${v.id})">
           <div class="viaje-card-nombre">${v.nombre}</div>
           <div class="viaje-card-fechas">${formatFecha(v.fecha_inicio)} — ${formatFecha(v.fecha_fin)}</div>
           ${fila}
@@ -658,8 +672,8 @@
     });
 
     document.getElementById("det-tx-lista").innerHTML = lista.length
-      ? lista.map(t => `
-          <div class="tx-wrap">
+      ? lista.map((t, i) => `
+          <div class="tx-wrap stagger-in" style="animation-delay:${Math.min(i, 12) * 30}ms">
             <div class="tx">
               <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
               <div class="tx-info">

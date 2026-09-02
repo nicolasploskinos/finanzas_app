@@ -101,7 +101,10 @@
     .cat-rank-row { display: flex; align-items: center; gap: 10px; }
     .cat-rank-name { flex: 0 0 120px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cat-rank-track { flex: 1; height: 10px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
-    .cat-rank-fill { height: 100%; border-radius: 100px; }
+    .cat-rank-fill { height: 100%; border-radius: 100px; transition: width .5s cubic-bezier(.2,.7,.3,1); }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-in { animation: fadeInUp .35s cubic-bezier(.2,.7,.3,1) both; }
+    @media (prefers-reduced-motion: reduce) { .stagger-in { animation: none; } .cat-rank-fill { transition: none; } }
     .cat-rank-val { flex: 0 0 auto; font-size: 13px; font-weight: 800; color: var(--muted); white-space: nowrap; }
 
     /* Escritorio: misma barra de iconos y criterio "premium" que el resto de la app. */
@@ -278,6 +281,25 @@
   let chartMensual = null, chartTendencia = null;
   let periodoActivo = "1m";
   const hoy = new Date();
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Los 4 KPI se recrean enteros con innerHTML en cada render (cambia el
+  // periodo, el filtro, etc.), asi que a diferencia del panel principal
+  // ac no hay "valor anterior" del que partir: siempre cuentan desde 0,
+  // como los precios de la landing.
+  function animarValor(el, valorFinal, formateador) {
+    if (reducedMotion) { el.textContent = formateador(valorFinal); return; }
+    const start = performance.now();
+    const dur = 700;
+    function step(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = formateador(valorFinal * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = formateador(valorFinal);
+    }
+    requestAnimationFrame(step);
+  }
 
   function normalizar(s) {
     return (s || "").toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -430,20 +452,24 @@
     document.getElementById("kpi-grid").innerHTML = `
       <div class="kpi-card ingresos">
         <div class="kpi-label">${tr("ingresos_totales")}</div>
-        <div class="kpi-value" style="color:var(--green)">${fmtARS(ingTotal)}</div>
+        <div class="kpi-value" id="kpi-ing" style="color:var(--green)">$0</div>
       </div>
       <div class="kpi-card gastos">
         <div class="kpi-label">${tr("gastos_totales")}</div>
-        <div class="kpi-value" style="color:var(--red)">${fmtARS(gasTotal)}</div>
+        <div class="kpi-value" id="kpi-gas" style="color:var(--red)">$0</div>
       </div>
       <div class="kpi-card balance">
         <div class="kpi-label">${tr("balance_neto")}</div>
-        <div class="kpi-value" style="color:${balanceNeto >= 0 ? 'var(--green)' : 'var(--red)'}">${balanceNeto >= 0 ? "+" : "-"}${fmtARS(Math.abs(balanceNeto))}</div>
+        <div class="kpi-value" id="kpi-net" style="color:${balanceNeto >= 0 ? 'var(--green)' : 'var(--red)'}">$0</div>
       </div>
       <div class="kpi-card promedio">
         <div class="kpi-label">${tr("promedio_mensual")}</div>
-        <div class="kpi-value">${fmtARS(promedioMensual)}</div>
+        <div class="kpi-value" id="kpi-prom">$0</div>
       </div>`;
+    animarValor(document.getElementById("kpi-ing"), ingTotal, fmtARS);
+    animarValor(document.getElementById("kpi-gas"), gasTotal, fmtARS);
+    animarValor(document.getElementById("kpi-net"), balanceNeto, v => (v >= 0 ? "+" : "-") + fmtARS(Math.abs(v)));
+    animarValor(document.getElementById("kpi-prom"), promedioMensual, fmtARS);
 
     // ── Gráfico de barras: ingresos vs gastos por mes ──
     const canvasMensual = document.getElementById("chart-mensual");
@@ -517,11 +543,14 @@
       const COLS = ["#4f8cf7","#f0576a","#34d399","#f5b95c","#9d7bf5","#2dd4bf","#fb923c","#f472b6"];
       const max = catEntries[0][1];
       catEl.innerHTML = catEntries.map(([nombre, total], i) => `
-        <div class="cat-rank-row">
+        <div class="cat-rank-row stagger-in" style="animation-delay:${i * 60}ms">
           <div class="cat-rank-name">${nombre}</div>
-          <div class="cat-rank-track"><div class="cat-rank-fill" style="width:${(total/max*100).toFixed(1)}%;background:${COLS[i % COLS.length]}"></div></div>
+          <div class="cat-rank-track"><div class="cat-rank-fill" data-target="${(total/max*100).toFixed(1)}" style="width:0%;background:${COLS[i % COLS.length]}"></div></div>
           <div class="cat-rank-val">${fmtARS(total)}</div>
         </div>`).join("");
+      requestAnimationFrame(() => {
+        catEl.querySelectorAll(".cat-rank-fill").forEach(bar => { bar.style.width = bar.dataset.target + "%"; });
+      });
     }
   }
 

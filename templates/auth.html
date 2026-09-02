@@ -55,6 +55,12 @@
     }
     .tab.active { background: var(--blue); color: white; }
 
+    @keyframes formFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .auth-fade-in { animation: formFadeIn .3s cubic-bezier(.2,.7,.3,1); }
+    @keyframes errorShake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+    .error.show { animation: errorShake .4s; }
+    @media (prefers-reduced-motion: reduce) { .auth-fade-in, .error.show { animation: none; } }
+
     .campo { margin-bottom: 14px; }
     .campo label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
     .campo input {
@@ -175,8 +181,14 @@
   function setTab(t) {
     document.getElementById("tab-login").classList.toggle("active", t === "login");
     document.getElementById("tab-register").classList.toggle("active", t === "register");
-    document.getElementById("form-login").style.display    = t === "login"    ? "" : "none";
-    document.getElementById("form-register").style.display = t === "register" ? "" : "none";
+    const formLogin = document.getElementById("form-login");
+    const formRegister = document.getElementById("form-register");
+    formLogin.style.display    = t === "login"    ? "" : "none";
+    formRegister.style.display = t === "register" ? "" : "none";
+    const formVisible = t === "login" ? formLogin : formRegister;
+    formVisible.classList.remove("auth-fade-in");
+    void formVisible.offsetWidth;
+    formVisible.classList.add("auth-fade-in");
     ocultarError();
   }
 
@@ -195,7 +207,13 @@
 
   function mostrarError(code) {
     const el = document.getElementById("error-msg");
-    el.textContent = t(code); el.classList.add("show");
+    el.textContent = t(code);
+    // Si ya estaba mostrando un error (dos intentos fallidos seguidos sin
+    // cambiar de pestaña), sacar y volver a poner la clase para que la
+    // animación de "shake" se repita en vez de quedarse quieta la segunda vez.
+    el.classList.remove("show");
+    void el.offsetWidth;
+    el.classList.add("show");
   }
   function ocultarError() {
     document.getElementById("error-msg").classList.remove("show");

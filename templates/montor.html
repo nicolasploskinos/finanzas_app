@@ -114,8 +114,16 @@
     .cot-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
     .cot-title  { font-size: 12px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .cot-rates  { font-size: 12px; color: var(--blue); font-weight: 600; }
-    .cot-body   { margin-top: 14px; display: none; }
-    .cot-body.open { display: block; }
+    .cot-body   { margin-top: 14px; max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.2,.7,.3,1); }
+    .cot-body.open { max-height: 400px; }
+
+    /* Mismo criterio para los otros acordeones del panel (resumen del mes,
+       recurrentes, whatsapp): antes aparecian de golpe con display:none/"",
+       ahora se despliegan. max-height (no grid-rows) porque el padding
+       queda inline en el propio elemento y con box-sizing:border-box se
+       recorta igual sin tener que mover ese padding a un wrapper nuevo. */
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.2,.7,.3,1); }
+    @media (prefers-reduced-motion: reduce) { .cot-body, .acc-body { transition: none; } }
     .conv-row { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
     .conv-row input, .conv-row select {
       background: var(--surface2); border: 1px solid var(--border);
@@ -159,6 +167,14 @@
     .mes-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
     /* Swipe wrapper */
+    /* Entrada escalonada para listas que se regeneran enteras con innerHTML
+       (transacciones, multi-moneda, recurrentes, presupuestos): cada fila
+       usa esta animacion con un animation-delay creciente por indice,
+       calculado inline al armar el HTML. */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-in { animation: fadeInUp .35s cubic-bezier(.2,.7,.3,1) both; }
+    @media (prefers-reduced-motion: reduce) { .stagger-in { animation: none; } }
+
     .tx-wrap { position: relative; margin-bottom: 8px; border-radius: 16px; overflow: hidden; }
     .tx-swipe-bg {
       position: absolute; left: 0; top: 0; bottom: 0; width: 80px;
@@ -228,9 +244,27 @@
     .fab:active { transform: scale(.92); box-shadow: 0 2px 10px rgba(var(--blue-rgb),.3); }
 
     /* Modal */
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
-    .overlay.open { display: flex; }
-    .modal { background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px 44px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; }
+    /* Antes el modal aparecia de golpe (display:none -> flex, sin forma de
+       animar eso). Ahora queda siempre en el flujo pero invisible
+       (visibility, no display), asi el fade del fondo y el slide-up de
+       la hoja se pueden animar; el transition-delay en visibility evita
+       que se pueda clickear/tabular al modal mientras esta cerrado. */
+    .overlay {
+      display: flex; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300;
+      align-items: flex-end; justify-content: center; backdrop-filter: blur(4px);
+      opacity: 0; visibility: hidden;
+      transition: opacity .22s ease, visibility 0s linear .22s;
+    }
+    .overlay.open { opacity: 1; visibility: visible; transition: opacity .22s ease; }
+    .modal {
+      background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px 44px;
+      width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto;
+      transform: translateY(28px); transition: transform .28s cubic-bezier(.2,.8,.3,1.1);
+    }
+    .overlay.open .modal { transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .overlay, .modal, .pro-overlay, .pro-modal { transition: none !important; }
+    }
     .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
     .modal h2 { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
 
@@ -281,9 +315,19 @@
     .toast.show { opacity: 1; }
 
     /* Modal Pro */
-    .pro-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; align-items: flex-end; justify-content: center; }
-    .pro-overlay.open { display: flex; }
-    .pro-modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; }
+    .pro-overlay {
+      display: flex; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500;
+      align-items: flex-end; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity .22s ease, visibility 0s linear .22s;
+    }
+    .pro-overlay.open { opacity: 1; visibility: visible; transition: opacity .22s ease; }
+    .pro-modal {
+      background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px 40px;
+      width: 100%; max-width: 480px;
+      transform: translateY(28px); transition: transform .28s cubic-bezier(.2,.8,.3,1.1);
+    }
+    .pro-overlay.open .pro-modal { transform: translateY(0); }
     .pro-modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
     .pro-titulo { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 4px; }
     .pro-precio { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
@@ -643,7 +687,7 @@
       <span data-en="📊 Monthly summary">📊 Resumen del mes</span>
       <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
-    <div id="stats-body" style="display:none;padding:0 14px 14px">
+    <div id="stats-body" class="acc-body" style="padding:0 14px 14px">
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <select id="stats-mes" onchange="cargarStats()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none">
           <option value="1" data-en="January">Enero</option><option value="2" data-en="February">Febrero</option><option value="3" data-en="March">Marzo</option>
@@ -684,7 +728,7 @@
         <span id="recur-chev" style="font-size:11px;color:var(--muted)">▼</span>
       </div>
     </div>
-    <div id="recur-body" style="display:none;padding:0 14px 12px">
+    <div id="recur-body" class="acc-body" style="padding:0 14px 12px">
       <div id="recur-lista"></div>
     </div>
   </div>
@@ -696,7 +740,7 @@
       <span data-en="📱 WhatsApp: log expenses &amp; ask questions">📱 WhatsApp: cargar gastos y preguntar</span>
       <span id="wa-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
-    <div id="wa-body" style="display:none;padding:0 14px 14px">
+    <div id="wa-body" class="acc-body" style="padding:0 14px 14px">
       <div id="wa-desvinculado" style="display:none">
         <p style="font-size:12px;color:var(--muted);margin:0 0 10px" data-en='Link your WhatsApp to log expenses by writing, for example: <em>"spent 500 on groceries"</em> — or ask it things like <em>"how much did I spend on food this month?"</em>.'>
           Vinculá tu WhatsApp para cargar gastos escribiendo, por ejemplo: <em>"gasté 500 en supermercado"</em> — o preguntale cosas como <em>"cuánto gasté en comida este mes?"</em>.
@@ -1023,6 +1067,61 @@
     });
   }
 
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Abre/cierra un acordeón (.acc-body) animando max-height al alto real
+  // del contenido (medido con scrollHeight) en vez de un valor fijo
+  // generoso — con un tope fijo grande, el contenido corto "salta" casi
+  // instantaneo porque la transicion es proporcional al valor declarado,
+  // no al contenido real. Al terminar de abrir se saca el limite
+  // (max-height:none) para que contenido que se carga despues (el chart
+  // de "Resumen del mes", por ejemplo) no quede recortado.
+  function toggleAccBody(el, abrir) {
+    if (reducedMotion) { el.classList.toggle("open", abrir); el.style.maxHeight = abrir ? "none" : "0px"; return; }
+    if (abrir) {
+      el.classList.add("open");
+      el.style.maxHeight = el.scrollHeight + "px";
+      const onEnd = (e) => {
+        if (e.propertyName !== "max-height") return;
+        el.style.maxHeight = "none";
+        el.removeEventListener("transitionend", onEnd);
+      };
+      el.addEventListener("transitionend", onEnd);
+    } else {
+      el.style.maxHeight = el.scrollHeight + "px";
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.classList.remove("open");
+          el.style.maxHeight = "0px";
+        });
+      });
+    }
+  }
+
+  // Anima un monto desde su ultimo valor mostrado hasta el nuevo, en vez de
+  // pisarlo de golpe — igual que el "conteo de precios" de la landing.
+  // Guarda el valor crudo en dataset.rawVal para poder arrancar la proxima
+  // animacion desde ahi (no siempre desde 0).
+  function animarMonto(el, valorFinal, formateador, onDone) {
+    const desde = parseFloat(el.dataset.rawVal || "0");
+    el.dataset.rawVal = valorFinal;
+    if (reducedMotion || !isFinite(desde) || !isFinite(valorFinal)) {
+      el.textContent = formateador(valorFinal);
+      if (onDone) onDone();
+      return;
+    }
+    const start = performance.now();
+    const dur = 550;
+    function step(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = formateador(desde + (valorFinal - desde) * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else { el.textContent = formateador(valorFinal); if (onDone) onDone(); }
+    }
+    requestAnimationFrame(step);
+  }
+
   let datos = [];
   let tipoActual       = "Gasto";
   let monedaActual     = "ARS";
@@ -1241,11 +1340,10 @@
     const ingEl = document.getElementById("cons-ing");
     const gasEl = document.getElementById("cons-gas");
     const netEl = document.getElementById("cons-net");
-    ingEl.textContent = fmtMon(ing, monedaConsol);
-    gasEl.textContent = fmtMon(gas, monedaConsol);
-    netEl.textContent = (net >= 0 ? "+" : "-") + fmtMon(Math.abs(net), monedaConsol);
+    animarMonto(ingEl, ing, v => fmtMon(v, monedaConsol), () => ajustarTexto(ingEl));
+    animarMonto(gasEl, gas, v => fmtMon(v, monedaConsol), () => ajustarTexto(gasEl));
+    animarMonto(netEl, net, v => (v >= 0 ? "+" : "-") + fmtMon(Math.abs(v), monedaConsol), () => ajustarTexto(netEl));
     netEl.className = "cons-card-value " + (net >= 0 ? "green" : "red");
-    [ingEl, gasEl, netEl].forEach(el => ajustarTexto(el));
     document.getElementById("cons-nota").textContent =
       monedaConsol === "ARS" ? tr("suma_directa_ars") : tr("tipo_cambio_oficial");
     renderSparkline();
@@ -1269,8 +1367,8 @@
       el.innerHTML = `<div class="presup-empty">${tr("sin_movimientos")}</div>`;
       return;
     }
-    el.innerHTML = monedas.map(m => `
-      <div class="multimon-row">
+    el.innerHTML = monedas.map((m, i) => `
+      <div class="multimon-row stagger-in" style="animation-delay:${i * 60}ms">
         <span class="multimon-mon">${m}</span>
         <span class="multimon-val ${porMoneda[m] >= 0 ? "green" : "red"}">${porMoneda[m] >= 0 ? "+" : "-"}${fmtMon(porMoneda[m], m)}</span>
       </div>`).join("");
@@ -1409,11 +1507,12 @@
 
     el.innerHTML = Object.entries(grupos).map(([mes, txs]) => `
       <div class="mes-header">${mes}</div>
-      ${txs.map(t => {
+      ${txs.map((t, i) => {
         const mon = t.moneda || 'ARS';
         const badge = mon !== 'ARS' ? `<div class="badge-mon">${mon}</div>` : '';
+        const delay = Math.min(i, 12) * 30;
         return `
-        <div class="tx-wrap">
+        <div class="tx-wrap stagger-in" style="animation-delay:${delay}ms">
           <div class="tx-swipe-bg">🗑</div>
           <div class="tx ${t.tipo.toLowerCase()}-tx" data-id="${t.id}">
             <div class="tx-icon ${t.tipo.toLowerCase()}">${t.tipo === "Ingreso" ? "↑" : "↓"}</div>
@@ -1469,7 +1568,7 @@
 
   function toggleRecur() {
     recurOpen = !recurOpen;
-    document.getElementById("recur-body").style.display = recurOpen ? "" : "none";
+    toggleAccBody(document.getElementById("recur-body"), recurOpen);
     document.getElementById("recur-chev").textContent = recurOpen ? "▲" : "▼";
     if (recurOpen) cargarRecurrentes();
   }
@@ -1490,8 +1589,8 @@
       el.innerHTML = `<div class="presup-empty">${tr("no_recurrentes_activos")}</div>`;
       return;
     }
-    el.innerHTML = recurrentes.map(r => `
-      <div class="recur-item">
+    el.innerHTML = recurrentes.map((r, i) => `
+      <div class="recur-item stagger-in" style="animation-delay:${Math.min(i, 10) * 50}ms">
         <div>
           <div style="font-size:13px;font-weight:700">
             ${r.tipo === "Ingreso" ? "💚" : "🔴"} ${fmtMon(r.monto, r.moneda)}
@@ -1523,7 +1622,7 @@
 
   function toggleWhatsapp() {
     waOpen = !waOpen;
-    document.getElementById("wa-body").style.display = waOpen ? "" : "none";
+    toggleAccBody(document.getElementById("wa-body"), waOpen);
     document.getElementById("wa-chev").textContent = waOpen ? "▲" : "▼";
     if (waOpen) cargarEstadoWhatsapp();
   }
@@ -1968,9 +2067,12 @@
   function toggleStats() {
     if (!ES_PRO) { abrirModalPro(); return; }
     statsOpen = !statsOpen;
-    document.getElementById("stats-body").style.display = statsOpen ? "" : "none";
+    toggleAccBody(document.getElementById("stats-body"), statsOpen);
     document.getElementById("stats-chev").textContent = statsOpen ? "▲" : "▼";
-    if (statsOpen) cargarStats();
+    // Se espera a que termine la transición del acordeón antes de pedir
+    // los datos: si Chart.js mide el canvas mientras el contenedor todavía
+    // está animando su alto, el gráfico queda con un tamaño incorrecto.
+    if (statsOpen) setTimeout(cargarStats, 420);
   }
 
   // Inicializar selectores de stats con mes/año actual
@@ -2199,7 +2301,7 @@
       gasto[k] = (gasto[k] || 0) + parseFloat(t.monto);
     });
 
-    el.innerHTML = presupuestos.map(p => {
+    el.innerHTML = presupuestos.map((p, i) => {
       const moneda  = p.moneda || "ARS";
       const gastado = gasto[normalizar(p.categoria) + "|" + moneda] || 0;
       const pct     = Math.min(gastado / p.monto * 100, 100);
@@ -2208,16 +2310,24 @@
       const amtTxt  = `${alerta}${fmtMon(gastado, moneda)} / ${fmtMon(p.monto, moneda)}`;
       const nombre  = moneda === "ARS" ? p.categoria : `${p.categoria} · ${moneda}`;
       return `
-        <div class="presup-bar-row">
+        <div class="presup-bar-row stagger-in" style="animation-delay:${i * 60}ms">
           <div class="presup-bar-labels">
             <span class="presup-bar-name">${nombre}</span>
             <span class="presup-bar-amt" style="color:${color}">${amtTxt}</span>
           </div>
           <div class="presup-bar-track">
-            <div class="presup-bar-fill" style="width:${pct}%;background:${color}"></div>
+            <div class="presup-bar-fill" data-target="${pct}" style="width:0%;background:${color}"></div>
           </div>
         </div>`;
     }).join("");
+    // La barra arranca en 0% y recien en el proximo frame se le pone el
+    // ancho real, asi la transition de .presup-bar-fill (ya definida en
+    // CSS) hace que se "llene" en vez de aparecer directo al porcentaje.
+    requestAnimationFrame(() => {
+      el.querySelectorAll(".presup-bar-fill").forEach(bar => {
+        bar.style.width = bar.dataset.target + "%";
+      });
+    });
   }
 
   function abrirModalPresup() {
