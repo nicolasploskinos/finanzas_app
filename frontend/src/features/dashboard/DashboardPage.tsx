@@ -41,8 +41,6 @@ function fechaHoyTexto(lang: "es" | "en"): string {
     : `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
 }
 
-const esEscritorio = () => window.matchMedia("(min-width: 900px)").matches;
-
 export function DashboardPage() {
   useFullBleed(nebula.fullBleed);
 
@@ -65,11 +63,12 @@ export function DashboardPage() {
   const [proModalAbierto, setProModalAbierto] = useState(false);
   const [perfilModalAbierto, setPerfilModalAbierto] = useState(false);
 
-  // En escritorio hay lugar de sobra: los acordeones vienen abiertos de
-  // entrada en vez de forzar un click extra. En mobile, cerrados.
-  const [statsOpen, setStatsOpen] = useState(esEscritorio);
-  const [recurOpen, setRecurOpen] = useState(esEscritorio);
-  const [waOpen, setWaOpen] = useState(esEscritorio);
+  // Los acordeones de la derecha (Resumen del mes, Recurrentes, WhatsApp)
+  // arrancan siempre cerrados, en cualquier tamaño de pantalla — el usuario
+  // los abre cuando los quiere ver.
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [recurOpen, setRecurOpen] = useState(false);
+  const [waOpen, setWaOpen] = useState(false);
 
   const datos = useMemo(() => transacciones.data ?? [], [transacciones.data]);
   const cotiz = cotizaciones.data ?? { USD: null, EUR: null };

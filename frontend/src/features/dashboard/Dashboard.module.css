@@ -848,7 +848,7 @@
 @media (min-width: 900px) {
   .shell {
     display: grid;
-    grid-template-columns: 292px minmax(0, 1fr) 380px;
+    grid-template-columns: 292px minmax(0, 1fr) 420px;
     align-items: start;
     gap: 20px 28px;
     padding: 10px 28px 20px;
@@ -920,12 +920,12 @@
   .hero .consCardValue { font-size: clamp(28px, 2.4vw, 42px); margin-top: 6px; }
   .hero .consNota { font-size: 12px; margin-top: 14px; }
 
-  .multimonCard { border-radius: 24px; padding: 22px 24px; border-left-width: 4px; border-left-style: solid; border-left-color: var(--teal); }
-  .multimonTitle { font-size: 15px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-  .multimonGrid { display: flex; flex-direction: column; gap: 12px; }
-  .multimonRow { background: var(--surface2); border-radius: 14px; padding: 14px 18px; }
-  .multimonMon { font-size: 15px; font-weight: 800; color: var(--muted); }
-  .multimonVal { font-size: 18px; font-weight: 800; }
+  .multimonCard { border-radius: 24px; padding: 26px 28px; border-left-width: 4px; border-left-style: solid; border-left-color: var(--teal); }
+  .multimonTitle { font-size: 17px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+  .multimonGrid { display: flex; flex-direction: column; gap: 14px; }
+  .multimonRow { background: var(--surface2); border-radius: 14px; padding: 16px 20px; }
+  .multimonMon { font-size: 17px; font-weight: 800; color: var(--muted); }
+  .multimonVal { font-size: 21px; font-weight: 800; }
 
   @media (min-width: 1900px) {
     .lista { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; align-items: start; }
@@ -937,7 +937,7 @@
   .drcha .cotWrap { margin: 0; border-left-width: 4px; border-left-style: solid; border-radius: 22px; }
   .drcha .cotCard { margin: 0; border-left-width: 4px; border-left-style: solid; border-radius: 22px; }
   .drcha .presupSection {
-    margin: 0; padding: 18px 20px 16px; border-radius: 22px;
+    margin: 0; padding: 22px 24px 20px; border-radius: 22px;
     background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--border);
     border-left-width: 4px; border-left-style: solid;
   }
@@ -946,18 +946,23 @@
   .cotWrapRecur { border-left-color: var(--yellow); }
   .cotWrapWhatsapp { border-left-color: var(--green); }
   .drcha .cotCard { border-left-color: var(--blue); }
+  .drcha .cotWrap .cotHeader,
+  .drcha .cotCard .cotHeader { padding: 18px 22px; }
+  .drcha .accBody { padding: 0 22px; }
+  .drcha .accBody.open { padding-bottom: 20px; }
+  .drcha .convRow { margin-bottom: 14px; }
 
-  .recurItem { padding: 14px 0; }
-  .recurItemTop { font-size: 18px !important; }
-  .recurItemTop span { font-size: 15px !important; }
-  .recurItemSub { font-size: 15px !important; margin-top: 4px !important; }
-  .recurItem button { font-size: 26px !important; }
-  .waTexto { font-size: 17px !important; line-height: 1.6; }
-  .waVinculadoP { font-size: 17px !important; }
-  .waVinculadoSub { font-size: 17px !important; }
-  .waCodigoLabel { font-size: 16px !important; }
-  .waVence { font-size: 16px !important; }
-  .waLink { font-size: 18px !important; }
+  .recurItem { padding: 16px 0; }
+  .recurItemTop { font-size: 20px !important; }
+  .recurItemTop span { font-size: 17px !important; }
+  .recurItemSub { font-size: 17px !important; margin-top: 5px !important; }
+  .recurItem button { font-size: 28px !important; }
+  .waTexto { font-size: 18px !important; line-height: 1.6; }
+  .waVinculadoP { font-size: 18px !important; }
+  .waVinculadoSub { font-size: 18px !important; }
+  .waCodigoLabel { font-size: 17px !important; }
+  .waVence { font-size: 17px !important; }
+  .waLink { font-size: 19px !important; padding: 12px 20px; }
 
   .headerLeft h1 { font-size: 20px; }
   .headerFecha { font-size: 12px; }
@@ -968,19 +973,23 @@
   .consCardLabel { font-size: 14px; }
   .consCardValue { font-size: 36px; }
   .consNota { font-size: 14px; }
-  .presupTitle { font-size: 16px; }
-  .presupAddBtn { font-size: 17px; }
-  .presupBarLabels { font-size: 17px; }
-  .presupEmpty { font-size: 17px; }
-  .cotWrap .cotHeader { font-size: 19px; }
-  .cotTitle { font-size: 17px; }
-  .cotRates { font-size: 17px; }
-  .badgeMon { font-size: 13px; }
-  .convNota { font-size: 14px; }
+  .presupTitle { font-size: 18px; }
+  .presupAddBtn { font-size: 19px; }
+  .presupBarLabels { font-size: 19px; }
+  .presupEmpty { font-size: 19px; }
+  .presupBarTrack { height: 10px; }
+  .cotWrap .cotHeader { font-size: 21px; font-weight: 800; }
+  .cotTitle { font-size: 19px; }
+  .cotRates { font-size: 19px; }
+  .badgeMon { font-size: 14px; }
+  .convNota { font-size: 15px; }
   .empty { font-size: 18px; }
-  .statsCardLabel { font-size: 14px; }
-  .statsCardValue { font-size: 34px; }
-  .statsDiff { font-size: 16px; }
+  .statsCardLabel { font-size: 15px; }
+  .statsCardValue { font-size: 38px; }
+  .statsDiff { font-size: 17px; }
+  .statsGrid { gap: 14px; margin-bottom: 20px; }
+  .statsCard { padding: 18px; border-radius: 16px; }
+  .catLabel { font-size: 13px; }
   .busqueda { font-size: 20px; padding: 17px 50px 17px 26px; }
   .btnClearBusq { font-size: 28px; }
   .periodoBtn { font-size: 18px; padding: 12px 24px; }
@@ -990,15 +999,15 @@
   .diaResultado { font-size: 18px; }
   .importExportBtn { font-size: 17px; }
   .exportMenuItem { font-size: 18px; }
-  .mesHeader { font-size: 18px; }
-  .txWrap { margin-bottom: 14px; }
-  .tx { padding: 22px 26px; gap: 20px; }
-  .txIcon { width: 58px; height: 58px; font-size: 27px; border-radius: 18px; }
-  .txCat { font-size: 22px; }
-  .txDesc { font-size: 18px; }
-  .txFecha { font-size: 15px; }
-  .txMonto { font-size: 26px; }
-  .txEdit { font-size: 21px; padding: 10px; border-radius: 50%; background: var(--surface2); }
+  .mesHeader { font-size: 16px; }
+  .txWrap { margin-bottom: 8px; }
+  .tx { padding: 12px 14px; gap: 12px; }
+  .txIcon { width: 38px; height: 38px; font-size: 16px; border-radius: 12px; }
+  .txCat { font-size: 14px; }
+  .txDesc { font-size: 12px; }
+  .txFecha { font-size: 11px; }
+  .txMonto { font-size: 15px; }
+  .txEdit { font-size: 15px; padding: 7px; border-radius: 50%; background: var(--surface2); }
   .txEdit:hover { background: var(--blue); color: #fff; }
 
   .tipoBtn { font-size: 18px; padding: 16px; }
