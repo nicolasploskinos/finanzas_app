@@ -15,6 +15,7 @@ export const MSG = {
   viajes: { es: "Viajes", en: "Trips" },
   plan_pro: { es: "Plan Pro", en: "Pro plan" },
   plan_gratis: { es: "Plan gratis", en: "Free plan" },
+  pasar_a_pro: { es: "⭐ Pasar a Pro", en: "⭐ Upgrade to Pro" },
   este_mes: { es: "Este mes", en: "This month" },
   mes_pasado: { es: "Mes pasado", en: "Last month" },
   tres_meses: { es: "3 meses", en: "3 months" },

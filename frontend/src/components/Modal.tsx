@@ -8,9 +8,12 @@ type Props = {
   titulo: string;
   onCerrar: () => void;
   children: ReactNode;
+  /** Modales con más campos (nueva transacción, presupuestos, importar) usan
+   *  una hoja más ancha en escritorio que la genérica de 560px. */
+  grande?: boolean;
 };
 
-export function Modal({ abierto, titulo, onCerrar, children }: Props) {
+export function Modal({ abierto, titulo, onCerrar, children, grande = false }: Props) {
   // Escape cierra, como cualquier modal. El listener solo existe mientras
   // está abierto para no acumular handlers.
   useEffect(() => {
@@ -33,7 +36,7 @@ export function Modal({ abierto, titulo, onCerrar, children }: Props) {
       aria-modal="true"
       aria-hidden={!abierto}
     >
-      <div className={css.modal}>
+      <div className={`${css.modal} ${grande ? css.grande : ""}`}>
         <div className={css.handle} />
         <h2 className={css.titulo}>{titulo}</h2>
         {children}

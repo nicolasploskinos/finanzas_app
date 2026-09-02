@@ -48,11 +48,9 @@ def terminos():
 @bp.route("/montor")
 @core.login_required
 def index():
-    plan = core._estado_plan(session["user_id"])
-    is_pro, is_trial, trial_dias = plan["is_pro"], plan["is_trial"], plan["trial_dias"]
-    whatsapp_habilitado = session["user_id"] == core._WHATSAPP_USER_ID
-    return render_template("montor.html", username=session["username"], is_pro=is_pro, is_trial=is_trial,
-                            trial_dias=trial_dias, whatsapp_habilitado=whatsapp_habilitado)
+    # Migrada a React (ver templates/spa.html y frontend/). El usuario, el
+    # plan y todo lo demás los pide el propio frontend por /api/montor/me.
+    return render_template("spa.html", titulo_completo="Montor", pwa=True, v=_spa_version())
 
 
 @bp.route("/montor/viajes")

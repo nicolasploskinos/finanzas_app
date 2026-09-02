@@ -46,3 +46,65 @@ export type ViajePayload = {
   fecha_inicio: string;
   fecha_fin: string;
 };
+
+export type Cotizaciones = { USD: number | null; EUR: number | null };
+
+export type Frecuencia = "semanal" | "mensual";
+
+export type Recurrente = {
+  id: number;
+  tipo: Tipo;
+  monto: number;
+  categoria: string | null;
+  descripcion: string | null;
+  moneda: Moneda | null;
+  frecuencia: Frecuencia;
+  proxima_fecha: string;
+  activo: boolean;
+  creado_en: string;
+};
+
+export type Presupuesto = {
+  id: number;
+  categoria: string;
+  monto: number;
+  moneda: Moneda | null;
+};
+
+export type StatsCategoria = { nombre: string; total: number };
+
+export type StatsResumen = {
+  gastos_actual: number;
+  ingresos_actual: number;
+  gastos_anterior: number;
+  ingresos_anterior: number;
+  mes_actual: string;
+  mes_anterior: string;
+};
+
+export type StatsMes = {
+  categorias: StatsCategoria[];
+  resumen: StatsResumen;
+  count_mes: number;
+};
+
+export type InflacionPunto = { mes: string; ipc: number };
+
+export type WhatsappEstado =
+  | { vinculado: true; telefono_oculto: string }
+  | { vinculado: false };
+
+export type ImportRow = {
+  fecha: string;
+  tipo: Tipo;
+  monto: number;
+  descripcion: string;
+  categoria: string;
+  moneda: Moneda;
+};
+
+export type ImportPreview = {
+  ok: true;
+  transacciones: ImportRow[];
+  errores: number;
+};

@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#1a1917">
+  {% if pwa %}
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Montor">
+  <link rel="manifest" href="/montor/manifest.json">
+  {% endif %}
   <title>{% if titulo_completo %}{{ titulo_completo }}{% else %}{{ titulo }} — Montor{% endif %}</title>
   {% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
   {% if og_title %}<meta property="og:title" content="{{ og_title }}">
@@ -27,5 +33,13 @@
   </script>
   <div id="root"></div>
   <script type="module" src="{{ url_for('static', filename='app/montor.js') }}?v={{ v }}"></script>
+  {% if pwa %}
+  <script>
+    // register("/montor/sw.js") queda scopeado a /montor/ por default (el
+    // directorio del script), así que solo hace falta llamarlo en esta
+    // página aunque el resto de la app comparta el mismo bundle.
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/montor/sw.js");
+  </script>
+  {% endif %}
 </body>
 </html>

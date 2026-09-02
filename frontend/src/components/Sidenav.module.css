@@ -77,7 +77,15 @@
     padding: 6px 14px 4px;
   }
   .nav { display: flex; flex-direction: column; gap: 4px; }
-  .foot { margin-top: auto; padding-top: 16px; }
+  .foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .pro {
+    border: none; border-radius: 14px; cursor: pointer;
+    background: var(--yellow); color: #fff;
+    font: inherit; font-size: 14px; font-weight: 800; padding: 13px 10px;
+    box-shadow: 0 6px 18px rgba(var(--yellow-rgb), 0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .pro:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(var(--yellow-rgb), 0.4); }
   .user {
     display: flex;
     align-items: center;

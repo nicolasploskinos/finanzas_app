@@ -17,13 +17,26 @@ type Props = {
   activa: string;
   username: string;
   isPro: boolean;
+  /** Solo en el panel: "Nueva transacción" abre el modal ahí mismo en vez
+   *  de navegar a `/montor?add=1` (esa URL existe para volver desde otra
+   *  página, no hace falta cuando ya estás en el panel). */
+  onNuevaTransaccion?: () => void;
+  /** Solo en el panel: agrega el botón "Pasar a Pro" abajo del todo. */
+  onUpgrade?: () => void;
+  /** Para que quien usa este componente pueda ubicarlo en su propio grid
+   *  (p.ej. hacer que ocupe dos filas en el panel principal). Un className
+   *  externo, no una clase con el mismo nombre en OTRO archivo: por cómo
+   *  escopea CSS Modules, una regla `.sidenav { grid-row: ... }` escrita en
+   *  el CSS de quien lo usa NUNCA matchea este `<aside>` — cada módulo
+   *  genera su propio nombre de clase hasheado. */
+  className?: string;
 };
 
-export function Sidenav({ activa, username, isPro }: Props) {
+export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade, className = "" }: Props) {
   const { t } = usePreferencias();
 
   return (
-    <aside className={css.rail}>
+    <aside className={`${css.rail} ${className}`}>
       <div className={css.brand}>
         <svg className={css.logo} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
@@ -37,25 +50,41 @@ export function Sidenav({ activa, username, isPro }: Props) {
       <div className={css.label}>{t("menu")}</div>
 
       <nav className={css.nav}>
-        {SECCIONES.map((s) =>
-          s.id === activa ? (
-            <span key={s.id} className={`${css.item} ${css.active}`}>
-              <span className={css.ico}>{s.icono}</span>
-              <span>{t(s.label)}</span>
-            </span>
-          ) : (
-            // Enlaces normales, no del router: el resto de la app todavía se
-            // sirve desde Flask con Jinja. Se cambian a <Link> cuando esas
-            // páginas también estén migradas.
+        {SECCIONES.map((s) => {
+          if (s.id === activa) {
+            return (
+              <span key={s.id} className={`${css.item} ${css.active}`}>
+                <span className={css.ico}>{s.icono}</span>
+                <span>{t(s.label)}</span>
+              </span>
+            );
+          }
+          if (s.id === "nueva" && onNuevaTransaccion) {
+            return (
+              <button key={s.id} className={css.item} onClick={onNuevaTransaccion}>
+                <span className={css.ico}>{s.icono}</span>
+                <span>{t(s.label)}</span>
+              </button>
+            );
+          }
+          // Enlaces normales, no del router: el resto de la app todavía se
+          // sirve desde Flask con Jinja. Se cambian a <Link> cuando esas
+          // páginas también estén migradas.
+          return (
             <a key={s.id} className={css.item} href={s.href ?? "#"}>
               <span className={css.ico}>{s.icono}</span>
               <span>{t(s.label)}</span>
             </a>
-          ),
-        )}
+          );
+        })}
       </nav>
 
       <div className={css.foot}>
+        {!isPro && onUpgrade && (
+          <button className={css.pro} onClick={onUpgrade}>
+            {t("pasar_a_pro")}
+          </button>
+        )}
         <div className={css.user}>
           <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
           <div className={css.userTxt}>

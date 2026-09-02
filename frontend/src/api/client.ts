@@ -15,10 +15,22 @@ export class ApiError extends Error {
 // (donde ya estás) en vez de mostrar el error en el formulario.
 const RUTAS_PUBLICAS_CON_401_ESPERADO = ["/api/montor/login", "/api/montor/register"];
 
+async function leerDetalleError(res: Response): Promise<string> {
+  try {
+    const cuerpo = (await res.json()) as { error?: string };
+    return cuerpo?.error ?? res.statusText;
+  } catch {
+    return res.statusText;
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const esFormData = init?.body instanceof FormData;
   const res = await fetch(path, {
     credentials: "same-origin",
-    headers: init?.body ? { "Content-Type": "application/json" } : undefined,
+    // Con FormData no se fija Content-Type a mano: el browser le agrega el
+    // boundary del multipart solo, y pisarlo rompería el parseo en el server.
+    headers: init?.body && !esFormData ? { "Content-Type": "application/json" } : undefined,
     ...init,
   });
 
@@ -28,14 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (res.status === 401 && !RUTAS_PUBLICAS_CON_401_ESPERADO.includes(path)) {
       window.location.href = "/montor/login";
     }
-    let detalle = res.statusText;
-    try {
-      const cuerpo = (await res.json()) as { error?: string };
-      if (cuerpo?.error) detalle = cuerpo.error;
-    } catch {
-      /* respuesta sin JSON: nos quedamos con el statusText */
-    }
-    throw new ApiError(detalle, res.status);
+    throw new ApiError(await leerDetalleError(res), res.status);
   }
 
   return (await res.json()) as T;
@@ -45,7 +50,18 @@ export const api = {
   get: <T,>(path: string) => request<T>(path),
   post: <T,>(path: string, body: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+  /** Para subir archivos (import de CSV): manda FormData tal cual. */
+  postForm: <T,>(path: string, form: FormData) => request<T>(path, { method: "POST", body: form }),
   put: <T,>(path: string, body: unknown) =>
     request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
   del: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
+  /** Para exportar (Excel/PDF): la respuesta es el archivo, no JSON. */
+  async getBlob(path: string): Promise<Blob> {
+    const res = await fetch(path, { credentials: "same-origin" });
+    if (!res.ok) {
+      if (res.status === 401) window.location.href = "/montor/login";
+      throw new ApiError(await leerDetalleError(res), res.status);
+    }
+    return res.blob();
+  },
 };

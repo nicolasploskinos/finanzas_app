@@ -2,12 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/api/client";
 import type {
+  Cotizaciones,
+  ImportPreview,
+  InflacionPunto,
+  Presupuesto,
+  Recurrente,
   Sesion,
+  StatsMes,
   Transaccion,
   TransaccionViaje,
   Viaje,
   ViajeDetalle,
   ViajePayload,
+  WhatsappEstado,
 } from "@/api/types";
 
 export const claves = {
@@ -15,6 +22,12 @@ export const claves = {
   transacciones: ["transacciones"] as const,
   viajes: ["viajes"] as const,
   viaje: (id: number) => ["viajes", id] as const,
+  cotizaciones: ["cotizaciones"] as const,
+  presupuestos: ["presupuestos"] as const,
+  recurrentes: ["recurrentes"] as const,
+  stats: (mes: number, anio: number) => ["stats", mes, anio] as const,
+  inflacion: ["inflacion"] as const,
+  whatsappEstado: ["whatsapp", "estado"] as const,
 };
 
 export function useSesion() {
@@ -32,10 +45,14 @@ export function useTransacciones() {
   });
 }
 
-export function useViajes() {
+// `habilitado` en true por default: en la página de Viajes siempre hace
+// falta. El panel principal (selector de viaje en el modal de carga) lo
+// pasa en false para usuarios free, que no tienen acceso a este endpoint.
+export function useViajes(habilitado = true) {
   return useQuery({
     queryKey: claves.viajes,
     queryFn: () => api.get<Viaje[]>("/api/montor/viajes"),
+    enabled: habilitado,
   });
 }
 
@@ -111,5 +128,180 @@ export function useRegistro() {
   return useMutation({
     mutationFn: (datos: LoginPayload) => api.post<{ ok: true }>("/api/montor/register", datos),
     onSuccess: () => qc.invalidateQueries({ queryKey: claves.sesion }),
+  });
+}
+
+// ── Panel principal ─────────────────────────────────────────────────────────
+
+export function useCotizaciones() {
+  return useQuery({
+    queryKey: claves.cotizaciones,
+    queryFn: () => api.get<Cotizaciones>("/api/montor/cotizaciones"),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export type TransaccionPayload = {
+  tipo: Transaccion["tipo"];
+  monto: number;
+  fecha: string;
+  categoria: string;
+  descripcion: string;
+  moneda: Transaccion["moneda"];
+  viaje_id: number | null;
+};
+
+function invalidarTrasEscribirTx(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: claves.transacciones });
+  qc.invalidateQueries({ queryKey: claves.presupuestos });
+  // "stats" no lleva `exact` a propósito: cualquier mes pudo cambiar de
+  // total, así que se invalidan todas las combinaciones mes/año en caché.
+  qc.invalidateQueries({ queryKey: ["stats"] });
+}
+
+export function useCrearTx() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (tx: TransaccionPayload) => api.post<Transaccion>("/api/montor", tx),
+    onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
+export function useEditarTx() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...tx }: TransaccionPayload & { id: number }) =>
+      api.put<Transaccion>(`/api/montor/${id}`, tx),
+    onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
+export function useBorrarTx() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.del<{ ok: boolean }>(`/api/montor/${id}`),
+    onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
+export function usePresupuestos() {
+  return useQuery({
+    queryKey: claves.presupuestos,
+    queryFn: () => api.get<Presupuesto[]>("/api/montor/presupuestos"),
+  });
+}
+
+export function useGuardarPresupuesto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: { categoria: string; monto: number; moneda: Presupuesto["moneda"] }) =>
+      api.post<Presupuesto>("/api/montor/presupuestos", datos),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.presupuestos }),
+  });
+}
+
+export function useBorrarPresupuesto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.del<{ ok: boolean }>(`/api/montor/presupuestos/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.presupuestos }),
+  });
+}
+
+/** Los recurrentes solo se piden cuando el acordeón está abierto. */
+export function useRecurrentes(habilitado: boolean) {
+  return useQuery({
+    queryKey: claves.recurrentes,
+    queryFn: () => api.get<Recurrente[]>("/api/montor/recurrentes"),
+    enabled: habilitado,
+  });
+}
+
+export type RecurrentePayload = TransaccionPayload & { frecuencia: Recurrente["frecuencia"] };
+
+export function useCrearRecurrente() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: RecurrentePayload) => api.post<Recurrente>("/api/montor/recurrentes", datos),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.recurrentes }),
+  });
+}
+
+export function useBorrarRecurrente() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.del<{ ok: boolean }>(`/api/montor/recurrentes/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.recurrentes }),
+  });
+}
+
+/** Stats (resumen del mes + categorías) solo se piden con el acordeón
+ *  abierto y cuenta Pro. */
+export function useStats(mes: number, anio: number, habilitado: boolean) {
+  return useQuery({
+    queryKey: claves.stats(mes, anio),
+    queryFn: () => api.get<StatsMes>(`/api/montor/stats?mes=${mes}&anio=${anio}`),
+    enabled: habilitado,
+  });
+}
+
+export function useInflacion(habilitado: boolean) {
+  return useQuery({
+    queryKey: claves.inflacion,
+    queryFn: () => api.get<InflacionPunto[]>("/api/montor/inflacion"),
+    enabled: habilitado,
+  });
+}
+
+/** Resumen con IA: mutation (no query) porque es una acción explícita del
+ *  usuario ("Generar resumen"), no algo que se precargue solo. */
+export function useResumenIA() {
+  return useMutation({
+    mutationFn: ({ mes, anio, lang }: { mes: number; anio: number; lang: string }) =>
+      api.get<{ ok: boolean; resumen?: string; error?: string }>(
+        `/api/montor/resumen-ia?mes=${mes}&anio=${anio}&lang=${lang}`,
+      ),
+  });
+}
+
+export function useWhatsappEstado(habilitado: boolean) {
+  return useQuery({
+    queryKey: claves.whatsappEstado,
+    queryFn: () => api.get<WhatsappEstado>("/api/montor/whatsapp/estado"),
+    enabled: habilitado,
+  });
+}
+
+export function useWhatsappCodigo() {
+  return useMutation({
+    mutationFn: () =>
+      api.post<{ ok: boolean; codigo: string; wa_link: string }>("/api/montor/whatsapp/codigo", {}),
+  });
+}
+
+export function useWhatsappDesvincular() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.del<{ ok: boolean }>("/api/montor/whatsapp/desvincular"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: claves.whatsappEstado }),
+  });
+}
+
+export function useImportPreview() {
+  return useMutation({
+    mutationFn: (archivo: File) => {
+      const fd = new FormData();
+      fd.append("archivo", archivo);
+      return api.postForm<ImportPreview>("/api/montor/import/preview", fd);
+    },
+  });
+}
+
+export function useImportConfirm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (transacciones: unknown[]) =>
+      api.post<{ ok: boolean; insertados: number }>("/api/montor/import/confirm", { transacciones }),
+    onSuccess: () => invalidarTrasEscribirTx(qc),
   });
 }

@@ -50,4 +50,10 @@
   .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
   .handle { display: none; }
   .titulo { font-size: 24px; }
+
+  /* Variante para modales con más campos (el panel principal: nueva
+     transacción, presupuestos, importar) — el 560px genérico les quedaba
+     apretado. */
+  .modal.grande { max-width: 660px; padding: 44px 48px 48px; }
+  .modal.grande .titulo { font-size: 28px; }
 }

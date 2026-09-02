@@ -5,6 +5,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  overflow-anchor: none;
+}
+
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
@@ -12,6 +16,14 @@ body {
   min-height: 100vh;
   max-width: 480px;
   margin: 0 auto;
+  /* El panel (y cualquier página con listas que cambian de alto — filtros,
+     acordeones) dispara el "scroll anchoring" nativo de Chrome: al crecer
+     contenido lejos del viewport visible, el navegador reajusta el scroll
+     "para compensar" y termina desplazando la página entera de golpe, como
+     si hubiera saltado sola. Es la causa exacta de ese salto — se
+     desactiva a nivel global en vez de por sección para no perseguir el
+     mismo bug en cada página nueva que migre. */
+  overflow-anchor: none;
 }
 
 @keyframes fadeInUp {
