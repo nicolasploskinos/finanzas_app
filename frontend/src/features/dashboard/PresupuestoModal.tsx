@@ -64,31 +64,18 @@ export function PresupuestoModal({ abierto, presupuestos, categorias, onCerrar }
   return (
     <Modal abierto={abierto} titulo={trd("presupuestos_del_mes", lang)} onCerrar={onCerrar} grande>
       {presupuestos.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
+        <div className={css.presupModalLista}>
           {presupuestos.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 0",
-                borderBottom: "1px solid var(--border)",
-              }}
-            >
+            <div key={p.id} className={css.presupModalItem}>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{p.categoria}</span>
-                <span style={{ fontSize: 12, color: "var(--muted)", marginLeft: 8 }}>
+                <span className={css.presupModalCat}>{p.categoria}</span>
+                <span className={css.presupModalMonto}>
                   {fmtMon(p.monto, p.moneda ?? "ARS")}
                   {trd("por_mes", lang)}
                   {p.moneda && p.moneda !== "ARS" ? ` · ${p.moneda}` : ""}
                 </span>
               </div>
-              <button
-                onClick={() => alBorrar(p.id)}
-                aria-label="Eliminar presupuesto"
-                style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 18, cursor: "pointer", padding: "0 4px", lineHeight: 1 }}
-              >
+              <button onClick={() => alBorrar(p.id)} aria-label="Eliminar presupuesto" className={css.presupModalBorrar}>
                 ×
               </button>
             </div>

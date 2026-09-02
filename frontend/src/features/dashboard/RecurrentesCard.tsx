@@ -27,8 +27,8 @@ export function RecurrentesCard({ abierto, onToggle }: { abierto: boolean; onTog
     <div className={`${css.cotWrap} ${css.cotWrapRecur}`}>
       <div className={css.cotHeader} onClick={onToggle}>
         <span>{trd("recurrentes_activos", lang)}</span>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "var(--muted)" }}>{lista.length ? `(${lista.length})` : ""}</span>
+        <div className={css.recurCountRow}>
+          <span className={css.recurCount}>{lista.length ? `(${lista.length})` : ""}</span>
           <span className={css.chev}>{abierto ? "▲" : "▼"}</span>
         </div>
       </div>
@@ -40,32 +40,21 @@ export function RecurrentesCard({ abierto, onToggle }: { abierto: boolean; onTog
             <div
               key={r.id}
               className={`${css.recurItem} ${css.staggerIn}`}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "10px 0",
-                borderBottom: "1px solid var(--border)",
-                animationDelay: `${Math.min(i, 10) * 50}ms`,
-              }}
+              style={{ animationDelay: `${Math.min(i, 10) * 50}ms` }}
             >
               <div>
-                <div className={css.recurItemTop} style={{ fontSize: 13, fontWeight: 700 }}>
+                <div className={css.recurItemTop}>
                   {r.tipo === "Ingreso" ? "💚" : "🔴"} {fmtMon(r.monto, r.moneda ?? "ARS")}
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 500, marginLeft: 4 }}>
+                  <span className={css.recurItemFreq}>
                     {trd(r.frecuencia === "semanal" ? "frecuencia_semanal" : "frecuencia_mensual", lang)}
                   </span>
                 </div>
-                <div className={css.recurItemSub} style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
+                <div className={css.recurItemSub}>
                   {r.categoria || trd("sin_categoria", lang)}
                   {r.descripcion ? " · " + r.descripcion : ""} · {trd("proximo", lang)}: {formatFecha(r.proxima_fecha, lang)}
                 </div>
               </div>
-              <button
-                onClick={() => alBorrar(r.id)}
-                aria-label="Eliminar recurrente"
-                style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 20, cursor: "pointer", padding: "4px 8px", flexShrink: 0 }}
-              >
+              <button onClick={() => alBorrar(r.id)} aria-label="Eliminar recurrente" className={css.recurItemBorrar}>
                 ×
               </button>
             </div>

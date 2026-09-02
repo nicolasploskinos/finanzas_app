@@ -79,12 +79,16 @@ export function DashboardPage() {
 
   const isPro = sesion.data?.is_pro ?? false;
 
-  // El "+" de la barra de iconos en otras páginas (Viajes, Análisis) linkea
-  // acá con ?add=1 para abrir el modal de carga sin duplicar su UI.
+  // El "+" y el tab de Perfil de la barra de navegación en otras páginas
+  // (Viajes, Análisis) linkean acá con ?add=1 / ?perfil=1 para abrir el
+  // modal correspondiente sin duplicar esa UI en cada página.
   useEffect(() => {
     if (params.get("add") === "1") {
       setEditando(null);
       setTxModalAbierto(true);
+      setParams({}, { replace: true });
+    } else if (params.get("perfil") === "1") {
+      setPerfilModalAbierto(true);
       setParams({}, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -22,16 +22,20 @@
 }
 .headerInner { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .headerLeft { min-width: 0; overflow: hidden; flex-shrink: 1; }
-.headerBrand { display: flex; align-items: center; gap: 6px; }
+/* La marca, el badge de Pro y los accesos rápidos a Viajes/Análisis vivían
+   acá antes de que el celular tuviera su propia barra de navegación abajo
+   (ver Sidenav) — ahora el header se ve igual en cualquier tamaño de
+   pantalla: solo fecha a la izquierda y usuario/acciones a la derecha. */
+.headerBrand, .hdrProBadge, .headerMobileLink { display: none; }
 .headerLogoIcon { width: 20px; height: 20px; flex-shrink: 0; color: var(--blue); filter: drop-shadow(0 0 8px rgba(var(--blue-rgb), 0.5)); }
 .headerLeft h1 { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; white-space: nowrap; }
-.headerFecha { font-size: 10px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.headerFecha { font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .headerRight {
   text-align: right;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
   flex-shrink: 0;
 }
@@ -293,6 +297,32 @@
 }
 @keyframes shimmer { to { transform: translateX(100%); } }
 .presupEmpty { font-size: 12px; color: var(--muted); text-align: center; padding: 4px 0 2px; }
+
+/* ── Recurrentes ── */
+.recurCountRow { display: flex; gap: 8px; align-items: center; }
+.recurCount { font-size: 12px; color: var(--muted); }
+.recurItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.recurItemTop { font-size: 15px; font-weight: 700; }
+.recurItemFreq { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+.recurItemSub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.recurItemBorrar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.recurItemBorrar:hover { color: var(--red); background: rgba(var(--red-rgb), 0.1); }
 
 /* ── Stats ── */
 .statsSelects { display: flex; gap: 6px; margin-bottom: 12px; }
@@ -627,7 +657,9 @@
 /* ── FAB ── */
 .fab {
   position: fixed;
-  bottom: 28px;
+  /* En mobile deja lugar a la barra de navegación fija de abajo (ver
+     Sidenav.module.css); en escritorio esa barra no existe. */
+  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   right: 20px;
   width: 58px;
   height: 58px;
@@ -677,6 +709,30 @@
 }
 .monedaBtn:hover:not(.active) { color: var(--text); }
 .monedaBtn.active { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(var(--blue-rgb), 0.35); }
+
+.presupModalLista { margin-bottom: 16px; }
+.presupModalItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.presupModalCat { font-size: 16px; font-weight: 700; }
+.presupModalMonto { font-size: 14px; color: var(--muted); margin-left: 8px; }
+.presupModalBorrar {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.presupModalBorrar:hover { color: var(--red); background: rgba(var(--red-rgb), 0.1); }
 
 .campo { margin-bottom: 14px; }
 .campo label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
@@ -852,6 +908,7 @@
     gap: 20px 28px;
     padding: 10px 28px 20px;
   }
+  .fab { bottom: 28px; }
   .sidenavArea { grid-column: 1; grid-row: 1 / span 2; }
   .hero { grid-column: 2 / -1; grid-row: 1; }
   .der { grid-column: 2; grid-row: 2; }
@@ -869,9 +926,7 @@
     .drcha { grid-column: 2; grid-row: 3; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
   }
 
-  .headerBrand, .hdrProBadge, .headerMobileLink { display: none; }
-  .headerLeft { justify-content: center; }
-  .headerRight { flex-direction: row; align-items: center; gap: 16px; }
+  .headerRight { gap: 16px; }
   .header { padding: 10px 28px; }
   .headerInner { gap: 24px; }
 
@@ -951,16 +1006,17 @@
   .drcha .convRow { margin-bottom: 14px; }
 
   .recurItem { padding: 16px 0; }
-  .recurItemTop { font-size: 20px !important; }
-  .recurItemTop span { font-size: 17px !important; }
-  .recurItemSub { font-size: 17px !important; margin-top: 5px !important; }
-  .recurItem button { font-size: 28px !important; }
-  .waTexto { font-size: 18px !important; line-height: 1.6; }
-  .waVinculadoP { font-size: 18px !important; }
-  .waVinculadoSub { font-size: 18px !important; }
-  .waCodigoLabel { font-size: 17px !important; }
-  .waVence { font-size: 17px !important; }
-  .waLink { font-size: 19px !important; padding: 12px 20px; }
+  .recurCount { font-size: 14px; }
+  .recurItemTop { font-size: 20px; }
+  .recurItemFreq { font-size: 16px; }
+  .recurItemSub { font-size: 16px; margin-top: 5px; }
+  .recurItemBorrar { font-size: 26px; }
+  .waTexto { font-size: 18px; line-height: 1.6; }
+  .waVinculadoP { font-size: 18px; }
+  .waVinculadoSub { font-size: 18px; }
+  .waCodigoLabel { font-size: 17px; }
+  .waVence { font-size: 17px; }
+  .waLink { font-size: 19px; padding: 12px 20px; }
 
   .headerLeft h1 { font-size: 20px; }
   .headerFecha { font-size: 12px; }
@@ -1011,6 +1067,9 @@
   .tipoBtn { font-size: 18px; padding: 16px; }
   .monedaBtn { font-size: 17px; padding: 14px; }
   .campo label { font-size: 15px; }
+  .presupModalCat { font-size: 18px; }
+  .presupModalMonto { font-size: 16px; }
+  .presupModalBorrar { font-size: 27px; }
   .campo input, .campo select { font-size: 19px; padding: 18px 20px; }
   .btnGuardar { font-size: 20px; padding: 20px; }
   .importResumen { font-size: 17px; }

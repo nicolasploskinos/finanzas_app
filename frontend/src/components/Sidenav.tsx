@@ -66,20 +66,34 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
             return (
               <button key={s.id} className={css.item} onClick={onNuevaTransaccion}>
                 <span className={css.ico}>{s.icono}</span>
-                <span>{t(s.label)}</span>
+                <span className={css.itemLabel}>{t(s.label)}</span>
               </button>
             );
           }
-          // Enlaces normales, no del router: el resto de la app todavía se
-          // sirve desde Flask con Jinja. Se cambian a <Link> cuando esas
-          // páginas también estén migradas.
+          // Enlaces normales, no del router: navegan con una recarga
+          // completa en vez de una transición de React Router.
           return (
             <a key={s.id} className={css.item} href={s.href ?? "#"}>
               <span className={css.ico}>{s.icono}</span>
-              <span>{t(s.label)}</span>
+              <span className={css.itemLabel}>{t(s.label)}</span>
             </a>
           );
         })}
+        {/* Solo en mobile (ver Sidenav.module.css): la barra de abajo suma un
+         *  acceso directo al perfil, que en escritorio ya está en .foot. Si
+         *  no estamos en el panel (no hay onPerfil) navega para abrirlo ahí,
+         *  igual que "Nueva transacción" con ?add=1. */}
+        {onPerfil ? (
+          <button className={`${css.item} ${css.perfilTab}`} onClick={onPerfil}>
+            <span className={css.ico}>👤</span>
+            <span className={css.itemLabel}>{t("perfil_tab")}</span>
+          </button>
+        ) : (
+          <a className={`${css.item} ${css.perfilTab}`} href="/montor?perfil=1">
+            <span className={css.ico}>👤</span>
+            <span className={css.itemLabel}>{t("perfil_tab")}</span>
+          </a>
+        )}
       </nav>
 
       <div className={css.foot}>
