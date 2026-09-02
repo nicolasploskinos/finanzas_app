@@ -3,7 +3,6 @@ import { usePreferencias } from "@/hooks/usePreferencias";
 import { fmtMon } from "@/lib/formato";
 import { fromARS, toARS } from "./logic";
 import { trd } from "./messages";
-import { Sparkline } from "./Sparkline";
 import { useAjustarTexto } from "./useAjustarTexto";
 import { useMontoAnimado } from "./useMontoAnimado";
 import css from "./Dashboard.module.css";
@@ -50,24 +49,6 @@ export function ConsolidadoCard({ filtrados, cotiz, monedaConsol, onCambiarMoned
   const gasRef = useAjustarTexto<HTMLDivElement>(gasTxt);
   const netRef = useAjustarTexto<HTMLDivElement>(netTxt);
 
-  // Saldo acumulado día a día (en ARS, luego pasado a la moneda elegida) —
-  // no es un balance de cuenta real, es la suma corrida de los movimientos
-  // filtrados, para mostrar la tendencia.
-  const lista = [...filtrados].sort((a, b) => a.fecha.localeCompare(b.fecha));
-  const porDia = new Map<string, number>();
-  for (const t of lista) {
-    const ars = toARS(t, cotiz);
-    if (ars === null) continue;
-    const delta = t.tipo === "Ingreso" ? ars : -ars;
-    porDia.set(t.fecha, (porDia.get(t.fecha) ?? 0) + delta);
-  }
-  const fechas = [...porDia.keys()].sort();
-  let acc = 0;
-  const puntos = fechas.map((f) => {
-    acc += porDia.get(f)!;
-    return fromARS(acc, monedaConsol, cotiz) ?? 0;
-  });
-
   return (
     <div className={css.consSection}>
       <div className={css.consHeader}>
@@ -84,12 +65,6 @@ export function ConsolidadoCard({ filtrados, cotiz, monedaConsol, onCambiarMoned
           ))}
         </div>
       </div>
-
-      {fechas.length > 0 && (
-        <div className={css.consSparkWrap}>
-          <Sparkline puntos={puntos} />
-        </div>
-      )}
 
       <div className={css.consCards}>
         <div className={css.consCard}>

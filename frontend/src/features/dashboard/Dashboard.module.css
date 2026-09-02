@@ -165,7 +165,6 @@
   color: white;
   box-shadow: 0 4px 14px rgba(var(--blue-rgb), 0.45);
 }
-.consSparkWrap { height: 44px; margin: 2px 0 12px; position: relative; }
 .consCards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; position: relative; }
 .consCard {
   background: var(--surface2);
@@ -911,7 +910,6 @@
   .hero .consTitle { font-size: 14px; letter-spacing: 0.8px; }
   .hero .consToggle { flex: 0 0 auto; padding: 4px; border-radius: 14px; }
   .hero .consBtn { padding: 9px 22px; font-size: 14px; border-radius: 10px; }
-  .hero .consSparkWrap { height: 76px; margin: 0 0 18px; }
   .hero .consCards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
   .hero .consCard { padding: 20px 24px; border-radius: 20px; background: color-mix(in srgb, var(--surface2) 80%, transparent); }
   .hero .consCard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--blue) 30%, var(--border)); }
