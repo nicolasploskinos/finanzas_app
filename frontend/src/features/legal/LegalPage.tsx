@@ -1,4 +1,5 @@
 import { usePreferencias } from "@/hooks/usePreferencias";
+import nebula from "@/styles/nebula.module.css";
 import css from "./Legal.module.css";
 
 export type Seccion = {
@@ -20,6 +21,7 @@ export function LegalPage({ titulo, actualizado, intro, secciones }: Props) {
   const { modo, lang, toggleModo, toggleLang } = usePreferencias();
 
   return (
+    <div className={nebula.theme} data-tema="nebula">
     <div className={css.page}>
       <div className={css.topbar}>
         <a href="/">{lang === "en" ? "← Back to Montor" : "← Volver a Montor"}</a>
@@ -45,6 +47,7 @@ export function LegalPage({ titulo, actualizado, intro, secciones }: Props) {
           </div>
         ))}
       </main>
+    </div>
     </div>
   );
 }

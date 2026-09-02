@@ -1,78 +1,7 @@
-/* ════════════════════════════════════════════════════════════════════════
-   TEMA "NÉBULA" — paleta e identidad nuevas, a propósito acotadas a este
-   componente (no tocan tokens.css global): se redefinen los MISMOS nombres
-   de variable que ya usa el resto de la app (--bg, --surface, --blue, etc.)
-   dentro de este wrapper, así que cualquier componente compartido que se
-   renderice adentro (Sidenav, Modal, Toast) hereda la paleta nueva por
-   cascada de CSS, sin tener que forkearlos ni tocar otras páginas todavía
-   sin rediseñar (Viajes, Análisis, Login, la landing).
-   ════════════════════════════════════════════════════════════════════════ */
-.theme {
-  --bg: #0a0a12;
-  --surface: #14141f;
-  --surface2: #1c1c2b;
-  --surface3: #262638;
-  --text: #f4f3fa;
-  --muted: #8d8ca8;
-  --border: #29293d;
-  --blue: #7c5cff;
-  --blue-dark: #6041e6;
-  --blue-rgb: 124, 92, 255;
-  --green: #00e0a4;
-  --green-rgb: 0, 224, 164;
-  --red: #ff4d75;
-  --red-rgb: 255, 77, 117;
-  --yellow: #ffb93d;
-  --yellow-rgb: 255, 185, 61;
-  --violet: #c084fc;
-  --violet-rgb: 192, 132, 252;
-  --teal: #2fe6c7;
-  --teal-rgb: 47, 230, 199;
-
-  font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  background:
-    radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(124, 92, 255, 0.16), transparent 60%),
-    radial-gradient(ellipse 900px 500px at 100% 10%, rgba(47, 230, 199, 0.08), transparent 55%),
-    var(--bg);
-  min-height: 100vh;
-  color: var(--text);
-}
-:global(body.light) .theme {
-  --bg: #f6f4fc;
-  --surface: #ffffff;
-  --surface2: #f0ecfa;
-  --surface3: #e5def7;
-  --text: #18172b;
-  --muted: #6d6b8a;
-  --border: #e2dcf3;
-  --blue: #6a3df0;
-  --blue-dark: #5730d1;
-  --blue-rgb: 106, 61, 240;
-  --green: #00a882;
-  --green-rgb: 0, 168, 130;
-  --red: #e63465;
-  --red-rgb: 230, 52, 101;
-  --yellow: #c9820e;
-  --yellow-rgb: 201, 130, 14;
-  --violet: #9147e6;
-  --violet-rgb: 145, 71, 230;
-  --teal: #0f9c85;
-  --teal-rgb: 15, 156, 133;
-
-  background:
-    radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(106, 61, 240, 0.08), transparent 60%),
-    radial-gradient(ellipse 900px 500px at 100% 10%, rgba(15, 156, 133, 0.06), transparent 55%),
-    var(--bg);
-}
-
-/* Números y títulos usan la display font; el resto de la UI se queda con
-   Inter (más legible en textos chicos: etiquetas, filtros, listas). */
-.theme :global(h1),
-.theme :global(h2),
-.theme :global(h3),
-.theme :global(h4) {
-  font-family: "Space Grotesk", inherit;
-}
+/* El tema "Nébula" (tokens de color + tipografía + fondo) vive en
+   @/styles/nebula.module.css, compartido con las demás páginas que ya lo
+   adoptaron — ver ese archivo para el detalle. Acá solo quedan los
+   estilos propios del panel. */
 
 /* ── Layout raíz ── */
 .shell { display: flex; flex-direction: column; padding-bottom: 100px; }
@@ -914,14 +843,6 @@
 .estado button {
   display: block; margin: 14px auto 0; background: var(--surface2); border: 1px solid var(--border);
   border-radius: 12px; color: var(--text); font: inherit; font-weight: 700; padding: 10px 20px; cursor: pointer;
-}
-
-/* El panel usa toda la pantalla (a diferencia del resto de las páginas,
-   todavía acotadas a 1600px vía body en base.css) — se anula ese límite acá
-   en vez de tocar la regla global, así ninguna otra página se ve afectada. */
-body.panelPage {
-  max-width: 100vw;
-  margin: 0;
 }
 
 @media (min-width: 900px) {

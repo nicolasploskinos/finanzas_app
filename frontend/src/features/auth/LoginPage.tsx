@@ -5,6 +5,7 @@ import { ApiError } from "@/api/client";
 import { useLogin, useRegistro } from "@/api/queries";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
+import nebula from "@/styles/nebula.module.css";
 import css from "./Login.module.css";
 
 type Tab = "login" | "register";
@@ -79,6 +80,7 @@ export function LoginPage() {
   }
 
   return (
+    <div className={nebula.theme} data-tema="nebula">
     <div className={css.bg}>
       <div className={css.topActions}>
         <button
@@ -196,6 +198,7 @@ export function LoginPage() {
           </form>
         )}
       </div>
+    </div>
     </div>
   );
 }

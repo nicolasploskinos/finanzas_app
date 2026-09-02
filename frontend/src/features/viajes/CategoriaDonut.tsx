@@ -7,16 +7,16 @@ import { fmtMon } from "@/lib/formato";
 ChartJS.register(ArcElement, Legend, Tooltip);
 
 const COLORES = [
-  "#60a5fa",
-  "#f87171",
-  "#4ade80",
-  "#fbbf24",
-  "#a78bfa",
-  "#fb923c",
-  "#34d399",
-  "#f472b6",
-  "#38bdf8",
-  "#facc15",
+  "#7c5cff",
+  "#ff4d75",
+  "#00e0a4",
+  "#ffb93d",
+  "#c084fc",
+  "#2fe6c7",
+  "#5b8def",
+  "#ff8fab",
+  "#f5a623",
+  "#4dd4e8",
 ];
 
 type Props = { categorias: Array<{ nombre: string; total: number }> };

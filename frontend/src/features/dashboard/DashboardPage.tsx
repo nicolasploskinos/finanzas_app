@@ -4,8 +4,10 @@ import { useSearchParams } from "react-router-dom";
 import { useBorrarTx, useCotizaciones, usePresupuestos, useSesion, useTransacciones } from "@/api/queries";
 import type { Moneda, Transaccion } from "@/api/types";
 import { Sidenav } from "@/components/Sidenav";
+import { useFullBleed } from "@/hooks/useFullBleed";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { useToast } from "@/hooks/useToast";
+import nebula from "@/styles/nebula.module.css";
 import { ConsolidadoCard } from "./ConsolidadoCard";
 import css from "./Dashboard.module.css";
 import { DashboardHeader } from "./DashboardHeader";
@@ -42,14 +44,7 @@ function fechaHoyTexto(lang: "es" | "en"): string {
 const esEscritorio = () => window.matchMedia("(min-width: 900px)").matches;
 
 export function DashboardPage() {
-  // El panel usa todo el ancho de pantalla, a diferencia del resto de las
-  // páginas (que todavía tienen el body acotado a 1600px). Se marca vía
-  // clase en <body> en vez de en el propio componente porque el límite de
-  // ancho está definido a nivel body en base.css.
-  useEffect(() => {
-    document.body.classList.add(css.panelPage);
-    return () => document.body.classList.remove(css.panelPage);
-  }, []);
+  useFullBleed(nebula.fullBleed);
 
   const { lang } = usePreferencias();
   const toast = useToast();
@@ -133,14 +128,14 @@ export function DashboardPage() {
 
   if (sesion.isPending || transacciones.isPending) {
     return (
-      <div className={css.theme}>
+      <div className={nebula.theme} data-tema="nebula">
         <div className={css.estado}>{lang === "en" ? "Loading…" : "Cargando…"}</div>
       </div>
     );
   }
   if (transacciones.isError || !sesion.data) {
     return (
-      <div className={css.theme}>
+      <div className={nebula.theme} data-tema="nebula">
         <div className={css.estado}>
           {lang === "en" ? "Could not load the data." : "No se pudieron cargar los datos."}
           <button onClick={() => transacciones.refetch()}>{lang === "en" ? "Retry" : "Reintentar"}</button>
@@ -152,7 +147,7 @@ export function DashboardPage() {
   const { username, whatsapp_habilitado: whatsappHabilitado, is_trial: isTrial, trial_dias: trialDias } = sesion.data;
 
   return (
-    <div className={css.theme}>
+    <div className={nebula.theme} data-tema="nebula">
       <DashboardHeader
         username={username}
         isPro={isPro}

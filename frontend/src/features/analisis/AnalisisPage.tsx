@@ -3,8 +3,10 @@ import { useMemo, useState } from "react";
 import { useSesion, useTransacciones } from "@/api/queries";
 import { AppHeader } from "@/components/AppHeader";
 import { Sidenav } from "@/components/Sidenav";
+import { useFullBleed } from "@/hooks/useFullBleed";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
+import nebula from "@/styles/nebula.module.css";
 import css from "./Analisis.module.css";
 import { CategoryRank } from "./CategoryRank";
 import { MonthlyChart, TrendChart } from "./Charts";
@@ -22,6 +24,7 @@ const PILLS: Array<{ id: Periodo; label: MsgKey }> = [
 ];
 
 export function AnalisisPage() {
+  useFullBleed(nebula.fullBleed);
   const { t, lang } = usePreferencias();
   const sesion = useSesion();
   const transacciones = useTransacciones();
@@ -44,22 +47,22 @@ export function AnalisisPage() {
 
   if (sesion.isPending || transacciones.isPending) {
     return (
-      <>
+      <div className={nebula.theme} data-tema="nebula">
         {header}
         <div className={css.estado}>{t("cargando")}</div>
-      </>
+      </div>
     );
   }
 
   if (transacciones.isError) {
     return (
-      <>
+      <div className={nebula.theme} data-tema="nebula">
         {header}
         <div className={css.estado}>
           {t("error_carga")}
           <button onClick={() => transacciones.refetch()}>{t("reintentar")}</button>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -67,19 +70,19 @@ export function AnalisisPage() {
 
   if (!isPro) {
     return (
-      <>
+      <div className={nebula.theme} data-tema="nebula">
         {header}
         <div className={css.locked}>
           <h2>🔒 {t("solo_pro")}</h2>
           <p>{t("solo_pro_detalle")}</p>
           <a href="/montor">{t("ver_planes")}</a>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className={nebula.theme} data-tema="nebula">
       {header}
       <div className={css.shell}>
         <Sidenav activa="analisis" username={username} isPro={isPro} />
@@ -162,6 +165,6 @@ export function AnalisisPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

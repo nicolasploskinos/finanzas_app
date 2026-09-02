@@ -5,9 +5,16 @@
   position: fixed;
   inset: 0;
   overflow-y: auto;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 60% 30% at 100% 0%, rgba(124, 92, 255, 0.14), transparent),
+    var(--bg);
   color: var(--text);
   line-height: 1.6;
+}
+:global(body.light) .page {
+  background:
+    radial-gradient(ellipse 60% 30% at 100% 0%, rgba(106, 61, 240, 0.07), transparent),
+    var(--bg);
 }
 
 .topbar {
@@ -18,7 +25,8 @@
   margin: 0 auto;
   padding: 20px 20px 0;
 }
-.topbar a { color: var(--blue); text-decoration: none; font-size: 14px; font-weight: 600; }
+.topbar a { color: var(--blue); text-decoration: none; font-size: 14px; font-weight: 700; transition: opacity 0.2s; }
+.topbar a:hover { opacity: 0.75; }
 .acciones { display: flex; gap: 8px; }
 .acciones button {
   background: none;
@@ -30,12 +38,14 @@
   padding: 6px 10px;
   cursor: pointer;
   font-family: inherit;
+  transition: background 0.2s, color 0.2s;
 }
+.acciones button:hover { background: var(--surface2); color: var(--text); }
 
 .main { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
-.h1 { font-size: 26px; margin-bottom: 4px; }
+.h1 { font-size: 26px; margin-bottom: 4px; font-weight: 800; }
 .actualizado { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
-.h2 { font-size: 17px; margin: 28px 0 8px; color: var(--blue); }
+.h2 { font-size: 17px; margin: 28px 0 8px; color: var(--blue); font-weight: 800; }
 
 /* El contenido de cada sección llega como HTML (tiene <strong> y <a> incrustados
    para los links a la otra página legal y al mailto) y se inyecta con

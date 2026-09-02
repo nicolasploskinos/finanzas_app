@@ -5,8 +5,10 @@ import { useSesion, useViaje, useViajes } from "@/api/queries";
 import type { Viaje } from "@/api/types";
 import { AppHeader } from "@/components/AppHeader";
 import { Sidenav } from "@/components/Sidenav";
+import { useFullBleed } from "@/hooks/useFullBleed";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { fmtMon, formatFecha } from "@/lib/formato";
+import nebula from "@/styles/nebula.module.css";
 import { ViajeDetalle } from "./ViajeDetalle";
 import { ViajeModal } from "./ViajeModal";
 import css from "./Viajes.module.css";
@@ -53,6 +55,7 @@ function ListaViajes({
 }
 
 export function ViajesPage() {
+  useFullBleed(nebula.fullBleed);
   const { t } = usePreferencias();
   const sesion = useSesion();
 
@@ -79,10 +82,10 @@ export function ViajesPage() {
 
   if (sesion.isPending) {
     return (
-      <>
+      <div className={nebula.theme} data-tema="nebula">
         {header}
         <div className={css.estado}>{t("cargando")}</div>
-      </>
+      </div>
     );
   }
 
@@ -90,14 +93,14 @@ export function ViajesPage() {
 
   if (!isPro) {
     return (
-      <>
+      <div className={nebula.theme} data-tema="nebula">
         {header}
         <div className={css.estado}>
           <h2>{t("viajes_solo_pro")}</h2>
           <p>{t("viajes_solo_pro_detalle")}</p>
           <a href="/montor">{t("volver_a_montor")}</a>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -110,7 +113,7 @@ export function ViajesPage() {
   };
 
   return (
-    <>
+    <div className={nebula.theme} data-tema="nebula">
       {header}
       <div className={css.shell}>
         <Sidenav activa="viajes" username={username} isPro={isPro} />
@@ -146,6 +149,6 @@ export function ViajesPage() {
           if (!editando) abrirDetalle(v.id);
         }}
       />
-    </>
+    </div>
   );
 }

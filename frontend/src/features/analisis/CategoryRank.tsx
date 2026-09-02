@@ -6,14 +6,14 @@ import type { Analisis } from "./analytics";
 import css from "./Analisis.module.css";
 
 const COLORES = [
-  "#4f8cf7",
-  "#f0576a",
-  "#34d399",
-  "#f5b95c",
-  "#9d7bf5",
-  "#2dd4bf",
-  "#fb923c",
-  "#f472b6",
+  "#7c5cff",
+  "#2fe6c7",
+  "#ff4d75",
+  "#ffb93d",
+  "#c084fc",
+  "#00e0a4",
+  "#5b8def",
+  "#ff8fab",
 ];
 
 export function CategoryRank({ categorias }: { categorias: Analisis["categorias"] }) {
