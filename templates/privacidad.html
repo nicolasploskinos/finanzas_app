@@ -38,6 +38,20 @@
     ul { padding-left: 20px; margin-bottom: 10px; }
     strong { color: var(--text); }
     a.inline { color: var(--blue); }
+
+    /* En escritorio la columna de 720px con letra de 14px dejaba media
+       pantalla vacía a los costados: se ensancha y se agranda el texto. */
+    @media (min-width: 900px) {
+      .topbar { max-width: 1080px; padding: 28px 32px 0; }
+      .topbar a { font-size: 18px; }
+      .topbar button { font-size: 15px; padding: 9px 14px; border-radius: 10px; }
+      main { max-width: 1080px; padding: 32px 32px 100px; }
+      h1 { font-size: 44px; letter-spacing: -1px; margin-bottom: 8px; }
+      .actualizado { font-size: 17px; margin-bottom: 40px; }
+      h2 { font-size: 27px; margin: 44px 0 14px; }
+      p, li { font-size: 19px; line-height: 1.75; margin-bottom: 16px; }
+      ul { padding-left: 28px; margin-bottom: 16px; }
+    }
   </style>
 </head>
 <body>

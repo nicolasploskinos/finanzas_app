@@ -37,9 +37,16 @@
       min-height: 100vh; max-width: 480px; margin: 0 auto;
     }
 
-    /* En mobile los "wrappers" de columna no existen visualmente: sus hijos
-       quedan directamente en el flujo, uno debajo del otro, como siempre. */
-    .col-izq, .col-der, .col-drcha { display: contents; }
+    /* En mobile las columnas se apilan. El orden del DOM pone los paneles
+       secundarios (presupuestos, resumen, cotizaciones) antes de la lista de
+       movimientos porque en escritorio van en la columna derecha; en mobile
+       se invierte con `order` para que abajo del consolidado aparezcan los
+       gastos y recién después el resto. */
+    #tab-resumen { display: flex; flex-direction: column; }
+    .col-hero  { order: 1; }
+    .col-der   { order: 2; }
+    .col-drcha { order: 3; }
+    .sidenav { display: none; }
 
     #busqueda { font-size: 13px; }
     #import-resumen { font-size: 13px; }
@@ -122,7 +129,14 @@
        ahora se despliegan. max-height (no grid-rows) porque el padding
        queda inline en el propio elemento y con box-sizing:border-box se
        recorta igual sin tener que mover ese padding a un wrapper nuevo. */
-    .acc-body { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.2,.7,.3,1); }
+    /* El padding vive acá y no inline: con max-height:0 el padding inferior
+       igual reserva alto y dejaba asomar la primera franja del contenido
+       cerrado, así que se anula mientras el acordeón está cerrado. */
+    .acc-body {
+      box-sizing: border-box; max-height: 0; overflow: hidden;
+      padding: 0 14px; transition: max-height .4s cubic-bezier(.2,.7,.3,1);
+    }
+    .acc-body.open { padding-bottom: 14px; }
     @media (prefers-reduced-motion: reduce) { .cot-body, .acc-body { transition: none; } }
     .conv-row { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
     .conv-row input, .conv-row select {
@@ -157,7 +171,11 @@
       box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
     /* Lista */
-    #lista { padding: 0 12px 100px; }
+    /* El colchón para que el botón flotante no tape nada va al final de la
+       página, no de la lista: en mobile abajo de la lista ahora hay más
+       secciones y ese padding quedaba como un hueco vacío en el medio. */
+    #lista { padding: 0 12px 12px; }
+    #tab-resumen { padding-bottom: 100px; }
     .mes-header {
       font-size: 11px; font-weight: 800; color: var(--muted);
       text-transform: uppercase; letter-spacing: .8px;
@@ -308,6 +326,15 @@
     .recur-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
     .recur-item:last-child { border-bottom:none; }
 
+    .ver-mas-btn {
+      display: block; width: calc(100% - 24px); margin: 4px 12px 12px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      color: var(--text); font: inherit; font-size: 14px; font-weight: 700;
+      padding: 13px; cursor: pointer; transition: background .15s, transform .15s;
+    }
+    .ver-mas-btn:active { transform: scale(.98); }
+    .ver-mas-btn:hover { background: var(--surface2); }
+
     .empty { text-align: center; color: var(--muted); padding: 60px 0; font-size: 14px; }
     .empty::before { content: "📭"; display: block; font-size: 40px; margin-bottom: 12px; }
 
@@ -353,16 +380,18 @@
     /* Trial banner */
     .trial-banner { background: linear-gradient(135deg,rgba(var(--blue-rgb),.15),rgba(var(--blue-rgb),.04)); border-bottom: 1px solid rgba(var(--blue-rgb),.25); padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* Barra de iconos (solo escritorio) */
-    .icon-rail { display: none; }
-    .icon-rail-btn {
-      width: 40px; height: 40px; border-radius: 12px; border: none;
-      display: flex; align-items: center; justify-content: center;
-      background: transparent; color: var(--muted); font-size: 17px;
-      text-decoration: none; cursor: pointer; transition: background .15s, color .15s;
+    /* Barra lateral con texto (solo escritorio) */
+    .sidenav-item {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; border: none; background: transparent;
+      color: var(--muted); font: inherit; font-size: 15px; font-weight: 700;
+      text-align: left; text-decoration: none; cursor: pointer;
+      padding: 12px 14px; border-radius: 14px;
+      transition: background .15s, color .15s, transform .15s;
     }
-    .icon-rail-btn:hover { background: var(--surface); color: var(--text); }
-    .icon-rail-btn.active { background: var(--blue); color: #fff; }
+    .sidenav-item:hover { background: var(--surface); color: var(--text); transform: translateX(2px); }
+    .sidenav-item.active { background: var(--blue); color: #fff; box-shadow: 0 6px 18px rgba(var(--blue-rgb),.35); }
+    .sidenav-ico { font-size: 19px; line-height: 1; width: 22px; text-align: center; flex-shrink: 0; }
 
     /* Stats */
     .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
@@ -376,18 +405,61 @@
        ganen en la cascada a las de arriba sin necesitar !important. */
     @media (min-width: 900px) {
       body { max-width: min(97vw, 1920px); }
+      /* Fila 1: el consolidado ocupa todo el ancho útil (es lo primero que
+         tiene que ver el usuario). Fila 2: movimientos a la izquierda y el
+         resto de los paneles en la columna angosta de la derecha. */
       #tab-resumen {
-        display: grid; grid-template-columns: 64px 400px 1fr; align-items: start;
-        gap: 24px; padding-top: 10px;
+        display: grid; grid-template-columns: 248px minmax(0, 1fr) 360px;
+        align-items: start; gap: 20px 24px; padding-top: 10px;
+      }
+      .sidenav  { grid-column: 1; grid-row: 1 / span 2; }
+      .col-hero { grid-column: 2 / -1; grid-row: 1; }
+      .col-der  { grid-column: 2; grid-row: 2; display: block; min-width: 0; }
+      .col-drcha {
+        grid-column: 3; grid-row: 2;
+        display: flex; flex-direction: column; gap: 16px;
       }
 
-      .icon-rail {
-        display: flex; flex-direction: column; align-items: center; gap: 12px;
+      .sidenav {
+        display: flex; flex-direction: column; gap: 6px;
         background: var(--surface2); border: 1px solid var(--border);
-        border-radius: 22px; padding: 16px 10px;
-        position: sticky; top: 76px; flex: 0 0 64px;
+        border-radius: 22px; padding: 20px 14px;
+        position: sticky; top: 76px;
+        height: calc(100vh - 92px); overflow-y: auto;
       }
-      .icon-rail-btn { width: 44px; height: 44px; font-size: 19px; border-radius: 14px; }
+      .sidenav-brand {
+        display: flex; align-items: center; gap: 10px;
+        padding: 0 8px 16px; margin-bottom: 6px;
+        border-bottom: 1px solid var(--border); color: var(--blue);
+      }
+      .sidenav-logo { width: 30px; height: 30px; flex-shrink: 0; }
+      .sidenav-brand-name { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -.4px; }
+      .sidenav-label {
+        font-size: 11px; font-weight: 800; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px 4px;
+      }
+      .sidenav-nav { display: flex; flex-direction: column; gap: 4px; }
+      .sidenav-foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+      .sidenav-pro {
+        border: none; border-radius: 14px; cursor: pointer;
+        background: var(--yellow); color: #fff;
+        font: inherit; font-size: 14px; font-weight: 800; padding: 13px 10px;
+        box-shadow: 0 6px 18px rgba(var(--yellow-rgb),.3);
+        transition: transform .15s, box-shadow .15s;
+      }
+      .sidenav-pro:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(var(--yellow-rgb),.4); }
+      .sidenav-user {
+        display: flex; align-items: center; gap: 10px;
+        border-top: 1px solid var(--border); padding: 14px 8px 0; min-width: 0;
+      }
+      .sidenav-avatar {
+        display: flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        background: var(--blue); color: #fff; font-weight: 800; font-size: 14px;
+      }
+      .sidenav-user-txt { min-width: 0; }
+      .sidenav-user-name { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sidenav-user-plan { font-size: 12px; font-weight: 700; color: var(--blue); }
 
       .header-avatar {
         display: flex; align-items: center; justify-content: center;
@@ -395,10 +467,12 @@
         background: var(--blue); color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0;
       }
 
-      /* En escritorio "Viajes" ya vive en la barra de iconos: repetirlo en
-         el header es ruido de mas. En mobile (sin barra de iconos) sigue
-         siendo la unica forma de llegar ahi, asi que ahi se queda. */
-      .header-viajes-link { display: none; }
+      /* En escritorio "Viajes", la marca y el estado del plan ya viven en la
+         barra lateral: repetirlos en el header es ruido de mas. En mobile
+         (sin barra lateral) siguen siendo la unica forma de llegar ahi. */
+      .header-viajes-link, .header-brand, .hdr-pro-badge { display: none; }
+      .header-left { justify-content: center; }
+      header p#fecha-hoy { font-size: 14px; }
 
       /* Tarjetas más "premium": esquinas más redondeadas, sombra con más
          cuerpo y una leve elevación al pasar el mouse, como en dashboards
@@ -412,30 +486,42 @@
       }
       .tx:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 
-      .col-izq {
-        display: flex; flex-direction: column; gap: 20px;
-        position: sticky; top: 76px;
-        background: var(--surface2); border: 1px solid var(--border);
-        border-radius: 22px; padding: 24px;
-      }
-      .col-der { display: block; min-width: 0; }
       .busqueda-wrap { max-width: 1000px; }
 
-      /* Cuarta columna ("Multi-moneda"): a 900-1299px todavía no hay
-         lugar para una columna fija más, así que ocupa toda la fila de
-         abajo como una mini-grilla; recién a partir de 1300px se convierte
-         en columna angosta fija a la derecha, sticky como col-izq. */
-      .icon-rail { grid-column: 1; grid-row: 1; }
-      .col-izq   { grid-column: 2; grid-row: 1; }
-      .col-der   { grid-column: 3; grid-row: 1; }
-      .col-drcha {
-        grid-column: 2 / -1; grid-row: 2;
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 20px; align-items: start;
+      /* El consolidado como pieza principal: banda ancha arriba de todo,
+         con las tres cifras en fila y tipografía grande. */
+      .col-hero .cons-section {
+        margin: 0; padding: 22px 28px 20px;
+        background: var(--surface2); border: 1px solid var(--border);
+        border-left: 5px solid var(--blue); border-radius: 22px;
       }
-      @media (min-width: 1300px) {
-        #tab-resumen { grid-template-columns: 64px 380px 1fr 340px; }
-        .col-drcha { grid-column: 4; grid-row: 1; display: flex; flex-direction: column; position: sticky; top: 76px; }
+      .col-hero .cons-header {
+        flex-direction: row; align-items: center; justify-content: space-between;
+        gap: 20px; margin-bottom: 16px;
+      }
+      .col-hero .cons-title { font-size: 14px; letter-spacing: .8px; }
+      .col-hero .cons-toggle { flex: 0 0 auto; padding: 4px; border-radius: 12px; }
+      .col-hero .cons-btn { padding: 8px 20px; font-size: 14px; border-radius: 9px; }
+      .col-hero #cons-spark-wrap { height: 72px; margin: 0 0 16px; }
+      .col-hero .cons-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .col-hero .cons-card { padding: 18px 22px; border-radius: 18px; background: var(--surface); }
+      .col-hero .cons-card-full { grid-column: auto; text-align: left; }
+      .col-hero .cons-card-label { font-size: 12px; letter-spacing: .6px; }
+      .col-hero .cons-card-value { font-size: clamp(26px, 2.4vw, 40px); margin-top: 6px; }
+      .col-hero .cons-nota { font-size: 12px; margin-top: 12px; }
+
+      /* Entre 900 y 1199px la columna derecha no entra al lado de los
+         movimientos: pasa abajo, repartida en tarjetas lado a lado. */
+      @media (max-width: 1199px) {
+        #tab-resumen { grid-template-columns: 232px minmax(0, 1fr); }
+        .sidenav   { grid-row: 1 / span 3; }
+        .col-hero  { grid-column: 2; grid-row: 1; }
+        .col-der   { grid-column: 2; grid-row: 2; }
+        .col-drcha {
+          grid-column: 2; grid-row: 3;
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          align-items: start;
+        }
       }
 
       .multimon-card {
@@ -475,15 +561,16 @@
       /* Acentos de color por seccion: la misma idea que ya usa la lista de
          transacciones (borde de color a la izquierda), aplicada a los
          modulos del sidebar para que se distingan de un vistazo. */
-      .col-izq .cons-section,
-      .col-izq .cot-wrap,
       .col-drcha .cot-wrap { margin: 0; border-left-width: 4px; border-left-style: solid; }
       .col-drcha .cot-card { margin: 0; border-left-width: 4px; border-left-style: solid; }
-      .col-izq .presup-section { padding: 12px 14px 10px; border-left-width: 4px; border-left-style: solid; background: var(--surface); border-radius: 14px; }
+      .col-drcha .presup-section {
+        margin: 0; padding: 16px 18px 14px; border-radius: 18px;
+        background: var(--surface); border: 1px solid var(--border);
+        border-left-width: 4px; border-left-style: solid;
+      }
 
-      .col-izq .cons-section     { border-left-color: var(--blue); }
-      .col-izq .presup-section   { border-left-color: var(--violet); }
-      .col-izq .cot-wrap--stats  { border-left-color: var(--teal); }
+      .col-drcha .presup-section   { border-left-color: var(--violet); }
+      .col-drcha .cot-wrap--stats  { border-left-color: var(--teal); }
       .col-drcha .cot-wrap--recur  { border-left-color: var(--yellow); }
       .col-drcha .cot-wrap--whatsapp { border-left-color: var(--green); }
       .col-drcha .cot-card         { border-left-color: var(--blue); }
@@ -631,13 +718,37 @@
 {% endif %}
 
 <div id="tab-resumen">
-  <div class="icon-rail">
-    <span class="icon-rail-btn active" title="Inicio">🏠</span>
-    <button class="icon-rail-btn" onclick="abrirModal()" title="Nueva transacción" aria-label="Nueva transacción">➕</button>
-    <a class="icon-rail-btn" href="/montor/viajes" title="Viajes" aria-label="Viajes">✈️</a>
-    <a class="icon-rail-btn" href="/montor/analisis" title="Análisis" aria-label="Análisis">📈</a>
-  </div>
-  <div class="col-izq">
+  <aside class="sidenav">
+    <div class="sidenav-brand">
+      <svg class="sidenav-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+        <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor"/>
+        <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor"/>
+        <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
+      </svg>
+      <span class="sidenav-brand-name">Montor</span>
+    </div>
+    <div class="sidenav-label" data-en="Menu">Menú</div>
+    <nav class="sidenav-nav">
+      <span class="sidenav-item active"><span class="sidenav-ico">🏠</span><span data-en="Home">Inicio</span></span>
+      <button class="sidenav-item" onclick="abrirModal()"><span class="sidenav-ico">➕</span><span data-en="New transaction">Nueva transacción</span></button>
+      <a class="sidenav-item" href="/montor/analisis"><span class="sidenav-ico">📈</span><span data-en="Analytics">Análisis</span></a>
+      <a class="sidenav-item" href="/montor/viajes"><span class="sidenav-ico">✈️</span><span data-en="Trips">Viajes</span></a>
+    </nav>
+    <div class="sidenav-foot">
+      {% if not is_pro %}
+      <button class="sidenav-pro" onclick="abrirModalPro()" data-en="⭐ Upgrade to Pro">⭐ Pasar a Pro</button>
+      {% endif %}
+      <div class="sidenav-user">
+        <span class="sidenav-avatar">{{ (username or "?")[:1]|upper }}</span>
+        <div class="sidenav-user-txt">
+          <div class="sidenav-user-name">{{ username }}</div>
+          <div class="sidenav-user-plan">{% if is_pro %}<span data-en="Pro plan">Plan Pro</span>{% else %}<span data-en="Free plan">Plan gratis</span>{% endif %}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="col-hero">
 
   <!-- Total consolidado -->
   <div class="cons-section">
@@ -669,6 +780,9 @@
     <div class="cons-nota" id="cons-nota">Al tipo de cambio oficial BNA</div>
   </div>
 
+  </div>
+  <div class="col-drcha">
+
   <!-- Presupuestos -->
   <div class="presup-section" id="presup-section">
     <div class="presup-header">
@@ -678,16 +792,13 @@
     <div id="presup-bars"></div>
   </div>
 
-  <!-- Límite transacciones (free) -->
-  <div id="limite-banner" style="display:none;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center"></div>
-
   <!-- Estadísticas del mes -->
   <div class="cot-wrap cot-wrap--stats">
     <div class="cot-header" onclick="toggleStats()">
       <span data-en="📊 Monthly summary">📊 Resumen del mes</span>
       <span id="stats-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
-    <div id="stats-body" class="acc-body" style="padding:0 14px 14px">
+    <div id="stats-body" class="acc-body">
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <select id="stats-mes" onchange="cargarStats()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;-webkit-appearance:none;outline:none">
           <option value="1" data-en="January">Enero</option><option value="2" data-en="February">Febrero</option><option value="3" data-en="March">Marzo</option>
@@ -710,9 +821,6 @@
     </div>
   </div>
 
-  </div>
-  <div class="col-drcha">
-
   <!-- Multi-moneda -->
   <div class="multimon-card">
     <div class="multimon-title" data-en="💱 Multi-currency">💱 Multi-moneda</div>
@@ -728,7 +836,7 @@
         <span id="recur-chev" style="font-size:11px;color:var(--muted)">▼</span>
       </div>
     </div>
-    <div id="recur-body" class="acc-body" style="padding:0 14px 12px">
+    <div id="recur-body" class="acc-body">
       <div id="recur-lista"></div>
     </div>
   </div>
@@ -740,7 +848,7 @@
       <span data-en="📱 WhatsApp: log expenses &amp; ask questions">📱 WhatsApp: cargar gastos y preguntar</span>
       <span id="wa-chev" style="font-size:11px;color:var(--muted)">▼</span>
     </div>
-    <div id="wa-body" class="acc-body" style="padding:0 14px 14px">
+    <div id="wa-body" class="acc-body">
       <div id="wa-desvinculado" style="display:none">
         <p style="font-size:12px;color:var(--muted);margin:0 0 10px" data-en='Link your WhatsApp to log expenses by writing, for example: <em>"spent 500 on groceries"</em> — or ask it things like <em>"how much did I spend on food this month?"</em>.'>
           Vinculá tu WhatsApp para cargar gastos escribiendo, por ejemplo: <em>"gasté 500 en supermercado"</em> — o preguntale cosas como <em>"cuánto gasté en comida este mes?"</em>.
@@ -790,6 +898,9 @@
 
   </div>
   <div class="col-der">
+
+  <!-- Límite transacciones (free) -->
+  <div id="limite-banner" style="display:none;margin:0 12px 8px;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;text-align:center"></div>
 
   {% if not is_pro %}
   <div style="margin:0 12px 8px;background:rgba(var(--yellow-rgb),.1);border:1px solid rgba(var(--yellow-rgb),.3);border-radius:10px;padding:9px 14px;font-size:12px;color:var(--yellow);display:flex;justify-content:space-between;align-items:center">
@@ -1146,6 +1257,10 @@
   // Periodo seleccionado
   let periodoActivo = "1m";
 
+  // Recorte de la lista en mobile (ver render()).
+  const TX_TOPE_MOBILE = 5;
+  let verTodasTx = false;
+
   function setPeriodo(p) {
     periodoActivo = p;
     document.getElementById("f-dia-desde").value = "";
@@ -1497,8 +1612,16 @@
       return;
     }
 
+    // En mobile la lista completa empuja todo lo demas fuera de la pantalla:
+    // se muestran los ultimos 5 movimientos y el resto queda detras de
+    // "Ver mas". En escritorio hay una columna entera para la lista, no hace
+    // falta recortarla.
+    const recortar = window.matchMedia("(max-width: 899px)").matches
+                     && !verTodasTx && lista.length > TX_TOPE_MOBILE;
+    const visibles = recortar ? lista.slice(0, TX_TOPE_MOBILE) : lista;
+
     const grupos = {};
-    lista.forEach(t => {
+    visibles.forEach(t => {
       const f = new Date(t.fecha + "T00:00:00");
       const k = `${mesNombre(f.getMonth())} ${f.getFullYear()}`;
       if (!grupos[k]) grupos[k] = [];
@@ -1530,6 +1653,16 @@
         </div>`;
       }).join("")}
     `).join("");
+
+    if (recortar) {
+      el.insertAdjacentHTML("beforeend",
+        `<button class="ver-mas-btn" onclick="verTodasTransacciones()">${tr("ver_mas_tx", { n: lista.length - TX_TOPE_MOBILE })}</button>`);
+    }
+  }
+
+  function verTodasTransacciones() {
+    verTodasTx = true;
+    render();
   }
 
   function formatFecha(iso) {
@@ -1835,6 +1968,7 @@
     movimientos_encontrados:     { es: "{n} movimientos encontrados", en: "{n} transactions found" },
     filas_no_reconocidas:        { es: "{n} filas no reconocidas", en: "{n} rows not recognized" },
     sin_movimientos:             { es: "Sin movimientos", en: "No transactions" },
+    ver_mas_tx:                  { es: "Ver {n} movimientos más ▾", en: "See {n} more transactions ▾" },
     sin_categoria:               { es: "Sin categoría", en: "No category" },
     proximo:                     { es: "Próximo", en: "Next" },
     no_recurrentes_activos:      { es: "No hay recurrentes activos", en: "No active recurring expenses" },

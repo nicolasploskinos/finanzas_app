@@ -72,15 +72,18 @@
       box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
 
-    .icon-rail { display: none; }
-    .icon-rail-btn {
-      width: 40px; height: 40px; border-radius: 12px; border: none;
-      display: flex; align-items: center; justify-content: center;
-      background: transparent; color: var(--muted); font-size: 17px;
-      text-decoration: none; cursor: pointer; transition: background .15s, color .15s;
+    .sidenav { display: none; }
+    .sidenav-item {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; border: none; background: transparent;
+      color: var(--muted); font: inherit; font-size: 15px; font-weight: 700;
+      text-align: left; text-decoration: none; cursor: pointer;
+      padding: 12px 14px; border-radius: 14px;
+      transition: background .15s, color .15s, transform .15s;
     }
-    .icon-rail-btn:hover { background: var(--surface); color: var(--text); }
-    .icon-rail-btn.active { background: var(--blue); color: #fff; }
+    .sidenav-item:hover { background: var(--surface); color: var(--text); transform: translateX(2px); }
+    .sidenav-item.active { background: var(--blue); color: #fff; box-shadow: 0 6px 18px rgba(var(--blue-rgb),.35); }
+    .sidenav-ico { font-size: 19px; line-height: 1; width: 22px; text-align: center; flex-shrink: 0; }
     .analisis-content { min-width: 0; flex: 1; padding: 14px 12px 100px; }
 
     .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
@@ -118,13 +121,38 @@
       .filtros select { font-size: 16px; padding: 10px 20px; }
 
       .analisis-shell { display: flex; align-items: flex-start; gap: 24px; padding-top: 10px; }
-      .icon-rail {
-        display: flex; flex-direction: column; align-items: center; gap: 12px;
+      .sidenav {
+        display: flex; flex-direction: column; gap: 6px;
         background: var(--surface2); border: 1px solid var(--border);
-        border-radius: 22px; padding: 16px 10px;
-        position: sticky; top: 100px; flex: 0 0 64px;
+        border-radius: 22px; padding: 20px 14px;
+        position: sticky; top: 100px; flex: 0 0 248px;
+        height: calc(100vh - 116px); overflow-y: auto;
       }
-      .icon-rail-btn { width: 44px; height: 44px; font-size: 19px; border-radius: 14px; }
+      .sidenav-brand {
+        display: flex; align-items: center; gap: 10px;
+        padding: 0 8px 16px; margin-bottom: 6px;
+        border-bottom: 1px solid var(--border); color: var(--blue);
+      }
+      .sidenav-logo { width: 30px; height: 30px; flex-shrink: 0; }
+      .sidenav-brand-name { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -.4px; }
+      .sidenav-label {
+        font-size: 11px; font-weight: 800; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px 4px;
+      }
+      .sidenav-nav { display: flex; flex-direction: column; gap: 4px; }
+      .sidenav-foot { margin-top: auto; padding-top: 16px; }
+      .sidenav-user {
+        display: flex; align-items: center; gap: 10px;
+        border-top: 1px solid var(--border); padding: 14px 8px 0; min-width: 0;
+      }
+      .sidenav-avatar {
+        display: flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        background: var(--blue); color: #fff; font-weight: 800; font-size: 14px;
+      }
+      .sidenav-user-txt { min-width: 0; }
+      .sidenav-user-name { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sidenav-user-plan { font-size: 12px; font-weight: 700; color: var(--blue); }
       .analisis-content { padding: 0; }
 
       .kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
@@ -163,12 +191,33 @@
 {% else %}
 
 <div class="analisis-shell">
-  <div class="icon-rail">
-    <a class="icon-rail-btn" href="/montor" title="Inicio" aria-label="Inicio">🏠</a>
-    <a class="icon-rail-btn" href="/montor?add=1" title="Nueva transacción" aria-label="Nueva transacción">➕</a>
-    <a class="icon-rail-btn" href="/montor/viajes" title="Viajes" aria-label="Viajes">✈️</a>
-    <span class="icon-rail-btn active" title="Análisis">📈</span>
-  </div>
+  <aside class="sidenav">
+    <div class="sidenav-brand">
+      <svg class="sidenav-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+        <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor"/>
+        <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor"/>
+        <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor"/>
+      </svg>
+      <span class="sidenav-brand-name">Montor</span>
+    </div>
+    <div class="sidenav-label" data-en="Menu">Menú</div>
+    <nav class="sidenav-nav">
+      <a class="sidenav-item" href="/montor"><span class="sidenav-ico">🏠</span><span data-en="Home">Inicio</span></a>
+      <a class="sidenav-item" href="/montor?add=1"><span class="sidenav-ico">➕</span><span data-en="New transaction">Nueva transacción</span></a>
+      <span class="sidenav-item active"><span class="sidenav-ico">📈</span><span data-en="Analytics">Análisis</span></span>
+      <a class="sidenav-item" href="/montor/viajes"><span class="sidenav-ico">✈️</span><span data-en="Trips">Viajes</span></a>
+    </nav>
+    <div class="sidenav-foot">
+      <div class="sidenav-user">
+        <span class="sidenav-avatar">{{ (username or "?")[:1]|upper }}</span>
+        <div class="sidenav-user-txt">
+          <div class="sidenav-user-name">{{ username }}</div>
+          <div class="sidenav-user-plan">{% if is_pro %}<span data-en="Pro plan">Plan Pro</span>{% else %}<span data-en="Free plan">Plan gratis</span>{% endif %}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <div class="analisis-content">
     <div class="periodo-pills">
