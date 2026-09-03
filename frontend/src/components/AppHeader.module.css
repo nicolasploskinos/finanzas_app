@@ -2,7 +2,9 @@
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  padding: 12px 16px;
+  /* Suma el área segura de arriba: ver el mismo comentario en el header
+     del panel (Dashboard.module.css). */
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
   position: sticky;
   top: 0;
   display: flex;
@@ -50,7 +52,7 @@
 .actions button:hover { background: var(--surface2); color: var(--text); }
 
 @media (min-width: 900px) {
-  .header { padding: 12px 28px; }
+  .header { padding: calc(12px + env(safe-area-inset-top, 0px)) 28px 12px; }
   .title { font-size: 19px; }
   .back { font-size: 22px; }
   .actions button { font-size: 15px; }

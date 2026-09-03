@@ -22,7 +22,9 @@
 
 .topActions {
   position: absolute;
-  top: 16px;
+  /* Área segura del dispositivo: sin esto quedan abajo de la barra de
+     estado del teléfono (ver viewport-fit=cover en spa.html). */
+  top: calc(16px + env(safe-area-inset-top, 0px));
   right: 16px;
   display: flex;
   gap: 8px;

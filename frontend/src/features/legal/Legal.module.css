@@ -23,7 +23,8 @@
   justify-content: space-between;
   max-width: 720px;
   margin: 0 auto;
-  padding: 20px 20px 0;
+  /* Área segura del dispositivo, igual que el resto de las páginas. */
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 20px 0;
 }
 .topbar a { color: var(--blue); text-decoration: none; font-size: 14px; font-weight: 700; transition: opacity 0.2s; }
 .topbar a:hover { opacity: 0.75; }
@@ -60,7 +61,7 @@
 /* En escritorio la columna de 720px con letra chica dejaba media pantalla
    vacía a los costados: se ensancha y se agranda el texto. */
 @media (min-width: 900px) {
-  .topbar { max-width: 1080px; padding: 28px 32px 0; }
+  .topbar { max-width: 1080px; padding: calc(28px + env(safe-area-inset-top, 0px)) 32px 0; }
   .topbar a { font-size: 18px; }
   .acciones button { font-size: 15px; padding: 9px 14px; border-radius: 10px; }
   .main { max-width: 1080px; padding: 32px 32px 100px; }

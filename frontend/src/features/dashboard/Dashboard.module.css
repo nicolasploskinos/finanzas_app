@@ -14,7 +14,11 @@
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  padding: 10px 12px;
+  /* El padding de arriba suma el área segura del dispositivo: con
+     viewport-fit=cover (necesario para que la barra de abajo esquive el
+     indicador de gestos) la página también se mete abajo de la barra de
+     estado, y sin esto el header queda tapado por el reloj y la señal. */
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -918,7 +922,7 @@
   }
 
   .headerRight { gap: 16px; }
-  .header { padding: 10px 28px; }
+  .header { padding: calc(10px + env(safe-area-inset-top, 0px)) 28px 10px; }
   .headerInner { gap: 24px; }
 
   @media (min-width: 1900px) {

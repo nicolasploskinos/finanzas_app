@@ -38,6 +38,17 @@ type Props = {
 export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade, onPerfil, className = "" }: Props) {
   const { t } = usePreferencias();
 
+  const contenidoUsuario = (
+    <>
+      <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
+      <div className={css.userTxt}>
+        <div className={css.userName}>{username}</div>
+        <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
+      </div>
+      <span className={css.userChevron}>›</span>
+    </>
+  );
+
   return (
     <aside className={`${css.rail} ${className}`}>
       <div className={css.brand}>
@@ -102,23 +113,18 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
             {t("pasar_a_pro")}
           </button>
         )}
+        {/* El bloque de usuario/plan abre el perfil desde cualquier página:
+         *  en el panel llama al modal directo, y en el resto navega al panel
+         *  con ?perfil=1 para que lo abra ahí (mismo patrón que el tab de
+         *  Perfil de la barra de abajo en mobile). */}
         {onPerfil ? (
           <button className={`${css.user} ${css.userBtn}`} onClick={onPerfil}>
-            <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
-            <div className={css.userTxt}>
-              <div className={css.userName}>{username}</div>
-              <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
-            </div>
-            <span className={css.userChevron}>›</span>
+            {contenidoUsuario}
           </button>
         ) : (
-          <div className={css.user}>
-            <span className={css.avatar}>{(username || "?").slice(0, 1).toUpperCase()}</span>
-            <div className={css.userTxt}>
-              <div className={css.userName}>{username}</div>
-              <div className={css.userPlan}>{isPro ? t("plan_pro") : t("plan_gratis")}</div>
-            </div>
-          </div>
+          <a className={`${css.user} ${css.userBtn}`} href="/montor?perfil=1">
+            {contenidoUsuario}
+          </a>
         )}
       </div>
     </aside>
