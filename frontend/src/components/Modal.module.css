@@ -32,7 +32,16 @@
   padding: 20px 20px 44px;
   width: 100%;
   max-width: 480px;
-  max-height: 92vh;
+  /* 92vh solo no alcanza: con un formulario largo (nueva transacción) la
+     hoja crece hasta pegarse contra el borde de arriba y queda tapada por
+     el notch/barra de estado. Se descuenta también el área segura de
+     arriba y de abajo (más la barra de navegación, que el overlay ya
+     esquiva) para que el sobrante quede como scroll interno en vez de
+     colarse detrás de la pantalla del celular. */
+  max-height: min(
+    92vh,
+    calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 78px - 16px)
+  );
   overflow-y: auto;
   box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.3);
   transform: translateY(28px) scale(0.98);
@@ -55,7 +64,13 @@
 
 @media (min-width: 900px) {
   .overlay { bottom: 0; align-items: center; }
-  .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
+  .modal {
+    max-width: 560px;
+    border-radius: 28px;
+    padding: 36px 40px 40px;
+    /* En escritorio no hay barra de navegación que esquivar por abajo. */
+    max-height: min(92vh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px));
+  }
   .handle { display: none; }
   .titulo { font-size: 24px; }
 
