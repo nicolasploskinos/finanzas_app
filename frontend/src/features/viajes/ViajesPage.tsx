@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { useSesion, useViaje, useViajes } from "@/api/queries";
 import type { Viaje } from "@/api/types";
@@ -98,7 +98,7 @@ export function ViajesPage() {
         <div className={css.estado}>
           <h2>{t("viajes_solo_pro")}</h2>
           <p>{t("viajes_solo_pro_detalle")}</p>
-          <a href="/montor">{t("volver_a_montor")}</a>
+          <Link to="/montor">{t("volver_a_montor")}</Link>
         </div>
       </div>
     );
@@ -116,7 +116,16 @@ export function ViajesPage() {
     <div className={nebula.theme} data-tema="nebula">
       {header}
       <div className={css.shell}>
-        <Sidenav activa="viajes" username={username} isPro={isPro} />
+        <Sidenav
+          activa="viajes"
+          username={username}
+          isPro={isPro}
+          // Tocar "Viajes" estando acá vuelve a la lista y cierra el modal.
+          onSeccionActiva={() => {
+            setModalAbierto(false);
+            setParams({});
+          }}
+        />
 
         <div className={css.content}>
           {viajeId !== null ? (

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useRef } from "react";
 
 import { usePreferencias } from "@/hooks/usePreferencias";
@@ -53,9 +54,9 @@ export function Hero() {
               : "Registrá ingresos y gastos en ARS, USD y EUR. La cotización oficial BNA se actualiza sola."}
           </p>
           <div className={css.heroBtns}>
-            <a href="/montor/login" className={css.btnPrimary}>
+            <Link to="/montor/login" className={css.btnPrimary}>
               {lang === "en" ? "I want free access →" : "Quiero acceso gratis →"}
-            </a>
+            </Link>
             <a href="#demo" className={css.btnSecondary}>
               {lang === "en" ? "See how it works" : "Ver cómo funciona"}
             </a>

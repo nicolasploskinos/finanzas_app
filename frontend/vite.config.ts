@@ -15,14 +15,25 @@ export default defineConfig({
   build: {
     outDir: "../static/app",
     emptyOutDir: true,
-    // Nombres fijos (sin hash): PythonAnywhere no corre Node, así que el
-    // build se commitea y la plantilla Jinja referencia estos archivos
-    // directamente. El cache-busting lo pone Flask con ?v=<mtime>.
+    // El JS se parte por página, pero el CSS entero pesa ~17 kB gzip:
+    // partirlo sólo agregaba un parpadeo sin estilos mientras llega el CSS
+    // del chunk, y once archivos más al repo.
+    cssCodeSplit: false,
+    // Flask lee este manifest para saber qué archivos referenciar (ver
+    // _spa_assets en routes_paginas.py).
+    manifest: true,
+    // El hash va en el nombre, no en un `?v=`. Con code splitting eso no es
+    // cosmético: la plantilla cargaba `montor.js?v=<mtime>` mientras los
+    // chunks importaban `./montor.js` a secas, y como los módulos ES se
+    // identifican por URL el navegador terminaba evaluando el entry dos
+    // veces — dos copias de React y pantalla en blanco. Con el hash en el
+    // nombre hay una sola URL por archivo, y encima la cache puede ser
+    // inmutable. Flask resuelve los nombres leyendo el manifest.
     rollupOptions: {
       output: {
-        entryFileNames: "montor.js",
-        chunkFileNames: "montor-[name].js",
-        assetFileNames: "montor.[ext]",
+        entryFileNames: "montor-[hash].js",
+        chunkFileNames: "montor-[name]-[hash].js",
+        assetFileNames: "montor-[hash].[ext]",
       },
     },
   },

@@ -1,0 +1,143 @@
+{
+  "_montor-AppHeader-BrSyRI6b.js": {
+    "file": "montor-AppHeader-BrSyRI6b.js",
+    "name": "AppHeader",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_montor-LegalPage-aijBCk__.js": {
+    "file": "montor-LegalPage-aijBCk__.js",
+    "name": "LegalPage",
+    "imports": [
+      "index.html",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "_montor-Modal-CRbiwK-U.js": {
+    "file": "montor-Modal-CRbiwK-U.js",
+    "name": "Modal",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_montor-nebula.module-DrJBFkkX.js": {
+    "file": "montor-nebula.module-DrJBFkkX.js",
+    "name": "nebula.module"
+  },
+  "_montor-queries-CJaZ7qCl.js": {
+    "file": "montor-queries-CJaZ7qCl.js",
+    "name": "queries",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_montor-useColoresTema-CJlKHt25.js": {
+    "file": "montor-useColoresTema-CJlKHt25.js",
+    "name": "useColoresTema",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "index.html": {
+    "file": "montor-DmvF-dBx.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/features/dashboard/DashboardPage.tsx",
+      "src/features/analisis/AnalisisPage.tsx",
+      "src/features/viajes/ViajesPage.tsx",
+      "src/features/auth/LoginPage.tsx",
+      "src/features/landing/LandingPage.tsx",
+      "src/features/legal/TerminosPage.tsx",
+      "src/features/legal/PrivacidadPage.tsx"
+    ]
+  },
+  "src/features/analisis/AnalisisPage.tsx": {
+    "file": "montor-AnalisisPage-Dn-QFvL_.js",
+    "name": "AnalisisPage",
+    "src": "src/features/analisis/AnalisisPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-queries-CJaZ7qCl.js",
+      "_montor-AppHeader-BrSyRI6b.js",
+      "_montor-useColoresTema-CJlKHt25.js",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "src/features/auth/LoginPage.tsx": {
+    "file": "montor-LoginPage-B-ajFbGI.js",
+    "name": "LoginPage",
+    "src": "src/features/auth/LoginPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-queries-CJaZ7qCl.js",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "src/features/dashboard/DashboardPage.tsx": {
+    "file": "montor-DashboardPage-BCQmrW5L.js",
+    "name": "DashboardPage",
+    "src": "src/features/dashboard/DashboardPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-queries-CJaZ7qCl.js",
+      "_montor-useColoresTema-CJlKHt25.js",
+      "_montor-nebula.module-DrJBFkkX.js",
+      "_montor-Modal-CRbiwK-U.js"
+    ]
+  },
+  "src/features/landing/LandingPage.tsx": {
+    "file": "montor-LandingPage-Dlt4OaxC.js",
+    "name": "LandingPage",
+    "src": "src/features/landing/LandingPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ]
+  },
+  "src/features/legal/PrivacidadPage.tsx": {
+    "file": "montor-PrivacidadPage-Dmd4k_qQ.js",
+    "name": "PrivacidadPage",
+    "src": "src/features/legal/PrivacidadPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-LegalPage-aijBCk__.js",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "src/features/legal/TerminosPage.tsx": {
+    "file": "montor-TerminosPage-DYYua3-0.js",
+    "name": "TerminosPage",
+    "src": "src/features/legal/TerminosPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-LegalPage-aijBCk__.js",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "src/features/viajes/ViajesPage.tsx": {
+    "file": "montor-ViajesPage-Da_tLcNh.js",
+    "name": "ViajesPage",
+    "src": "src/features/viajes/ViajesPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_montor-queries-CJaZ7qCl.js",
+      "_montor-AppHeader-BrSyRI6b.js",
+      "_montor-useColoresTema-CJlKHt25.js",
+      "_montor-Modal-CRbiwK-U.js",
+      "_montor-nebula.module-DrJBFkkX.js"
+    ]
+  },
+  "style.css": {
+    "file": "montor-BHPkMsMR.css",
+    "src": "style.css"
+  }
+}

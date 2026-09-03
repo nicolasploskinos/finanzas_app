@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { NAV_LINKS } from "./content";
 import css from "./Landing.module.css";
@@ -48,9 +49,9 @@ export function Nav() {
         >
           {modo === "light" ? "☀️" : "🌙"}
         </button>
-        <a href="/montor/login" className={css.navCta}>
+        <Link to="/montor/login" className={css.navCta}>
           {lang === "en" ? "Start free →" : "Empezar gratis →"}
-        </a>
+        </Link>
       </div>
     </nav>
   );

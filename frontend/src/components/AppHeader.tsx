@@ -1,10 +1,12 @@
+import { Link } from "react-router-dom";
+
 import { usePreferencias } from "@/hooks/usePreferencias";
 import css from "./AppHeader.module.css";
 
 type Props = {
   icono: string;
   titulo: string;
-  /** A dónde vuelve la flecha. Por defecto al panel, que sigue en Jinja. */
+  /** A dónde vuelve la flecha; por defecto, al panel. */
   volverA?: string;
   /** Si se pasa, la flecha ejecuta esto en vez de navegar (p. ej. volver del
    *  detalle de un viaje a la lista sin salir de la página). */
@@ -22,9 +24,9 @@ export function AppHeader({ icono, titulo, volverA = "/montor", onVolver }: Prop
             ←
           </button>
         ) : (
-          <a className={css.back} href={volverA} aria-label="Volver">
+          <Link className={css.back} to={volverA} aria-label="Volver">
             ←
-          </a>
+          </Link>
         )}
         <span>
           {icono} {titulo}

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import nebula from "@/styles/nebula.module.css";
 import css from "./Legal.module.css";
@@ -24,7 +25,7 @@ export function LegalPage({ titulo, actualizado, intro, secciones }: Props) {
     <div className={nebula.theme} data-tema="nebula">
     <div className={css.page}>
       <div className={css.topbar}>
-        <a href="/">{lang === "en" ? "← Back to Montor" : "← Volver a Montor"}</a>
+        <Link to="/">{lang === "en" ? "← Back to Montor" : "← Volver a Montor"}</Link>
         <div className={css.acciones}>
           <button onClick={toggleLang} title="Switch language">
             {lang === "en" ? "ES" : "EN"}

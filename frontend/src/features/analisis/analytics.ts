@@ -1,4 +1,4 @@
-import type { Moneda, Tipo, Transaccion } from "@/api/types";
+import type { Cotizaciones, Moneda, Tipo, Transaccion } from "@/api/types";
 import type { Lang } from "@/i18n/messages";
 import { MESES_CORTOS, tr } from "@/i18n/messages";
 
@@ -61,12 +61,17 @@ export function fmtARS(n: number): string {
 /**
  * Monto de la transacción llevado a ARS con la cotización que quedó guardada
  * en la propia fila (la del día en que se cargó), igual que el consolidado
- * del panel principal. `null` si falta la cotización y no se puede convertir.
+ * del panel principal.
+ *
+ * Las filas cargadas antes de que existiera esa foto la tienen en null: para
+ * esas se cae a la cotización de hoy como mejor esfuerzo, igual que hace el
+ * panel. Sin ese respaldo quedaban afuera de los gráficos sin aviso, y los
+ * totales de Análisis no coincidían con los del panel.
  */
-export function toARS(t: Transaccion): number | null {
+export function toARS(t: Transaccion, cotiz: Cotizaciones): number | null {
   const moneda = t.moneda ?? "ARS";
   if (moneda === "ARS") return Number(t.monto);
-  const tasa = moneda === "USD" ? t.cotizacion_usd : t.cotizacion_eur;
+  const tasa = moneda === "USD" ? (t.cotizacion_usd ?? cotiz.USD) : (t.cotizacion_eur ?? cotiz.EUR);
   return tasa ? Number(t.monto) * tasa : null;
 }
 
@@ -143,6 +148,7 @@ export function calcularAnalisis(
   datos: Transaccion[],
   filtros: Filtros,
   lang: Lang,
+  cotiz: Cotizaciones,
   hoy: Date = new Date(),
 ): Analisis {
   const mesesCortos = MESES_CORTOS[lang];
@@ -177,7 +183,7 @@ export function calcularAnalisis(
   const porCategoria = new Map<string, number>();
 
   for (const t of lista) {
-    const ars = toARS(t);
+    const ars = toARS(t, cotiz);
     if (ars === null) continue;
     const f = parseFecha(t.fecha);
     const mes = porMes.get(`${f.getFullYear()}-${f.getMonth()}`);

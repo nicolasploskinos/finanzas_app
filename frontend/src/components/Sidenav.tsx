@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
 import css from "./Sidenav.module.css";
@@ -26,6 +28,11 @@ type Props = {
   /** Solo en el panel: hace clickeable el bloque de usuario/plan de abajo,
    *  para abrir el perfil (cambiar nombre, contraseña, suscripción). */
   onPerfil?: () => void;
+  /** Tocar la sección en la que ya estás sirve para "volver": antes eso
+   *  recargaba la página y cerraba de paso cualquier modal abierto encima.
+   *  Ahora que se navega del lado del cliente no hay remonte, así que la
+   *  página avisa por acá para cerrar lo que tenga abierto. */
+  onSeccionActiva?: () => void;
   /** Para que quien usa este componente pueda ubicarlo en su propio grid
    *  (p.ej. hacer que ocupe dos filas en el panel principal). Un className
    *  externo, no una clase con el mismo nombre en OTRO archivo: por cómo
@@ -35,7 +42,16 @@ type Props = {
   className?: string;
 };
 
-export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade, onPerfil, className = "" }: Props) {
+export function Sidenav({
+  activa,
+  username,
+  isPro,
+  onNuevaTransaccion,
+  onUpgrade,
+  onPerfil,
+  onSeccionActiva,
+  className = "",
+}: Props) {
   const { t } = usePreferencias();
 
   const contenidoUsuario = (
@@ -66,16 +82,19 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
       <nav className={css.nav}>
         {SECCIONES.map((s) => {
           if (s.id === activa) {
-            // Clickeable aunque ya estés acá: en mobile es la forma de
-            // "volver al panel" cuando hay un modal abierto encima (Nueva
-            // transacción, Perfil) — al navegar de nuevo a esta misma
-            // sección, la página se remonta entera y el modal se cierra
-            // solo. En escritorio es una recarga redundante pero inofensiva.
+            // Sigue siendo clickeable aunque ya estés acá: en mobile es la
+            // forma de "volver" cuando hay un modal abierto encima (Nueva
+            // transacción, Perfil).
             return (
-              <a key={s.id} className={`${css.item} ${css.active}`} href={s.href ?? "#"}>
+              <Link
+                key={s.id}
+                className={`${css.item} ${css.active}`}
+                to={s.href ?? "#"}
+                onClick={onSeccionActiva}
+              >
                 <span className={css.ico}>{s.icono}</span>
                 <span className={css.itemLabel}>{t(s.label)}</span>
-              </a>
+              </Link>
             );
           }
           if (s.id === "nueva" && onNuevaTransaccion) {
@@ -86,13 +105,11 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
               </button>
             );
           }
-          // Enlaces normales, no del router: navegan con una recarga
-          // completa en vez de una transición de React Router.
           return (
-            <a key={s.id} className={css.item} href={s.href ?? "#"}>
+            <Link key={s.id} className={css.item} to={s.href ?? "#"}>
               <span className={css.ico}>{s.icono}</span>
               <span className={css.itemLabel}>{t(s.label)}</span>
-            </a>
+            </Link>
           );
         })}
         {/* Solo en mobile (ver Sidenav.module.css): la barra de abajo suma un
@@ -105,10 +122,10 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
             <span className={css.itemLabel}>{t("perfil_tab")}</span>
           </button>
         ) : (
-          <a className={`${css.item} ${css.perfilTab}`} href="/montor?perfil=1">
+          <Link className={`${css.item} ${css.perfilTab}`} to="/montor?perfil=1">
             <span className={css.ico}>👤</span>
             <span className={css.itemLabel}>{t("perfil_tab")}</span>
-          </a>
+          </Link>
         )}
       </nav>
 
@@ -127,9 +144,9 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
             {contenidoUsuario}
           </button>
         ) : (
-          <a className={`${css.user} ${css.userBtn}`} href="/montor?perfil=1">
+          <Link className={`${css.user} ${css.userBtn}`} to="/montor?perfil=1">
             {contenidoUsuario}
-          </a>
+          </Link>
         )}
       </div>
     </aside>

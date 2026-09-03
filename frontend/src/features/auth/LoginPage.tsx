@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
@@ -191,9 +192,9 @@ export function LoginPage() {
             </button>
             <p className={css.legal}>
               {lang === "en" ? "By creating an account you agree to our " : "Al crear una cuenta aceptás nuestros "}
-              <a href="/terminos">{t("terminos")}</a>
+              <Link to="/terminos">{t("terminos")}</Link>
               {lang === "en" ? " and " : " y "}
-              <a href="/privacidad">{t("politica_privacidad")}</a>
+              <Link to="/privacidad">{t("politica_privacidad")}</Link>
             </p>
           </form>
         )}

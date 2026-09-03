@@ -1,6 +1,7 @@
+import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 
-import { useSesion, useTransacciones } from "@/api/queries";
+import { useCotizaciones, useSesion, useTransacciones } from "@/api/queries";
 import { AppHeader } from "@/components/AppHeader";
 import { Sidenav } from "@/components/Sidenav";
 import { useFullBleed } from "@/hooks/useFullBleed";
@@ -29,6 +30,8 @@ export function AnalisisPage() {
   const { t, lang } = usePreferencias();
   const sesion = useSesion();
   const transacciones = useTransacciones();
+  // Respaldo para las filas viejas que no guardaron la cotización del día.
+  const cotizaciones = useCotizaciones();
 
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
 
@@ -44,10 +47,11 @@ export function AnalisisPage() {
   }
 
   const datos = useMemo(() => transacciones.data ?? [], [transacciones.data]);
+  const cotiz = cotizaciones.data ?? { USD: null, EUR: null };
   const categorias = useMemo(() => categoriasDisponibles(datos), [datos]);
   const analisis = useMemo(
-    () => calcularAnalisis(datos, filtros, lang),
-    [datos, filtros, lang],
+    () => calcularAnalisis(datos, filtros, lang, cotiz),
+    [datos, filtros, lang, cotiz.USD, cotiz.EUR],
   );
 
   // Si el filtro de tipo ya deja un solo lado, el selector de monedas del
@@ -90,7 +94,7 @@ export function AnalisisPage() {
         <div className={css.locked}>
           <h2>🔒 {t("solo_pro")}</h2>
           <p>{t("solo_pro_detalle")}</p>
-          <a href="/montor">{t("ver_planes")}</a>
+          <Link to="/montor">{t("ver_planes")}</Link>
         </div>
       </div>
     );

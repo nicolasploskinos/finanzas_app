@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import css from "./Landing.module.css";
 
@@ -15,9 +16,9 @@ export function CtaFinal() {
           ? "No card required. Set up your first transaction in under 2 minutes."
           : "Sin tarjeta necesaria. Cargá tu primera transacción en menos de 2 minutos."}
       </p>
-      <a href="/montor/login" className={css.btnPrimary}>
+      <Link to="/montor/login" className={css.btnPrimary}>
         {lang === "en" ? "I want free access →" : "Quiero acceso gratis →"}
-      </a>
+      </Link>
     </section>
   );
 }

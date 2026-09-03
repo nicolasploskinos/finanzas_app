@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
@@ -42,12 +44,12 @@ export function DashboardHeader({ username, isPro, fechaHoy, onAbrirPro, onCerra
                 ⭐ Pro
               </button>
             )}
-            <a href="/montor/viajes" title="Viajes" aria-label="Viajes" className={css.headerMobileLink}>
+            <Link to="/montor/viajes" title="Viajes" aria-label="Viajes" className={css.headerMobileLink}>
               ✈️
-            </a>
-            <a href="/montor/analisis" title="Análisis" aria-label="Análisis" className={css.headerMobileLink}>
+            </Link>
+            <Link to="/montor/analisis" title="Análisis" aria-label="Análisis" className={css.headerMobileLink}>
               📈
-            </a>
+            </Link>
             <button onClick={toggleLang} className={css.hdrLangBtn} aria-label="Switch language" title="Switch language">
               {lang === "en" ? "ES" : "EN"}
             </button>

@@ -93,6 +93,15 @@ export function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Tocar "Inicio" estando ya en el panel es la forma de volver a la vista
+   *  limpia: antes lo lograba la recarga completa, ahora se cierra a mano. */
+  function cerrarModales() {
+    setTxModalAbierto(false);
+    setPresupModalAbierto(false);
+    setProModalAbierto(false);
+    setPerfilModalAbierto(false);
+  }
+
   function abrirNuevo() {
     setEditando(null);
     setTxModalAbierto(true);
@@ -168,6 +177,7 @@ export function DashboardPage() {
           onNuevaTransaccion={abrirNuevo}
           onUpgrade={() => setProModalAbierto(true)}
           onPerfil={() => setPerfilModalAbierto(true)}
+          onSeccionActiva={cerrarModales}
           className={css.sidenavArea}
         />
 

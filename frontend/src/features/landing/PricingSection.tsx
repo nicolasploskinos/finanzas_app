@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { CountUpOnView } from "./CountUpOnView";
 import { PRECIO_FREE_FEATURES, PRECIO_PRO_FEATURES } from "./content";
@@ -34,9 +35,9 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
               </li>
             ))}
           </ul>
-          <a href="/montor/login" className={css.btnPrimary} style={{ display: "block", textAlign: "center" }}>
+          <Link to="/montor/login" className={css.btnPrimary} style={{ display: "block", textAlign: "center" }}>
             {lang === "en" ? "Try 7 days free →" : "Probá 7 días gratis →"}
-          </a>
+          </Link>
         </Reveal>
 
         <Reveal contenedor={contenedor} index={1} className={`${css.precioCard} ${css.pro}`}>
@@ -68,13 +69,13 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
               <li key={f.texto.es}>{f.texto[lang]}</li>
             ))}
           </ul>
-          <a
-            href="/montor/login"
+          <Link
+            to="/montor/login"
             className={css.btnPrimary}
             style={{ display: "block", textAlign: "center", background: "#d97706" }}
           >
             {lang === "en" ? "Start with Pro →" : "Empezar con Pro →"}
-          </a>
+          </Link>
         </Reveal>
       </div>
     </section>
