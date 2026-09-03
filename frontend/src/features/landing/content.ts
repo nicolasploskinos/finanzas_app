@@ -22,8 +22,8 @@ export const HERO_TILES: Array<{ tile: "blue" | "purple" | "green"; icon: string
     icon: "💵",
     title: { es: "MULTI-MONEDA REAL", en: "REAL MULTI-CURRENCY" },
     body: {
-      es: "ARS, USD y EUR convertidos automáticamente a la cotización oficial BNA.",
-      en: "ARS, USD, and EUR converted automatically at the official BNA rate.",
+      es: "ARS, USD y EUR, a la cotización oficial BNA.",
+      en: "ARS, USD, and EUR, at the official BNA rate.",
     },
   },
   {
@@ -31,8 +31,8 @@ export const HERO_TILES: Array<{ tile: "blue" | "purple" | "green"; icon: string
     icon: "✈️",
     title: { es: "VIAJES, EN DÓLARES", en: "TRIPS, IN DOLLARS" },
     body: {
-      es: "Etiquetá gastos a un viaje y mirá el total gastado, sin importar en qué moneda los cargaste.",
-      en: "Tag expenses to a trip and see the total spent, no matter what currency you logged them in.",
+      es: "Etiquetá gastos a un viaje y mirá el total, sin importar la moneda.",
+      en: "Tag expenses to a trip and see the total, no matter the currency.",
     },
   },
   {
@@ -40,8 +40,8 @@ export const HERO_TILES: Array<{ tile: "blue" | "purple" | "green"; icon: string
     icon: "🤖",
     title: { es: "RESUMEN MENSUAL CON IA", en: "AI MONTHLY SUMMARY" },
     body: {
-      es: "Un párrafo escrito de cero cada mes, interpretando cómo venís — no una plantilla.",
-      en: "A paragraph written fresh every month, interpreting how you're doing — not a template.",
+      es: "Un resumen distinto cada mes, escrito por IA — no una plantilla.",
+      en: "A different AI-written summary every month — not a template.",
     },
   },
 ];
@@ -51,8 +51,8 @@ export const FEATURES: Array<{ icon: string; title: Bi; body: Bi; slot?: "conver
     icon: "💱",
     title: { es: "Probá la conversión en vivo", en: "Try the conversion live" },
     body: {
-      es: "Escribí un monto y mirá cómo se convierte, igual que en la app.",
-      en: "Type an amount and see it converted, exactly like the app does it.",
+      es: "Escribí un monto y mirá cómo se convierte en el momento.",
+      en: "Type an amount and watch it convert in real time.",
     },
     slot: "converter",
   },
@@ -60,80 +60,80 @@ export const FEATURES: Array<{ icon: string; title: Bi; body: Bi; slot?: "conver
     icon: "🎯",
     title: { es: "Presupuestos por categoría", en: "Budgets by category" },
     body: {
-      es: "Definí cuánto querés gastar por mes en supermercado, salidas o lo que sea. Una barra de progreso te avisa cuando te vas acercando o ya te pasaste.",
-      en: "Set how much you want to spend per month on groceries, going out, or anything else. A progress bar warns you as you get close or go over.",
+      es: "Definí un límite mensual por categoría y una barra te avisa cuando te vas pasando.",
+      en: "Set a monthly limit per category and a bar warns you as you get close.",
     },
   },
   {
     icon: "🔄",
     title: { es: "Gastos recurrentes", en: "Recurring expenses" },
     body: {
-      es: "El alquiler, las suscripciones, la cuota del gimnasio. Configurás una vez y se agregan solos cada semana o cada mes.",
-      en: "Rent, subscriptions, the gym membership. Set it up once and they get added by themselves every week or every month.",
+      es: "Alquiler, suscripciones o el gimnasio: configurás una vez y se cargan solos cada mes.",
+      en: "Rent, subscriptions, the gym: set it up once and it's added automatically every month.",
     },
   },
   {
     icon: "📈",
     title: { es: "Análisis y tendencias", en: "Trends and analysis" },
     body: {
-      es: "Gráficos de ingresos vs. gastos mes a mes, tus categorías de gasto principales, y cómo viene evolucionando tu saldo en el tiempo.",
-      en: "Charts of income vs. expenses month by month, your top spending categories, and how your balance trends over time.",
+      es: "Ingresos, gastos y categorías principales, mes a mes.",
+      en: "Income, expenses, and top categories, month by month.",
     },
   },
   {
     icon: "📊",
     title: { es: "Saldo consolidado", en: "Consolidated balance" },
     body: {
-      es: "Un solo número que te dice cuánto tenés. Sin importar si ganás en dólares y gastás en pesos: ves el total en la moneda que elijas.",
-      en: "One single number that tells you how much you have. Doesn't matter if you earn in dollars and spend in pesos — see the total in whichever currency you pick.",
+      es: "Un solo número, en la moneda que elijas, sin importar en cuál ganás o gastás.",
+      en: "One single number, in whichever currency you pick — no matter where you earn or spend.",
     },
   },
   {
     icon: "📥",
     title: { es: "Importá tus movimientos", en: "Import your transactions" },
     body: {
-      es: "Subí el resumen CSV de tu banco o billetera virtual y la app reconoce fechas, montos y descripciones sola. Revisás y confirmás antes de cargar nada.",
-      en: "Upload the CSV statement from your bank or digital wallet and the app recognizes dates, amounts, and descriptions on its own. You review and confirm before anything gets loaded.",
+      es: "Subí el CSV de tu banco y la app reconoce todo sola. Vos confirmás antes de cargar.",
+      en: "Upload your bank's CSV and the app figures it out on its own. You confirm before it loads.",
     },
   },
   {
     icon: "📤",
     title: { es: "Exportá a Excel o PDF", en: "Export to Excel or PDF" },
     body: {
-      es: "Descargá todo tu historial en un archivo .xlsx prolijo o en un PDF con el resumen de ingresos y gastos, listo para guardar o compartir.",
-      en: "Download your whole history as a clean .xlsx file or a PDF with the income and expense summary, ready to save or share.",
+      es: "Descargá tu historial en Excel o PDF, listo para guardar o compartir.",
+      en: "Download your history as Excel or PDF, ready to save or share.",
     },
   },
   {
     icon: "🔍",
     title: { es: "Buscá y filtrá rápido", en: "Search and filter fast" },
     body: {
-      es: "Autocompletado de categorías según tu propio historial, búsqueda de texto libre y filtro por un día puntual o un rango de fechas para encontrar cualquier transacción en segundos.",
-      en: "Category autocomplete based on your own history, free-text search, and a filter for a single day or a date range to find any transaction in seconds.",
+      es: "Buscá por texto, categoría o rango de fechas y encontrá cualquier transacción en segundos.",
+      en: "Search by text, category, or date range and find any transaction in seconds.",
     },
   },
   {
     icon: "✏️",
     title: { es: "Editable y simple", en: "Editable and simple" },
     body: {
-      es: "Metiste mal un monto? Editás cualquier transacción en dos toques. Sin formularios complicados, sin pasos innecesarios.",
-      en: "Typed in the wrong amount? Edit any transaction in two taps. No complicated forms, no unnecessary steps.",
+      es: "¿Te equivocaste de monto? Editás cualquier transacción en dos toques.",
+      en: "Wrong amount? Edit any transaction in two taps.",
     },
   },
   {
     icon: "📈",
     title: { es: "Análisis mensual + inflación real", en: "Monthly analysis + real inflation" },
     body: {
-      es: "Gráfico de gastos por categoría y comparación automática con el mes anterior. Sumamos el índice de inflación del INDEC para que veas si tu gasto subió más o menos que los precios.",
-      en: "A category spending chart and automatic comparison against last month. We add INDEC's inflation index so you can see if your spending grew more or less than prices did.",
+      es: "Comparación automática con el mes anterior, más el índice de inflación del INDEC.",
+      en: "Automatic comparison with last month, plus INDEC's inflation index.",
     },
   },
   {
     icon: "🔐",
     title: { es: "Tus datos, solo tuyos", en: "Your data, only yours" },
     body: {
-      es: "No compartimos tu información con nadie. No vendemos datos. Si borrás tu cuenta, se eliminan todos tus registros. Acceso protegido con contraseña.",
-      en: "We don't share your information with anyone. We don't sell data. If you delete your account, all your records are erased. Password-protected access.",
+      es: "No compartimos ni vendemos tus datos. Borrás tu cuenta y se elimina todo.",
+      en: "We don't share or sell your data. Delete your account and everything's gone.",
     },
   },
 ];
