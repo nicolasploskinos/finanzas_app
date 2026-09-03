@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 
-import { useCotizaciones, useSesion, useTransacciones } from "@/api/queries";
+import { useCategorias, useCotizaciones, useSesion, useTransacciones } from "@/api/queries";
 import { AppHeader } from "@/components/AppHeader";
 import { Sidenav } from "@/components/Sidenav";
 import { useFullBleed } from "@/hooks/useFullBleed";
@@ -12,7 +12,8 @@ import css from "./Analisis.module.css";
 import { CategoryRank } from "./CategoryRank";
 import { MonthlyChart, TrendChart } from "./Charts";
 import { KpiGrid } from "./KpiGrid";
-import { calcularAnalisis, categoriasDisponibles, FILTROS_INICIALES, MONEDAS } from "./analytics";
+import { calcularAnalisis, FILTROS_INICIALES, MONEDAS, rangoPeriodo } from "./analytics";
+import { aISO } from "@/lib/formato";
 import type { Filtros, Periodo } from "./analytics";
 import type { Moneda } from "@/api/types";
 
@@ -28,12 +29,19 @@ const PILLS: Array<{ id: Periodo; label: MsgKey }> = [
 export function AnalisisPage() {
   useFullBleed(nebula.fullBleed);
   const { t, lang } = usePreferencias();
+  const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
+
+  // Al servidor sólo se le pide el período elegido, no todo el historial.
+  const rango = useMemo(() => {
+    const { desde, hasta } = rangoPeriodo(filtros.periodo, new Date());
+    return { desde: desde ? aISO(desde) : null, hasta: hasta ? aISO(hasta) : null };
+  }, [filtros.periodo]);
+
   const sesion = useSesion();
-  const transacciones = useTransacciones();
+  const transacciones = useTransacciones(rango);
   // Respaldo para las filas viejas que no guardaron la cotización del día.
   const cotizaciones = useCotizaciones();
-
-  const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
+  const categoriasQuery = useCategorias();
 
   /** Prende/apaga una moneda en el lado que corresponda (ingresos o gastos). */
   function toggleMoneda(lado: "monedasIng" | "monedasGas", m: Moneda) {
@@ -48,7 +56,11 @@ export function AnalisisPage() {
 
   const datos = useMemo(() => transacciones.data ?? [], [transacciones.data]);
   const cotiz = cotizaciones.data ?? { USD: null, EUR: null };
-  const categorias = useMemo(() => categoriasDisponibles(datos), [datos]);
+  // Del historial completo, no del rango visible (ver useCategorias).
+  const categorias = useMemo(
+    () => (categoriasQuery.data ?? []).map((c) => c.nombre).sort((a, b) => a.localeCompare(b)),
+    [categoriasQuery.data],
+  );
   const analisis = useMemo(
     () => calcularAnalisis(datos, filtros, lang, cotiz),
     [datos, filtros, lang, cotiz.USD, cotiz.EUR],

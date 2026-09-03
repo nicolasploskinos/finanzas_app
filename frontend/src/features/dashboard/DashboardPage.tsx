@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useBorrarTx, useCotizaciones, usePresupuestos, useSesion, useTransacciones } from "@/api/queries";
+import { useBorrarTx, useCategorias, useCotizaciones, usePresupuestos, useSesion, useTransacciones } from "@/api/queries";
 import type { Moneda, Transaccion } from "@/api/types";
 import { Sidenav } from "@/components/Sidenav";
 import { useFullBleed } from "@/hooks/useFullBleed";
@@ -16,7 +16,7 @@ import { ExportMenu } from "./ExportMenu";
 import { Filtros } from "./Filtros";
 import { ImportFlow } from "./ImportFlow";
 import { LimiteBanner } from "./LimiteBanner";
-import { categoriasDisponibles, categoriasPorFrecuencia, filtrarTransacciones, FILTROS_INICIALES } from "./logic";
+import { filtrarTransacciones, FILTROS_INICIALES, rangoParaFetch } from "./logic";
 import { PresupuestoModal } from "./PresupuestoModal";
 import { PresupuestosCard } from "./PresupuestosCard";
 import { trd } from "./messages";
@@ -47,13 +47,19 @@ export function DashboardPage() {
   const toast = useToast();
   const [params, setParams] = useSearchParams();
 
+  const [filtros, setFiltros] = useState(FILTROS_INICIALES);
+
+  const hoy = new Date();
+  // Al servidor sólo se le pide el rango que se está mirando; el resto de
+  // los filtros (texto, tipo, categoría) se siguen aplicando acá.
+  const rango = useMemo(() => rangoParaFetch(filtros, hoy), [filtros.periodo, filtros.dia]);
+
   const sesion = useSesion();
-  const transacciones = useTransacciones();
+  const transacciones = useTransacciones(rango);
   const cotizaciones = useCotizaciones();
+  const categoriasQuery = useCategorias();
   const presupuestos = usePresupuestos();
   const borrarTx = useBorrarTx();
-
-  const [filtros, setFiltros] = useState(FILTROS_INICIALES);
   const [monedaConsol, setMonedaConsol] = useState<Moneda>("ARS");
 
   const [txModalAbierto, setTxModalAbierto] = useState(false);
@@ -71,9 +77,14 @@ export function DashboardPage() {
 
   const datos = useMemo(() => transacciones.data ?? [], [transacciones.data]);
   const cotiz = cotizaciones.data ?? { USD: null, EUR: null };
-  const categorias = useMemo(() => categoriasDisponibles(datos), [datos]);
-  const categoriasFrecuentes = useMemo(() => categoriasPorFrecuencia(datos), [datos]);
-  const hoy = new Date();
+  // Las categorías vienen del historial completo, no del rango visible: si
+  // no, el autocompletado se achicaría al cambiar de período.
+  const catCompletas = useMemo(() => categoriasQuery.data ?? [], [categoriasQuery.data]);
+  const categorias = useMemo(
+    () => [...catCompletas].map((c) => c.nombre).sort((a, b) => a.localeCompare(b)),
+    [catCompletas],
+  );
+  const categoriasFrecuentes = useMemo(() => catCompletas.map((c) => c.nombre), [catCompletas]);
   const filtrados = useMemo(() => filtrarTransacciones(datos, filtros, hoy), [datos, filtros]);
 
   const isPro = sesion.data?.is_pro ?? false;

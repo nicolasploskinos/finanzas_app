@@ -9,6 +9,7 @@ import {
   filtrarTransacciones,
   fromARS,
   normalizarRangoDia,
+  rangoParaFetch,
   toARS,
 } from "./logic";
 import type { Filtros } from "./logic";
@@ -92,6 +93,26 @@ describe("desdePeriodo", () => {
 
   it("'3m' cruza bien el cambio de año", () => {
     expect(desdePeriodo("3m", new Date(2026, 0, 15))).toEqual(new Date(2025, 10, 1));
+  });
+});
+
+describe("rangoParaFetch", () => {
+  const hoy = new Date(2026, 7, 15);
+
+  it("pide desde el arranque del período, sin tope superior", () => {
+    expect(rangoParaFetch(filtros({ periodo: "1m" }), hoy)).toEqual({ desde: "2026-08-01", hasta: null });
+    expect(rangoParaFetch(filtros({ periodo: "3m" }), hoy)).toEqual({ desde: "2026-06-01", hasta: null });
+  });
+
+  it("'todo' pide sin recorte", () => {
+    expect(rangoParaFetch(filtros({ periodo: "todo" }), hoy)).toEqual({ desde: null, hasta: null });
+  });
+
+  // Si el rango puntual no mandara su propia ventana, elegir un día viejo
+  // no traería nada del servidor y la lista quedaría vacía sin motivo.
+  it("el rango de días puntual manda por encima del período", () => {
+    const f = filtros({ periodo: "1m", dia: { desde: "2024-03-01", hasta: "2024-03-31" } });
+    expect(rangoParaFetch(f, hoy)).toEqual({ desde: "2024-03-01", hasta: "2024-03-31" });
   });
 });
 

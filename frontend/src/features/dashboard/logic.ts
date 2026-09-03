@@ -1,4 +1,5 @@
 import type { Cotizaciones, Moneda, Tipo, Transaccion } from "@/api/types";
+import { aISO } from "@/lib/formato";
 
 export const PERIODOS = ["1m", "3m", "6m", "1a", "todo"] as const;
 export type Periodo = (typeof PERIODOS)[number];
@@ -46,6 +47,17 @@ export function desdePeriodo(periodo: Periodo, hoy: Date): Date | null {
   else if (periodo === "6m") d.setMonth(d.getMonth() - 5);
   else if (periodo === "1a") d.setMonth(0);
   return d;
+}
+
+/**
+ * Ventana de fechas a pedirle al servidor. Es la del período elegido, salvo
+ * que haya un rango de días puntual activo: ese puede apuntar a fechas
+ * viejas fuera del período, y si no se pidieran no habría nada que filtrar.
+ */
+export function rangoParaFetch(f: Filtros, hoy: Date): { desde: string | null; hasta: string | null } {
+  if (f.dia) return { desde: f.dia.desde, hasta: f.dia.hasta };
+  const desde = desdePeriodo(f.periodo, hoy);
+  return { desde: desde ? aISO(desde) : null, hasta: null };
 }
 
 export function filtrarTransacciones(datos: Transaccion[], f: Filtros, hoy: Date): Transaccion[] {

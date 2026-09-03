@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/api/client";
 import type {
@@ -21,6 +21,9 @@ import type {
 export const claves = {
   sesion: ["sesion"] as const,
   transacciones: ["transacciones"] as const,
+  transaccionesRango: (r: { desde: string | null; hasta: string | null }) =>
+    ["transacciones", r.desde ?? "inicio", r.hasta ?? "hoy"] as const,
+  categorias: ["categorias"] as const,
   viajes: ["viajes"] as const,
   viaje: (id: number) => ["viajes", id] as const,
   cotizaciones: ["cotizaciones"] as const,
@@ -40,10 +43,39 @@ export function useSesion() {
   });
 }
 
-export function useTransacciones() {
+/** Ventana de fechas a pedir. `null` en un extremo = sin tope de ese lado. */
+export type RangoFechas = { desde: string | null; hasta: string | null };
+
+/**
+ * Trae sólo el rango que la pantalla está mostrando, en vez de bajarse todo
+ * el historial en cada carga: con años de movimientos esa consulta crecía
+ * sin techo. Cada rango se cachea por separado, así volver a un período ya
+ * visitado es instantáneo, y mientras llega uno nuevo se siguen mostrando
+ * los datos anteriores en lugar de vaciar la pantalla.
+ */
+export function useTransacciones(rango: RangoFechas = { desde: null, hasta: null }) {
+  const params = new URLSearchParams();
+  if (rango.desde) params.set("desde", rango.desde);
+  if (rango.hasta) params.set("hasta", rango.hasta);
+  const qs = params.toString();
+
   return useQuery({
-    queryKey: claves.transacciones,
-    queryFn: () => api.get<Transaccion[]>("/api/montor"),
+    queryKey: claves.transaccionesRango(rango),
+    queryFn: () => api.get<Transaccion[]>(`/api/montor${qs ? `?${qs}` : ""}`),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * Categorías ya usadas, con su frecuencia. Van por separado de las
+ * transacciones porque esas ahora llegan recortadas al período visible, y
+ * el autocompletado y el filtro por categoría necesitan todo el historial.
+ */
+export function useCategorias() {
+  return useQuery({
+    queryKey: claves.categorias,
+    queryFn: () => api.get<Array<{ nombre: string; usos: number }>>("/api/montor/categorias"),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -154,7 +186,11 @@ export type TransaccionPayload = {
 };
 
 function invalidarTrasEscribirTx(qc: ReturnType<typeof useQueryClient>) {
+  // Sin `exact`: las claves por rango son ["transacciones", desde, hasta],
+  // así que esto las alcanza a todas por prefijo.
   qc.invalidateQueries({ queryKey: claves.transacciones });
+  // La transacción pudo estrenar una categoría nueva.
+  qc.invalidateQueries({ queryKey: claves.categorias });
   qc.invalidateQueries({ queryKey: claves.presupuestos });
   // "stats" no lleva `exact` a propósito: cualquier mes pudo cambiar de
   // total, así que se invalidan todas las combinaciones mes/año en caché.

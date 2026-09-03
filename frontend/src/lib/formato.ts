@@ -21,3 +21,11 @@ export function formatFecha(iso: string, lang: Lang): string {
     year: "numeric",
   });
 }
+
+/** Fecha a YYYY-MM-DD en hora local. `toISOString()` no sirve acá: pasa por
+ *  UTC y en Argentina (UTC-3) devuelve el día anterior. */
+export function aISO(d: Date): string {
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}

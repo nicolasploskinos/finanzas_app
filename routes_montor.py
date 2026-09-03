@@ -2,6 +2,7 @@
 import csv
 import io
 import os
+import unicodedata
 from datetime import date, timedelta
 from flask import Blueprint, Response, jsonify, request, session
 
@@ -30,6 +31,27 @@ def cotizaciones():
     return jsonify(core._obtener_cotizaciones())
 
 
+_LIMITE_DEFAULT = 2000
+_LIMITE_MAXIMO = 5000
+
+
+def _sin_tildes(s):
+    """Misma normalización que usa el frontend para agrupar categorías."""
+    descompuesto = unicodedata.normalize("NFD", s.lower())
+    return "".join(c for c in descompuesto if unicodedata.category(c) != "Mn")
+
+
+def _fecha_valida(valor):
+    """Acepta sólo YYYY-MM-DD; cualquier otra cosa se ignora en vez de
+    romper la consulta."""
+    valor = (valor or "").strip()
+    try:
+        date.fromisoformat(valor)
+        return valor
+    except ValueError:
+        return ""
+
+
 @bp.route("/api/montor", methods=["GET"])
 @core.login_required
 def listar():
@@ -39,11 +61,59 @@ def listar():
         pass
     es_pro = core._es_pro(session["user_id"])
     query = core.db.table("transacciones").select("*").eq("user_id", session["user_id"])
+
+    # El frontend pide sólo el período que está mirando en vez de bajarse
+    # todo el historial en cada carga. Sin parámetros se comporta como antes.
+    desde = _fecha_valida(request.args.get("desde"))
+    hasta = _fecha_valida(request.args.get("hasta"))
+
     if not es_pro:
-        desde = (core._hoy_ar() - timedelta(days=90)).isoformat()
+        # El plan gratis nunca ve más de 90 días, pida lo que pida.
+        tope_gratis = (core._hoy_ar() - timedelta(days=90)).isoformat()
+        desde = max(desde, tope_gratis) if desde else tope_gratis
+
+    if desde:
         query = query.gte("fecha", desde)
-    res = query.order("fecha", desc=True).execute()
+    if hasta:
+        query = query.lte("fecha", hasta)
+
+    try:
+        limite = min(int(request.args.get("limit", _LIMITE_DEFAULT)), _LIMITE_MAXIMO)
+    except (TypeError, ValueError):
+        limite = _LIMITE_DEFAULT
+
+    res = query.order("fecha", desc=True).limit(max(1, limite)).execute()
     return jsonify(res.data)
+
+
+@bp.route("/api/montor/categorias", methods=["GET"])
+@core.login_required
+def categorias():
+    """Categorías que el usuario ya usó, con cuántas veces.
+
+    Va aparte de la lista de transacciones porque esa ahora llega recortada
+    al período que se está mirando, y el autocompletado del formulario y el
+    filtro por categoría necesitan el historial completo igual.
+    """
+    res = (
+        core.db.table("transacciones")
+        .select("categoria")
+        .eq("user_id", session["user_id"])
+        .execute()
+    )
+    usos = {}
+    for fila in res.data or []:
+        nombre = (fila.get("categoria") or "").strip()
+        if not nombre:
+            continue
+        # Se agrupa sin distinguir mayúsculas/tildes, quedándose con la
+        # primera forma escrita, igual que hacía el frontend.
+        clave = _sin_tildes(nombre)
+        if clave in usos:
+            usos[clave]["usos"] += 1
+        else:
+            usos[clave] = {"nombre": nombre, "usos": 1}
+    return jsonify(sorted(usos.values(), key=lambda c: -c["usos"]))
 
 
 @bp.route("/api/montor", methods=["POST"])
