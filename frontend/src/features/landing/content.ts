@@ -206,8 +206,8 @@ export const FAQ_ITEMS: Array<{ q: Bi; a: Bi }> = [
   {
     q: { es: "¿Puedo cancelar Pro cuando quiera?", en: "Can I cancel Pro whenever I want?" },
     a: {
-      es: "Sí, podés cancelar en cualquier momento desde Mercado Pago. No hay contratos ni períodos mínimos. Al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.",
-      en: "Yes, you can cancel anytime from Mercado Pago. No contracts or minimum periods. When you cancel, your account goes back to the free plan and you keep your data.",
+      es: "Sí, desde tu perfil dentro de la app, en dos toques. Ahí mismo ves cuándo es tu próximo cobro y podés cambiar la tarjeta o dar de baja. No hay contratos ni períodos mínimos: al cancelar, tu cuenta vuelve al plan gratis y conservás tus datos.",
+      en: "Yes, from your profile inside the app, in two taps. That's also where you see your next charge date and can change your card or cancel. No contracts or minimum periods: when you cancel, your account goes back to the free plan and you keep your data.",
     },
   },
   {

@@ -1,15 +1,15 @@
 # Montor: una aplicación web de gestión de finanzas personales multi-moneda con asistencia de Inteligencia Artificial
 
 **Autor:** Nicolás Ploskinos
-**Fecha:** Agosto de 2026
+**Fecha:** Septiembre de 2026
 
 ---
 
 ## Resumen
 
-Este trabajo presenta *Montor*, una aplicación web de control de gastos e ingresos personales pensada específicamente para el contexto económico argentino, donde conviven distintas monedas (pesos, dólares y euros) en el día a día de una misma persona. El sistema permite registrar transacciones, organizarlas por viajes, definir presupuestos por categoría, automatizar gastos recurrentes, e interactuar con la aplicación tanto desde una interfaz web como desde WhatsApp mediante un asistente conversacional impulsado por modelos de lenguaje (LLM). Se describen las decisiones de arquitectura, la integración de Inteligencia Artificial en distintos puntos del producto, las medidas de seguridad implementadas, la estrategia de testing automatizado y de integración continua, y el modelo de despliegue e infraestructura utilizado. El proyecto fue desarrollado y mantenido por un único desarrollador, e incorpora un modelo de negocio freemium con un plan pago (Pro) gestionado a través de Mercado Pago.
+Este trabajo presenta *Montor*, una aplicación web de control de gastos e ingresos personales pensada específicamente para el contexto económico argentino, donde conviven distintas monedas (pesos, dólares y euros) en el día a día de una misma persona. El sistema permite registrar transacciones, organizarlas por viajes, definir presupuestos por categoría, automatizar gastos recurrentes, e interactuar con la aplicación tanto desde una interfaz web como desde WhatsApp mediante un asistente conversacional impulsado por modelos de lenguaje (LLM). Se describen las decisiones de arquitectura —incluida la migración del frontend desde plantillas servidas por el servidor hacia una aplicación de página única en React—, la integración de Inteligencia Artificial en distintos puntos del producto, las medidas de seguridad implementadas, la estrategia de testing automatizado y de integración continua, y el modelo de despliegue e infraestructura utilizado. El proyecto fue desarrollado y mantenido por un único desarrollador, e incorpora un modelo de negocio freemium con un plan pago (Pro) gestionado a través de Mercado Pago.
 
-**Palabras clave:** finanzas personales, aplicación web, Flask, Inteligencia Artificial, procesamiento de lenguaje natural, WhatsApp Business API, Supabase, testing automatizado.
+**Palabras clave:** finanzas personales, aplicación web, Flask, React, Inteligencia Artificial, procesamiento de lenguaje natural, WhatsApp Business API, Supabase, testing automatizado.
 
 ---
 
@@ -43,7 +43,9 @@ Desarrollar una aplicación web de gestión de finanzas personales que resuelva 
 
 ### 3.1. Gestión de transacciones
 
-El núcleo de la aplicación es el registro de transacciones (gastos e ingresos), cada una con monto, moneda (ARS/USD/EUR), categoría, descripción y fecha. El usuario puede cargar, editar y eliminar movimientos desde una interfaz web responsive (optimizada primero para uso móvil, con una disposición de dos columnas a partir de los 900px de ancho), buscar y filtrar por texto libre, categoría o rango de fechas, y exportar su historial completo a Excel, PDF o CSV. El ancho máximo del contenido en la vista de escritorio se calcula en función del viewport (en lugar de un valor fijo) para aprovechar mejor el espacio disponible en monitores grandes sin perder la lectura cómoda propia de una columna angosta.
+El núcleo de la aplicación es el registro de transacciones (gastos e ingresos), cada una con monto, moneda (ARS/USD/EUR), categoría, descripción y fecha. El usuario puede cargar, editar y eliminar movimientos desde una interfaz web responsive, buscar y filtrar por texto libre, categoría o rango de fechas, y exportar su historial completo a Excel, PDF o CSV. En móvil, además, cada movimiento se puede eliminar deslizándolo hacia el costado.
+
+La interfaz se organiza distinto según el dispositivo. En escritorio ocupa el ancho completo de la pantalla y se divide en tres columnas: navegación a la izquierda, la lista de movimientos con sus filtros al centro, y una columna de widgets a la derecha (presupuestos del mes, resumen mensual, gastos recurrentes, vinculación de WhatsApp y cotizaciones), todos plegables y cerrados por defecto para que el usuario abra únicamente lo que quiere mirar. En móvil, ese mismo contenido se apila en una sola columna encabezada por el balance consolidado, la lista se limita a los movimientos más recientes con un botón para ver el resto, y la navegación pasa a una barra inferior fija con las mismas secciones que la barra lateral de escritorio.
 
 ### 3.2. Multi-moneda, cotización oficial y valor histórico
 
@@ -65,15 +67,38 @@ El usuario puede definir un presupuesto mensual por categoría (y moneda), visua
 
 La aplicación permite subir un archivo CSV exportado desde un banco o billetera virtual. El sistema detecta automáticamente el delimitador, reconoce las columnas relevantes (fecha, monto, descripción, o columnas separadas de débito/crédito) mediante heurísticas de coincidencia de encabezados, y le muestra al usuario una vista previa editable antes de confirmar la importación masiva.
 
+### 3.6. Perfil y autogestión de la suscripción
+
+Desde su perfil, el usuario administra su propia cuenta sin intervención del desarrollador: puede cambiar su nombre de usuario (validando que no esté tomado por otra cuenta), cambiar su contraseña (verificando primero la actual), y ver el estado de su plan. Si tiene una suscripción Pro activa, ve además el ciclo contratado (mensual o anual) y la fecha del próximo cobro, y puede cambiar el medio de pago o dar de baja la suscripción.
+
+El cambio de medio de pago merece una aclaración de diseño: como el procesador de pagos no expone una forma de reemplazar la tarjeta de una suscripción ya autorizada, la operación se resuelve creando una preaprobación nueva —donde el usuario carga la tarjeta directamente en el entorno del procesador, sin que la aplicación vea nunca los datos de la tarjeta— y cancelando la anterior. Para poder ofrecer todo esto, la aplicación guarda el identificador de la preaprobación de Mercado Pago asociada a cada usuario, el ciclo contratado y la fecha del próximo cobro informada por el procesador.
+
 ## 4. Arquitectura del sistema
 
 ### 4.1. Stack tecnológico
 
-El backend está desarrollado en Python con el framework **Flask**, sin un framework de frontend con build step: las vistas se sirven como plantillas Jinja2 con HTML, CSS y JavaScript "vanilla" embebidos, sin dependencias de Node.js ni proceso de compilación. Esta decisión, tomada deliberadamente, permite iterar sobre la interfaz sin fricción de tooling adicional, a costa de una menor capacidad de reutilización de componentes que la que ofrecería un framework como React — una relación costo-beneficio razonable para el tamaño y la etapa actual del proyecto.
+El backend está desarrollado en Python con el framework **Flask**, y el frontend es una aplicación de página única (SPA) construida con **React**, **TypeScript** y **Vite**.
+
+El proyecto no nació así: la primera versión servía las vistas como plantillas Jinja2 con HTML, CSS y JavaScript "vanilla" embebidos, sin dependencias de Node.js ni proceso de compilación —una decisión deliberada que permitía iterar sobre la interfaz sin fricción de tooling adicional—. A medida que la interfaz ganó estado propio (filtros combinados, acordeones, modales, gráficos que reaccionan al tema claro/oscuro, animaciones), el costo de sostener ese estado a mano en JavaScript sin componentes superó al costo del tooling, y se realizó una migración completa del frontend a React, página por página, manteniendo la aplicación funcionando en cada paso.
+
+Tras esa migración, la división de responsabilidades quedó así:
+
+- **Flask** expone exclusivamente una API JSON y sirve un shell HTML genérico (una única plantilla) para todas las rutas de la aplicación; ya no genera marcado de interfaz.
+- **React Router** resuelve la navegación del lado del cliente.
+- **TanStack Query** gestiona el ciclo de vida de los datos del servidor (cacheo, revalidación e invalidación tras cada escritura), eliminando el estado de sincronización manual que antes había que escribir a mano en cada pantalla.
+- Los estilos usan **CSS Modules**, que acotan cada regla al componente que la declara y evitan las colisiones de nombres propias de una hoja de estilos global.
+
+Una particularidad del despliegue condiciona este esquema: el hosting utilizado no ejecuta Node.js, por lo que la compilación se hace localmente y **el resultado compilado se versiona en el repositorio** junto al código fuente, quedando servido por Flask como archivos estáticos. Es un compromiso explícito —versionar un artefacto derivado no es una práctica deseable en general— aceptado para poder usar un stack de frontend moderno sobre un hosting gratuito sin pipeline de build propio.
+
+### 4.2. Identidad visual y accesibilidad de la interfaz
+
+La interfaz utiliza un sistema de diseño propio con soporte de **modo claro y oscuro**, donde ambos modos se definen como dos juegos de variables CSS sobre los mismos nombres de token (superficies, texto, bordes y colores semánticos de ingreso/gasto/alerta). Los componentes nunca referencian un color literal: leen el token, de modo que agregar o ajustar un modo no requiere tocar cada componente.
+
+La disposición se adapta al dispositivo: en escritorio, una barra lateral de navegación permanente junto a una grilla de tres columnas (navegación, contenido principal y panel de widgets); en móvil, el mismo conjunto de secciones se presenta como una barra de navegación inferior fija con ícono y etiqueta, respetando el área segura del dispositivo (el espacio reservado al indicador de gestos en teléfonos sin botón físico). Los gráficos leen los colores resueltos del tema en tiempo de ejecución, de forma que acompañan el cambio entre modo claro y oscuro sin duplicar configuración.
 
 La persistencia de datos se resuelve con **Supabase** (una capa de Postgres gestionado con una API REST autogenerada), accedida mediante su cliente Python oficial. La autenticación de usuarios es propia (no se utiliza Supabase Auth): las contraseñas se almacenan hasheadas con `werkzeug.security`, y la sesión del usuario se maneja mediante las cookies de sesión firmadas de Flask.
 
-### 4.2. Organización del código
+### 4.3. Organización del código
 
 El backend evolucionó de un único archivo monolítico de aproximadamente 1300 líneas a una estructura modular organizada por dominio funcional, utilizando *Blueprints* de Flask:
 
@@ -84,12 +109,15 @@ El backend evolucionó de un único archivo monolítico de aproximadamente 1300 
 - `routes_viajes.py`: gestión de viajes.
 - `routes_whatsapp.py`: vinculación y webhook del bot de WhatsApp.
 - `routes_pagos.py`: suscripción Pro vía Mercado Pago.
+- `routes_cuenta.py`: perfil del usuario — cambio de nombre y contraseña, estado de la suscripción y baja.
 
 Cada módulo de rutas accede a los recursos compartidos importando el módulo núcleo completo (en lugar de importar símbolos individuales), un patrón elegido deliberadamente para que la suite de tests pudiera seguir reemplazando dependencias (cliente de base de datos, cliente de IA) por *mocks* sin importar en qué archivo terminara viviendo el código que las utiliza.
 
-### 4.3. Modelo de datos
+### 4.4. Modelo de datos
 
 Las principales entidades del modelo de datos son: `usuarios`, `transacciones`, `viajes`, `presupuestos`, `recurrentes` y `whatsapp_users` (esta última vincula un número de teléfono con una cuenta de usuario, y almacena el identificador de la última transacción cargada por ese medio, para soportar la función de deshacer la última carga).
+
+La tabla `usuarios` guarda, además de las credenciales y el plan vigente, los datos necesarios para la autogestión de la suscripción descrita en la sección 3.6: el identificador de la preaprobación de Mercado Pago, el ciclo contratado y la fecha del próximo cobro. Estos dos últimos se actualizan desde el webhook del procesador de pagos, de modo que la aplicación no necesita consultar un servicio externo cada vez que el usuario abre su perfil.
 
 ## 5. Integración de Inteligencia Artificial
 
@@ -131,7 +159,7 @@ Además, dado que la aplicación procesa datos financieros personales y pagos, s
 
 ## 7. Testing y aseguramiento de calidad
 
-Se desarrolló una suite de más de 125 pruebas automatizadas con `pytest`, que cubre: autenticación (incluyendo el caso específico de que un intento fallido no revele si el nombre de usuario existe o no, y la exigencia de contraseñas de al menos 8 caracteres), el límite de intentos de inicio de sesión, el acceso denegado a rutas protegidas sin sesión iniciada, las funciones puras de cálculo (conversión de moneda, cómputo de fechas, resolución de la cotización histórica de una fecha pasada), la interpretación de mensajes de WhatsApp (incluyendo casos límite como jerga, distintos idiomas, y la degradación cuando la IA no está disponible), el manejo de errores 404/500, y los distintos endpoints de la API — entre ellos, que el total de un mes o de un viaje no cambie si la cotización del dólar cambia después de cargada una transacción.
+Se desarrolló una suite de casi 150 pruebas automatizadas con `pytest`, que cubre: autenticación (incluyendo el caso específico de que un intento fallido no revele si el nombre de usuario existe o no, y la exigencia de contraseñas de al menos 8 caracteres), el límite de intentos de inicio de sesión, el acceso denegado a rutas protegidas sin sesión iniciada, las funciones puras de cálculo (conversión de moneda, cómputo de fechas, resolución de la cotización histórica de una fecha pasada), la interpretación de mensajes de WhatsApp (incluyendo casos límite como jerga, distintos idiomas, y la degradación cuando la IA no está disponible), el manejo de errores 404/500, y los distintos endpoints de la API — entre ellos, que el total de un mes o de un viaje no cambie si la cotización del dólar cambia después de cargada una transacción.
 
 Ninguna prueba se conecta a la base de datos real ni a ninguna API externa: tanto el cliente de Supabase como el cliente de Gemini se reemplazan por objetos simulados (*fakes*) definidos en el archivo de configuración compartido de pytest, lo que permite que la suite completa se ejecute en pocos segundos, de forma determinística y sin credenciales reales.
 
@@ -149,17 +177,23 @@ Para el entorno de desarrollo local se corrigió además un problema de arranque
 
 ## 10. Modelo de negocio
 
-El producto sigue un modelo *freemium*: el uso básico es gratuito y permanente (hasta 50 transacciones por mes, con historial de los últimos tres meses), mientras que un plan pago (**Montor Pro**) desbloquea transacciones ilimitadas, historial completo, viajes, gastos recurrentes automáticos, exportación avanzada, importación bancaria y el resumen mensual con IA. La suscripción se gestiona mediante la integración con **Mercado Pago**, con opción de pago mensual o anual (este último con un descuento equivalente a dos meses gratuitos), y todo usuario nuevo accede a una prueba gratuita de 7 días con las funciones Pro habilitadas.
+El producto sigue un modelo *freemium*: el uso básico es gratuito y permanente (hasta 50 transacciones por mes, con historial de los últimos tres meses), mientras que un plan pago (**Montor Pro**) desbloquea transacciones ilimitadas, historial completo, viajes, gastos recurrentes automáticos, exportación avanzada, importación bancaria y el resumen mensual con IA. La suscripción se gestiona mediante la integración con **Mercado Pago**, con opción de pago mensual o anual (este último con un descuento equivalente a dos meses gratuitos), y todo usuario nuevo accede a una prueba gratuita de 7 días con las funciones Pro habilitadas. La alta, el cambio de medio de pago y la baja son autogestionables por el propio usuario desde su perfil (ver sección 3.6), sin necesidad de contactar al desarrollador.
 
 ## 11. Conclusiones y trabajo futuro
 
 *Montor* demuestra que es posible construir, con recursos de un único desarrollador, un producto de software con funcionalidad real y diferenciada —particularmente en su integración de Inteligencia Artificial conversacional multicanal— sin resignar prácticas de ingeniería de software habitualmente asociadas a equipos más grandes: testing automatizado, integración continua, control de versiones, y una arquitectura modular que facilita el mantenimiento a largo plazo.
 
-Entre las líneas de trabajo futuro identificadas se destacan: completar el proceso de verificación de negocio de Meta para habilitar el bot de WhatsApp a cualquier usuario (actualmente restringido a una única cuenta por una limitación de la plataforma, no del sistema propio); incorporar categorización automática de transacciones mediante IA en la carga desde la interfaz web (hoy disponible únicamente vía WhatsApp); y evaluar la migración del frontend a un framework de componentes si la complejidad de la interfaz lo justifica en el futuro.
+El proyecto también ilustra que las decisiones de arquitectura tienen fecha de vencimiento: servir la interfaz como plantillas sin proceso de compilación fue la decisión correcta mientras la interfaz era simple, y dejó de serlo cuando el estado del lado del cliente creció; la migración posterior a un framework de componentes se hizo de forma incremental, página por página, con la aplicación funcionando en todo momento.
+
+Entre las líneas de trabajo futuro identificadas se destacan: completar el proceso de verificación de negocio de Meta para habilitar el bot de WhatsApp a cualquier usuario (actualmente restringido a una única cuenta por una limitación de la plataforma, no del sistema propio); incorporar categorización automática de transacciones mediante IA en la carga desde la interfaz web (hoy disponible únicamente vía WhatsApp); y dividir el paquete compilado del frontend en fragmentos cargados bajo demanda, hoy servido como un único archivo que supera el umbral recomendado por la herramienta de compilación.
 
 ## Referencias / tecnologías utilizadas
 
-- Flask (framework web, Python)
+- Flask (API web, Python)
+- React + TypeScript (interfaz de usuario)
+- Vite (compilación del frontend)
+- React Router (navegación del lado del cliente)
+- TanStack Query (gestión del estado del servidor en el cliente)
 - Supabase (Postgres gestionado, API REST)
 - Google Gemini API (modelos `gemini-3.5-flash-lite`) — interpretación de lenguaje natural, transcripción de audio, generación de texto
 - WhatsApp Business Platform (Meta Cloud API)
