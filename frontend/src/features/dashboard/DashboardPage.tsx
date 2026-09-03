@@ -17,7 +17,6 @@ import { Filtros } from "./Filtros";
 import { ImportFlow } from "./ImportFlow";
 import { LimiteBanner } from "./LimiteBanner";
 import { categoriasDisponibles, categoriasPorFrecuencia, filtrarTransacciones, FILTROS_INICIALES } from "./logic";
-import { MultiMonedaCard } from "./MultiMonedaCard";
 import { PresupuestoModal } from "./PresupuestoModal";
 import { PresupuestosCard } from "./PresupuestosCard";
 import { trd } from "./messages";
@@ -208,7 +207,6 @@ export function DashboardPage() {
               </div>
             </div>
           )}
-          <MultiMonedaCard filtrados={filtrados} />
           <RecurrentesCard abierto={recurOpen} onToggle={() => setRecurOpen((v) => !v)} />
           {whatsappHabilitado && <WhatsappCard abierto={waOpen} onToggle={() => setWaOpen((v) => !v)} />}
           <CotizacionesCard cotiz={cotiz} cargando={cotizaciones.isPending} />

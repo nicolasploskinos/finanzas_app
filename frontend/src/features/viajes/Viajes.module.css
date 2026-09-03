@@ -34,7 +34,7 @@
 
 .fab {
   position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
   right: 20px;
   width: 58px;
   height: 58px;

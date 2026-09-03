@@ -193,28 +193,6 @@
 .consCardValue.red { color: var(--red); text-shadow: 0 0 24px rgba(var(--red-rgb), 0.3); }
 .consNota { font-size: 10px; color: var(--muted); text-align: right; margin-top: 8px; }
 
-/* ── Multi-moneda ── */
-.multimonCard {
-  margin: 0 12px 8px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border: 1px solid var(--border);
-}
-.multimonTitle { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-.multimonGrid { display: flex; flex-direction: column; gap: 8px; }
-.multimonRow {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--surface2); border-radius: 12px; padding: 9px 12px;
-  transition: transform 0.2s;
-}
-.multimonRow:hover { transform: translateX(2px); }
-.multimonMon { font-size: 12px; font-weight: 800; color: var(--muted); }
-.multimonVal { font-size: 14px; font-weight: 800; font-family: "Space Grotesk", inherit; }
-.multimonVal.green { color: var(--green); }
-.multimonVal.red { color: var(--red); }
-
 /* ── Cotizaciones ── */
 .cotCard {
   margin: 0 12px 8px;
@@ -659,7 +637,7 @@
   position: fixed;
   /* En mobile deja lugar a la barra de navegación fija de abajo (ver
      Sidenav.module.css); en escritorio esa barra no existe. */
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
   right: 20px;
   width: 58px;
   height: 58px;
@@ -777,23 +755,36 @@
 
 /* ── Perfil ── */
 .perfilDivider { height: 1px; background: var(--border); margin: 22px 0 18px; border: none; }
-.perfilSectionTitle { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+.perfilSectionTitle { font-size: 14px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
 .perfilPlanCard {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 16px 18px;
+  padding: 18px 20px;
 }
-.perfilPlanEstado { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.perfilPlanEstado { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
 .perfilPlanFila {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 15px;
   color: var(--muted);
-  padding: 8px 0;
+  padding: 10px 0;
   border-top: 1px solid var(--border);
 }
-.perfilPlanFila span:last-child { color: var(--text); font-weight: 700; }
+.perfilPlanFila span:first-child { flex-shrink: 0; }
+.perfilPlanFila span:last-child { color: var(--text); font-weight: 700; text-align: right; min-width: 0; }
+/* Texto largo (ej: "todavía no tenemos la fecha exacta"): ocupa el ancho
+   completo en vez de pelear con la etiqueta dentro de una fila. */
+.perfilPlanNota {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
 .perfilLinkBtn {
   display: block;
   width: 100%;
@@ -804,8 +795,8 @@
   color: var(--blue);
   font: inherit;
   font-weight: 700;
-  font-size: 13px;
-  padding: 11px;
+  font-size: 15px;
+  padding: 13px;
   margin-top: 14px;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
@@ -814,7 +805,7 @@
 .perfilLinkBtn:disabled { opacity: 0.6; cursor: default; }
 .perfilLinkBtn.perfilDanger { color: var(--red); }
 .perfilLinkBtn.perfilDanger:hover { background: rgba(var(--red-rgb), 0.1); border-color: rgba(var(--red-rgb), 0.4); }
-.perfilAyuda { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+.perfilAyuda { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
 
 /* ── Modal Pro ── */
 .proOverlay {
@@ -973,12 +964,6 @@
   .hero .consCardValue { font-size: clamp(28px, 2.4vw, 42px); margin-top: 6px; }
   .hero .consNota { font-size: 12px; margin-top: 14px; }
 
-  .multimonCard { border-radius: 24px; padding: 26px 28px; border-left-width: 4px; border-left-style: solid; border-left-color: var(--teal); }
-  .multimonTitle { font-size: 17px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-  .multimonGrid { display: flex; flex-direction: column; gap: 14px; }
-  .multimonRow { background: var(--surface2); border-radius: 14px; padding: 16px 20px; }
-  .multimonMon { font-size: 17px; font-weight: 800; color: var(--muted); }
-  .multimonVal { font-size: 21px; font-weight: 800; }
 
   @media (min-width: 1900px) {
     .lista { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; align-items: start; }
@@ -1070,6 +1055,12 @@
   .presupModalCat { font-size: 18px; }
   .presupModalMonto { font-size: 16px; }
   .presupModalBorrar { font-size: 27px; }
+  .perfilSectionTitle { font-size: 16px; }
+  .perfilPlanEstado { font-size: 20px; }
+  .perfilPlanFila { font-size: 17px; padding: 12px 0; }
+  .perfilPlanNota { font-size: 15px; padding-top: 12px; }
+  .perfilLinkBtn { font-size: 17px; padding: 15px; }
+  .perfilAyuda { font-size: 14px; }
   .campo input, .campo select { font-size: 19px; padding: 18px 20px; }
   .btnGuardar { font-size: 20px; padding: 20px; }
   .importResumen { font-size: 17px; }

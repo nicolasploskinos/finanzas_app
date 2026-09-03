@@ -168,14 +168,17 @@ export function ProfileModal({ abierto, onCerrar, onVerPlanes }: Props) {
 
             {c.is_pro && !c.is_trial && (
               <>
-                <div className={css.perfilPlanFila}>
-                  <span>{trd("proximo_pago", lang)}</span>
-                  <span>
-                    {c.suscripcion?.proximo_pago
-                      ? formatFechaHora(c.suscripcion.proximo_pago, lang)
-                      : trd("sin_fecha_proximo_pago", lang)}
-                  </span>
-                </div>
+                {/* La fecha exacta entra como valor de la fila; el texto
+                 *  largo de "todavía no la sabemos" va como nota aparte,
+                 *  que en una fila etiqueta/valor se encimaba. */}
+                {c.suscripcion?.proximo_pago ? (
+                  <div className={css.perfilPlanFila}>
+                    <span>{trd("proximo_pago", lang)}</span>
+                    <span>{formatFechaHora(c.suscripcion.proximo_pago, lang)}</span>
+                  </div>
+                ) : (
+                  <p className={css.perfilPlanNota}>{trd("sin_fecha_proximo_pago", lang)}</p>
+                )}
                 {c.suscripcion?.ciclo && (
                   <div className={css.perfilPlanFila}>
                     <span>{lang === "en" ? "Billing cycle" : "Ciclo"}</span>
