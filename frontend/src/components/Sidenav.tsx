@@ -66,11 +66,16 @@ export function Sidenav({ activa, username, isPro, onNuevaTransaccion, onUpgrade
       <nav className={css.nav}>
         {SECCIONES.map((s) => {
           if (s.id === activa) {
+            // Clickeable aunque ya estés acá: en mobile es la forma de
+            // "volver al panel" cuando hay un modal abierto encima (Nueva
+            // transacción, Perfil) — al navegar de nuevo a esta misma
+            // sección, la página se remonta entera y el modal se cierra
+            // solo. En escritorio es una recarga redundante pero inofensiva.
             return (
-              <span key={s.id} className={`${css.item} ${css.active}`}>
+              <a key={s.id} className={`${css.item} ${css.active}`} href={s.href ?? "#"}>
                 <span className={css.ico}>{s.icono}</span>
-                <span>{t(s.label)}</span>
-              </span>
+                <span className={css.itemLabel}>{t(s.label)}</span>
+              </a>
             );
           }
           if (s.id === "nueva" && onNuevaTransaccion) {

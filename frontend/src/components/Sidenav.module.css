@@ -6,7 +6,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 150;
+  /* Más alto que cualquier modal (ver Modal.module.css / .proOverlay en
+     Dashboard.module.css) para que la barra nunca quede tapada ni
+     inalcanzable, sin importar qué esté abierto arriba. */
+  z-index: 600;
   display: flex;
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(20px) saturate(1.4);

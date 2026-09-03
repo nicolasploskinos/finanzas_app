@@ -3,7 +3,13 @@
 .overlay {
   display: flex;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* En mobile no llega hasta el borde: deja siempre visible (y tocable) la
+     barra de navegación de abajo, que tiene más z-index que esto — ver
+     Sidenav.module.css. En escritorio no hay barra que esquivar. */
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
   background: rgba(0, 0, 0, 0.65);
   z-index: 300;
   align-items: flex-end;
@@ -48,7 +54,7 @@
 }
 
 @media (min-width: 900px) {
-  .overlay { align-items: center; }
+  .overlay { bottom: 0; align-items: center; }
   .modal { max-width: 560px; border-radius: 28px; padding: 36px 40px 40px; }
   .handle { display: none; }
   .titulo { font-size: 24px; }

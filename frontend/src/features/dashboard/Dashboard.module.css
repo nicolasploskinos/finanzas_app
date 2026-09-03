@@ -815,7 +815,12 @@
 .proOverlay {
   display: flex;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Igual que el modal genérico: no tapa la barra de navegación de abajo
+     en mobile. */
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
   background: rgba(0, 0, 0, 0.7);
   z-index: 500;
   align-items: flex-end;
@@ -1088,7 +1093,7 @@
   .btnProPagar { font-size: 20px; padding: 20px; }
   .btnProCancel { font-size: 17px; }
 
-  .proOverlay { align-items: center; }
+  .proOverlay { bottom: 0; align-items: center; }
   .proModal { max-width: 660px; border-radius: 28px; padding: 44px 48px 48px; }
   .proModalHandle { display: none; }
 }
