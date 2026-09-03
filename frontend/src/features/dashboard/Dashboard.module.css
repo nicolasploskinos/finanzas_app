@@ -925,8 +925,8 @@
     .header { padding-left: 40px; padding-right: 40px; }
   }
   .headerActions { gap: 12px; }
-  .hdrLangBtn { font-size: 13px; }
-  .hdrLogout { font-size: 13px; padding: 6px 0 6px 12px; }
+  .hdrLangBtn { font-size: 15px; }
+  .hdrLogout { font-size: 15px; padding: 6px 0 6px 12px; }
   .hdrIconBtn { font-size: 17px; }
 
   .consSection, .cotCard, .cotWrap, .tx { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
@@ -960,9 +960,9 @@
   .hero .consCard { padding: 20px 24px; border-radius: 20px; background: color-mix(in srgb, var(--surface2) 80%, transparent); }
   .hero .consCard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--blue) 30%, var(--border)); }
   .hero .consCardFull { grid-column: auto; text-align: left; }
-  .hero .consCardLabel { font-size: 12px; letter-spacing: 0.6px; }
+  .hero .consCardLabel { font-size: 14px; letter-spacing: 0.6px; }
   .hero .consCardValue { font-size: clamp(28px, 2.4vw, 42px); margin-top: 6px; }
-  .hero .consNota { font-size: 12px; margin-top: 14px; }
+  .hero .consNota { font-size: 14px; margin-top: 14px; }
 
 
   @media (min-width: 1900px) {
@@ -1004,7 +1004,7 @@
   .waLink { font-size: 19px; padding: 12px 20px; }
 
   .headerLeft h1 { font-size: 20px; }
-  .headerFecha { font-size: 12px; }
+  .headerFecha { font-size: 14px; }
   .headerLogoIcon { width: 24px; height: 24px; }
   .headerUsername { font-size: 15px; max-width: none; }
   .consTitle { font-size: 16px; }
@@ -1028,7 +1028,10 @@
   .statsDiff { font-size: 17px; }
   .statsGrid { gap: 14px; margin-bottom: 20px; }
   .statsCard { padding: 18px; border-radius: 16px; }
-  .catLabel { font-size: 13px; }
+  .catLabel { font-size: 15px; }
+  .catVacio { font-size: 15px; }
+  .chev { font-size: 13px; }
+  .iaBtn { font-size: 15px; }
   .busqueda { font-size: 20px; padding: 17px 50px 17px 26px; }
   .btnClearBusq { font-size: 28px; }
   .periodoBtn { font-size: 18px; padding: 12px 24px; }

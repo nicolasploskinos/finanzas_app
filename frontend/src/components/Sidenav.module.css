@@ -104,7 +104,7 @@
   }
   .label {
     display: block;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 800;
     color: var(--muted);
     text-transform: uppercase;
