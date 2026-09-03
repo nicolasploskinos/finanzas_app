@@ -38,31 +38,36 @@
   min-height: 100vh;
   color: var(--text);
 }
+/* Antes era blanco puro + violeta bien saturado (#6a3df0): mucho contraste
+   de color, cansador para uso prolongado. Se lleva a la misma paleta cálida
+   y tenue que ya usa el resto de la app sin rediseñar (tokens.css /
+   body.light), con colores menos saturados en vez de "apagar" la app a
+   gris. */
 :global(body.light) .theme {
-  --bg: #f6f4fc;
-  --surface: #ffffff;
-  --surface2: #f0ecfa;
-  --surface3: #e5def7;
-  --text: #18172b;
-  --muted: #6d6b8a;
-  --border: #e2dcf3;
-  --blue: #6a3df0;
-  --blue-dark: #5730d1;
-  --blue-rgb: 106, 61, 240;
-  --green: #00a882;
-  --green-rgb: 0, 168, 130;
-  --red: #e63465;
-  --red-rgb: 230, 52, 101;
-  --yellow: #c9820e;
-  --yellow-rgb: 201, 130, 14;
-  --violet: #9147e6;
-  --violet-rgb: 145, 71, 230;
-  --teal: #0f9c85;
-  --teal-rgb: 15, 156, 133;
+  --bg: #f2eee4;
+  --surface: #faf7f0;
+  --surface2: #ede5d3;
+  --surface3: #e2d8c1;
+  --text: #2b2620;
+  --muted: #756b5c;
+  --border: #ddd0b8;
+  --blue: #6d5bc4;
+  --blue-dark: #574a9e;
+  --blue-rgb: 109, 91, 196;
+  --green: #2f9d6f;
+  --green-rgb: 47, 157, 111;
+  --red: #c9556a;
+  --red-rgb: 201, 85, 106;
+  --yellow: #b8791f;
+  --yellow-rgb: 184, 121, 31;
+  --violet: #7c67c9;
+  --violet-rgb: 124, 103, 201;
+  --teal: #2f8f82;
+  --teal-rgb: 47, 143, 130;
 
   background:
-    radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(106, 61, 240, 0.08), transparent 60%),
-    radial-gradient(ellipse 900px 500px at 100% 10%, rgba(15, 156, 133, 0.06), transparent 55%),
+    radial-gradient(ellipse 1200px 600px at 15% -10%, rgba(109, 91, 196, 0.06), transparent 60%),
+    radial-gradient(ellipse 900px 500px at 100% 10%, rgba(47, 143, 130, 0.05), transparent 55%),
     var(--bg);
 }
 

@@ -27,17 +27,17 @@ body.light {
   --surface2: #ede4d3;
   --surface3: #e3d8c2;
   --blue-dark: #2f56ad;
-  --green: #1f9d6f;
-  --red: #d64a5c;
-  --blue: #3f6fd6;
+  --green: #2f9d6f;
+  --red: #c9556a;
+  --blue: #4a6fc4;
   --yellow: #b8791f;
-  --violet: #6d54c9;
-  --teal: #1a9186;
+  --violet: #7c67c9;
+  --teal: #2f8f82;
   --text: #2b2620;
   --muted: #756b5c;
   --border: #ddd0b8;
-  --green-rgb: 31, 157, 111;
-  --red-rgb: 214, 74, 92;
-  --blue-rgb: 63, 111, 214;
+  --green-rgb: 47, 157, 111;
+  --red-rgb: 201, 85, 106;
+  --blue-rgb: 74, 111, 196;
   --yellow-rgb: 184, 121, 31;
 }
