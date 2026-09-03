@@ -27,11 +27,23 @@ export const MSG = {
   gasto: { es: "Gasto", en: "Expense" },
   ingreso: { es: "Ingreso", en: "Income" },
   ing_vs_gas: {
-    es: "Ingresos vs. gastos por mes (ARS)",
-    en: "Income vs. expenses per month (ARS)",
+    es: "Ingresos vs. gastos por mes",
+    en: "Income vs. expenses per month",
   },
-  cat_principales: { es: "Categorías principales (ARS)", en: "Top categories (ARS)" },
-  tendencia_saldo: { es: "Tendencia del saldo (ARS)", en: "Balance trend (ARS)" },
+  cat_principales: { es: "Categorías principales", en: "Top categories" },
+  tendencia_saldo: { es: "Tendencia del saldo", en: "Balance trend" },
+  // Filtro de monedas por lado (ingresos / gastos)
+  ingresos: { es: "Ingresos", en: "Income" },
+  gastos: { es: "Gastos", en: "Expenses" },
+  monedas: { es: "Monedas", en: "Currencies" },
+  nota_conversion: {
+    es: "Los totales suman todas las monedas elegidas, convertidas a ARS con la cotización del día de cada movimiento.",
+    en: "Totals add up every selected currency, converted to ARS using each transaction's own exchange rate.",
+  },
+  sin_monedas: {
+    es: "Elegí al menos una moneda para ver datos.",
+    en: "Pick at least one currency to see data.",
+  },
   sin_datos: { es: "Todavía no hay suficientes datos", en: "Not enough data yet" },
   sin_gastos: { es: "Sin gastos registrados", en: "No expenses recorded" },
   solo_pro: { es: "Análisis es una función Pro", en: "Analytics is a Pro feature" },

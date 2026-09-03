@@ -80,6 +80,62 @@
 }
 .filtros select:focus { border-color: var(--blue); }
 
+/* Monedas: un grupo por lado (ingresos / gastos), cada chip se prende y
+   apaga por separado. El color del chip activo repite el del lado (verde
+   ingresos, rojo gastos) para no tener que leer la etiqueta. */
+.monedasFiltro { display: flex; gap: 10px; flex-wrap: wrap; padding: 0 0 10px; }
+.monedaGrupo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 5px 10px 5px 14px;
+}
+.monedaGrupoLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 2px;
+}
+.monedaChip {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 100px;
+  padding: 5px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.monedaChip:hover { color: var(--text); }
+.monedaChip.chipIng {
+  background: linear-gradient(135deg, var(--green), color-mix(in srgb, var(--green) 70%, black));
+  border-color: transparent;
+  color: #04241b;
+  box-shadow: 0 4px 12px rgba(var(--green-rgb), 0.3);
+}
+.monedaChip.chipGas {
+  background: linear-gradient(135deg, var(--red), color-mix(in srgb, var(--red) 70%, black));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--red-rgb), 0.3);
+}
+
+.notaConversion {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+  max-width: 70ch;
+}
+.notaConversion.notaAviso { color: var(--yellow); font-weight: 700; }
+
 .kpiGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -167,6 +223,10 @@
   .content { padding: 0; }
   .pill { font-size: 15px; padding: 9px 20px; }
   .filtros select { font-size: 15px; padding: 9px 20px; }
+  .monedaGrupoLabel { font-size: 13px; }
+  .monedaChip { font-size: 14px; padding: 7px 15px; }
+  .monedaGrupo { padding: 6px 12px 6px 16px; gap: 7px; }
+  .notaConversion { font-size: 14px; margin-bottom: 20px; }
 
   @media (min-width: 1900px) {
     .shell { padding-left: 40px; padding-right: 40px; }

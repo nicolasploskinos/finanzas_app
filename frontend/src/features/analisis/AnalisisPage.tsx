@@ -11,8 +11,9 @@ import css from "./Analisis.module.css";
 import { CategoryRank } from "./CategoryRank";
 import { MonthlyChart, TrendChart } from "./Charts";
 import { KpiGrid } from "./KpiGrid";
-import { calcularAnalisis, categoriasDisponibles } from "./analytics";
+import { calcularAnalisis, categoriasDisponibles, FILTROS_INICIALES, MONEDAS } from "./analytics";
 import type { Filtros, Periodo } from "./analytics";
+import type { Moneda } from "@/api/types";
 
 const PILLS: Array<{ id: Periodo; label: MsgKey }> = [
   { id: "1m", label: "este_mes" },
@@ -29,12 +30,18 @@ export function AnalisisPage() {
   const sesion = useSesion();
   const transacciones = useTransacciones();
 
-  const [filtros, setFiltros] = useState<Filtros>({
-    periodo: "1m",
-    tipo: "",
-    moneda: "",
-    categoria: "",
-  });
+  const [filtros, setFiltros] = useState<Filtros>(FILTROS_INICIALES);
+
+  /** Prende/apaga una moneda en el lado que corresponda (ingresos o gastos). */
+  function toggleMoneda(lado: "monedasIng" | "monedasGas", m: Moneda) {
+    setFiltros((f) => {
+      const actuales = f[lado];
+      const nuevas = actuales.includes(m)
+        ? actuales.filter((x) => x !== m)
+        : [...MONEDAS].filter((x) => actuales.includes(x) || x === m); // mantiene el orden ARS/USD/EUR
+      return { ...f, [lado]: nuevas };
+    });
+  }
 
   const datos = useMemo(() => transacciones.data ?? [], [transacciones.data]);
   const categorias = useMemo(() => categoriasDisponibles(datos), [datos]);
@@ -42,6 +49,14 @@ export function AnalisisPage() {
     () => calcularAnalisis(datos, filtros, lang),
     [datos, filtros, lang],
   );
+
+  // Si el filtro de tipo ya deja un solo lado, el selector de monedas del
+  // otro lado no tendría efecto: se esconde en vez de quedar muerto.
+  const ingVisible = filtros.tipo !== "Gasto";
+  const gasVisible = filtros.tipo !== "Ingreso";
+  const sinMonedas =
+    (!ingVisible || filtros.monedasIng.length === 0) &&
+    (!gasVisible || filtros.monedasGas.length === 0);
 
   const header = <AppHeader icono="📈" titulo={t("analisis")} />;
 
@@ -113,18 +128,6 @@ export function AnalisisPage() {
             </select>
 
             <select
-              value={filtros.moneda}
-              onChange={(e) =>
-                setFiltros((f) => ({ ...f, moneda: e.target.value as Filtros["moneda"] }))
-              }
-            >
-              <option value="">{t("todas")}</option>
-              <option value="ARS">ARS</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-
-            <select
               value={filtros.categoria}
               onChange={(e) => setFiltros((f) => ({ ...f, categoria: e.target.value }))}
             >
@@ -136,6 +139,48 @@ export function AnalisisPage() {
               ))}
             </select>
           </div>
+
+          {/* Monedas por lado: se puede mirar, por ejemplo, ingresos sólo en
+              dólares contra gastos en las tres. */}
+          <div className={css.monedasFiltro}>
+            {ingVisible && (
+              <div className={css.monedaGrupo}>
+                <span className={css.monedaGrupoLabel}>{t("ingresos")}</span>
+                {MONEDAS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={filtros.monedasIng.includes(m)}
+                    className={`${css.monedaChip} ${filtros.monedasIng.includes(m) ? css.chipIng : ""}`}
+                    onClick={() => toggleMoneda("monedasIng", m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {gasVisible && (
+              <div className={css.monedaGrupo}>
+                <span className={css.monedaGrupoLabel}>{t("gastos")}</span>
+                {MONEDAS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={filtros.monedasGas.includes(m)}
+                    className={`${css.monedaChip} ${filtros.monedasGas.includes(m) ? css.chipGas : ""}`}
+                    onClick={() => toggleMoneda("monedasGas", m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <p className={`${css.notaConversion} ${sinMonedas ? css.notaAviso : ""}`}>
+            {sinMonedas ? `⚠️ ${t("sin_monedas")}` : `💱 ${t("nota_conversion")}`}
+          </p>
 
           <KpiGrid analisis={analisis} />
 

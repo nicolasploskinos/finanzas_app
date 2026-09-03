@@ -5,11 +5,28 @@ import { MESES_CORTOS, tr } from "@/i18n/messages";
 export const PERIODOS = ["1m", "mes_pasado", "3m", "6m", "1a", "todo"] as const;
 export type Periodo = (typeof PERIODOS)[number];
 
+export const MONEDAS: Moneda[] = ["ARS", "USD", "EUR"];
+
+/**
+ * Las monedas se eligen por separado para ingresos y para gastos: se puede
+ * mirar, por ejemplo, los ingresos sólo en dólares contra los gastos en las
+ * tres monedas. Todo lo seleccionado se suma junto, convertido a ARS con la
+ * cotización que guardó cada movimiento (ver `toARS`).
+ */
 export type Filtros = {
   periodo: Periodo;
   tipo: Tipo | "";
-  moneda: Moneda | "";
+  monedasIng: Moneda[];
+  monedasGas: Moneda[];
   categoria: string;
+};
+
+export const FILTROS_INICIALES: Filtros = {
+  periodo: "1m",
+  tipo: "",
+  monedasIng: [...MONEDAS],
+  monedasGas: [...MONEDAS],
+  categoria: "",
 };
 
 export type MesSerie = {
@@ -106,7 +123,9 @@ export function parseFecha(iso: string): Date {
 
 function pasaFiltrosNoFecha(t: Transaccion, f: Filtros): boolean {
   if (f.tipo && t.tipo !== f.tipo) return false;
-  if (f.moneda && (t.moneda ?? "ARS") !== f.moneda) return false;
+  // Cada lado tiene su propia lista de monedas permitidas.
+  const permitidas = t.tipo === "Ingreso" ? f.monedasIng : f.monedasGas;
+  if (!permitidas.includes(t.moneda ?? "ARS")) return false;
   if (f.categoria && normalizar(t.categoria) !== normalizar(f.categoria)) return false;
   return true;
 }
