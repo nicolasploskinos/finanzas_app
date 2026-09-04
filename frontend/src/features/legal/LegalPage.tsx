@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import nebula from "@/styles/nebula.module.css";
 import css from "./Legal.module.css";
@@ -20,12 +20,31 @@ type Props = {
 
 export function LegalPage({ titulo, actualizado, intro, secciones }: Props) {
   const { modo, lang, toggleModo, toggleLang } = usePreferencias();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  /** Vuelve a la página desde la que se entró, no siempre a la landing.
+   *
+   *  A estas páginas se llega desde dos lugares distintos: el pie de la
+   *  landing y el texto legal del formulario de registro. Mandar siempre a
+   *  "/" dejaba a quien estaba por crearse una cuenta de nuevo en la landing,
+   *  teniendo que rehacer todo el camino hasta el login.
+   *
+   *  `location.key` vale "default" cuando esta es la primera página de la
+   *  visita (link compartido, resultado de Google): ahí no hay a dónde
+   *  volver, así que va a la landing. */
+  function volver() {
+    if (location.key === "default") navigate("/");
+    else navigate(-1);
+  }
 
   return (
     <div className={nebula.theme} data-tema="nebula">
     <div className={css.page}>
       <div className={css.topbar}>
-        <Link to="/">{lang === "en" ? "← Back to Montor" : "← Volver a Montor"}</Link>
+        <button type="button" className={css.volver} onClick={volver}>
+          {lang === "en" ? "← Back" : "← Volver"}
+        </button>
         <div className={css.acciones}>
           <button onClick={toggleLang} title="Switch language">
             {lang === "en" ? "ES" : "EN"}

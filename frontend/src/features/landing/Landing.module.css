@@ -30,7 +30,10 @@
 /* ── NAV ── */
 .nav {
   position: fixed;
-  top: 14px;
+  /* Suma el área segura de arriba: spa.html va con viewport-fit=cover, así
+     que la página se mete abajo de la barra de estado del teléfono y sin
+     esto la barra queda pisada por el reloj y la señal. */
+  top: calc(14px + env(safe-area-inset-top, 0px));
   left: 14px;
   right: 14px;
   z-index: 100;
@@ -102,11 +105,21 @@
   white-space: nowrap;
 }
 .navCta:hover { background: var(--blue); }
+.ctaCorto { display: none; }
+
 @media (max-width: 480px) {
-  .nav { padding: 0 14px; }
-  .navLogo { font-size: 20px; gap: 7px; }
-  .navLogo svg { width: 24px; height: 24px; }
-  .navCta { padding: 9px 14px; font-size: 14px; }
+  /* 64px de alto era mucho para un celular: la barra flotante se comía una
+     franja del hero. Baja a 52 y se aprietan los espacios, que además es lo
+     que hacía que el CTA no entrara y quedara cortado contra el borde. */
+  .nav { height: 52px; padding: 0 12px; gap: 8px; border-radius: 16px; }
+  .navLogo { font-size: 18px; gap: 6px; }
+  .navLogo svg { width: 22px; height: 22px; }
+  .navRight { gap: 6px; }
+  .langBtn { font-size: 11px; padding: 5px 7px; border-radius: 7px; }
+  .iconBtn { font-size: 16px; padding: 2px; }
+  .navCta { padding: 8px 12px; font-size: 13px; border-radius: 9px; }
+  .ctaLargo { display: none; }
+  .ctaCorto { display: inline; }
 }
 
 /* ── HERO ── */
