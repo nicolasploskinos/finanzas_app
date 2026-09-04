@@ -435,7 +435,7 @@
 /* ── Encabezado ── */
 .thQue { width: 44%; text-align: left; vertical-align: bottom; padding: 0 20px 16px; }
 .thQueTexto {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -485,14 +485,11 @@
 .proNombre { color: var(--yellow); }
 .planPrecio { font-size: 34px; font-weight: 900; line-height: 1.05; letter-spacing: -1px; }
 .planPrecio span { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
-.planNota { font-size: 12.5px; color: var(--muted); margin: 5px 0 16px; }
+.planNota { font-size: 14px; color: var(--muted); margin: 6px 0 16px; }
 
-/* Anclaje de precio: $6.000 al mes suena a suscripción; $200 por día suena a
-   nada. Es el mismo número dicho en la unidad en que la gente decide. */
-.planAncla { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .planAhorro {
   display: inline-block;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   background: rgba(var(--green-rgb), 0.1);
   border: 1px solid rgba(var(--green-rgb), 0.28);
@@ -508,8 +505,8 @@
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 11px;
-  padding: 11px 10px;
-  font-size: 14.5px;
+  padding: 12px 10px;
+  font-size: 15.5px;
   font-weight: 700;
   text-decoration: none;
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
@@ -528,7 +525,7 @@
 /* ── Filas ── */
 .tdQue {
   padding: 11px 20px;
-  font-size: 15.5px;
+  font-size: 16.5px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -537,8 +534,8 @@
 .filaIcono {
   font-size: 15px;
   line-height: 1;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
   border-radius: 9px;
   background: var(--surface2);
@@ -553,7 +550,7 @@
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   background: var(--surface);
-  font-size: 15px;
+  font-size: 16px;
 }
 .tdPro {
   background: rgba(var(--yellow-rgb), 0.05);
@@ -565,7 +562,7 @@
 .filaTabla:hover .tdPro { background: rgba(var(--yellow-rgb), 0.11); }
 .tabla tbody tr:last-child .tdPlan { border-radius: 0 0 18px 18px; }
 
-.pSi { color: var(--green); font-weight: 900; font-size: 17px; }
+.pSi { color: var(--green); font-weight: 900; font-size: 19px; }
 /* En Pro el tilde pesa más: es la columna donde queremos que se detengan. */
 .pSiPro {
   display: inline-flex;
@@ -600,11 +597,11 @@
   border: 1px solid rgba(var(--green-rgb), 0.3);
   color: var(--green);
   border-radius: 100px;
-  padding: 8px 18px;
-  font-size: 14.5px;
+  padding: 9px 20px;
+  font-size: 15.5px;
   font-weight: 700;
 }
-.pieNota { font-size: 13px; color: var(--muted); }
+.pieNota { font-size: 14px; color: var(--muted); }
 
 @media (max-width: 700px) {
   /* La tabla necesita cada píxel de ancho: con los 20px de la sección
@@ -616,14 +613,10 @@
   /* La cinta no se achica sola (va nowrap) y era la que fijaba el ancho
      mínimo de la columna: con la tabla desbordaba 17px y cortaba Pro. */
   .cinta { font-size: 8.5px; padding: 3px 7px; top: -10px; letter-spacing: 0.3px; }
-  /* El anclaje por día ocupa dos renglones en una columna de 110px: se cae
-     en celular, donde el espacio vale más que ese argumento. */
-  .planAncla { display: none; }
   .planNombre { font-size: 11px; }
   .planPrecio { font-size: 22px; }
   .planPrecio span { font-size: 11px; }
   .planNota { font-size: 11px; margin: 3px 0 10px; }
-  .planAncla { font-size: 10.5px; }
   .planAhorro { font-size: 10px; padding: 2px 6px; margin: 5px 0 9px; }
   /* Sin nowrap el rótulo se partía en tres renglones y estiraba el
      encabezado; con la etiqueta corta entra en uno solo. */
@@ -632,7 +625,7 @@
   .filaIcono { width: 23px; height: 23px; font-size: 12.5px; border-radius: 7px; }
   .tdPlan { padding: 9px 3px; font-size: 12px; }
   .piePill { font-size: 12.5px; padding: 7px 14px; }
-  .pieNota { font-size: 11.5px; }
+  .pieNota { font-size: 13px; }
 }
 
 /* ── CTA FINAL ── */
@@ -746,50 +739,46 @@
    px útiles según la barra del navegador, y con el tamaño holgado la sección
    medía 1123 — caía en el hueco entre tamaños y no entraba. */
 @media (max-height: 1200px) and (min-width: 900px) {
-  :global(#precio).section { padding-top: 32px; padding-bottom: 32px; }
+  :global(#precio).section { padding-top: 24px; padding-bottom: 24px; }
   :global(#precio) .h2 { font-size: 29px; margin-bottom: 6px; }
-  :global(#precio) .sectionSub { font-size: 15px; margin-bottom: 22px; }
+  :global(#precio) .sectionSub { font-size: 15px; margin-bottom: 16px; }
   :global(#precio) .sectionLabel { margin-bottom: 10px; }
-  .thPlan { padding: 15px 14px 13px; }
-  .planPrecio { font-size: 27px; }
-  .planNota { margin: 3px 0 10px; font-size: 11.5px; }
-  .planAncla { font-size: 11px; margin-top: 2px; }
-  .planAhorro { font-size: 11px; padding: 2px 9px; margin: 6px 0 10px; }
-  .planBtn { padding: 9px 10px; font-size: 13.5px; }
+  .thPlan { padding: 13px 14px 12px; }
+  .planPrecio { font-size: 30px; }
+  .planNota { margin: 3px 0 9px; font-size: 13px; }
+  .planAhorro { font-size: 12.5px; padding: 3px 10px; margin: 5px 0 9px; }
+  .planBtn { padding: 11px 10px; font-size: 15px; }
   .thQue { padding-bottom: 10px; }
-  .tdQue { padding: 6px 20px; font-size: 14.5px; }
-  .filaIcono { width: 25px; height: 25px; font-size: 13.5px; }
-  .tdPlan { padding: 6px 14px; }
-  .pSiPro { width: 21px; height: 21px; font-size: 12.5px; }
-  .tablaPie { margin-top: 14px; }
-  .piePill { font-size: 13px; padding: 6px 14px; }
-  .pieNota { font-size: 12px; }
+  .tdQue { padding: 5px 20px; font-size: 16px; }
+  .filaIcono { width: 24px; height: 24px; font-size: 14px; }
+  .tdPlan { padding: 5px 14px; font-size: 16px; }
+  .pSiPro { width: 24px; height: 24px; font-size: 14px; }
+  .tablaPie { margin-top: 11px; }
+  .piePill { font-size: 14.5px; padding: 8px 17px; }
+  .pieNota { font-size: 13.5px; }
 }
 
 /* Portátiles de 768px físicos: con la barra del navegador quedan ~630px
    útiles, así que necesitan un escalón más. */
 @media (max-height: 700px) and (min-width: 900px) {
-  :global(#precio).section { padding-top: 14px; padding-bottom: 14px; }
-  :global(#precio) .h2 { font-size: 25px; margin-bottom: 4px; }
-  :global(#precio) .sectionSub { font-size: 13px; margin-bottom: 12px; }
+  :global(#precio).section { padding-top: 8px; padding-bottom: 8px; }
+  :global(#precio) .h2 { font-size: 25px; margin-bottom: 2px; }
+  :global(#precio) .sectionSub { font-size: 13.5px; margin-bottom: 9px; }
   :global(#precio) .sectionLabel { font-size: 13px; margin-bottom: 6px; }
-  .tablaWrap { padding-top: 14px; }
-  .thPlan { padding: 11px 14px 10px; }
+  .tablaWrap { padding-top: 12px; }
+  .thPlan { padding: 9px 14px 8px; }
   .thQue { padding-bottom: 7px; }
-  .planPrecio { font-size: 23px; }
-  .planNota { font-size: 11px; margin: 2px 0 7px; }
-  /* El anclaje por día se cae acá: es el argumento más prescindible y libera
-     un renglón en el encabezado, que es lo que no entra. */
-  .planAncla { display: none; }
-  .planAhorro { font-size: 10.5px; padding: 2px 8px; margin: 4px 0 8px; }
-  .planBtn { padding: 7px 10px; font-size: 12.5px; }
-  .tdQue { padding: 3px 20px; font-size: 13.5px; }
-  .filaIcono { width: 22px; height: 22px; font-size: 12px; }
-  .tdPlan { padding: 3px 14px; font-size: 13.5px; }
-  .pSiPro { width: 19px; height: 19px; font-size: 11.5px; }
-  .tablaPie { margin-top: 9px; }
-  .piePill { font-size: 12px; padding: 5px 12px; }
-  .pieNota { font-size: 11.5px; }
+  .planPrecio { font-size: 27px; }
+  .planNota { font-size: 12.5px; margin: 2px 0 6px; }
+  .planAhorro { font-size: 12px; padding: 2px 9px; margin: 4px 0 7px; }
+  .planBtn { padding: 9px 10px; font-size: 14px; }
+  .tdQue { padding: 3px 20px; font-size: 15.5px; }
+  .filaIcono { width: 22px; height: 22px; font-size: 13px; }
+  .tdPlan { padding: 3px 14px; font-size: 15.5px; }
+  .pSiPro { width: 22px; height: 22px; font-size: 13px; }
+  .tablaPie { margin-top: 5px; }
+  .piePill { font-size: 13.5px; padding: 7px 15px; }
+  .pieNota { font-size: 13px; }
 }
 
 /* El h2 general va hasta 52px, pensado para remates de dos o tres palabras.

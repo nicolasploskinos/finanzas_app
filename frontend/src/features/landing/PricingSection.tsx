@@ -57,9 +57,6 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
                 <div className={css.planPrecio}>
                   $6.000<span>{lang === "en" ? "/mo" : "/mes"}</span>
                 </div>
-                <div className={css.planAncla}>
-                  {lang === "en" ? "less than $200 a day" : "menos de $200 por día"}
-                </div>
                 <div className={css.planAhorro}>
                   {lang === "en" ? "$60.000/yr · " : "$60.000/año · "}
                   <strong>{lang === "en" ? "save 2 months" : "ahorrás 2 meses"}</strong>
