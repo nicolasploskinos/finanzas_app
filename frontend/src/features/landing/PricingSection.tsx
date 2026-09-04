@@ -6,10 +6,10 @@ import { Reveal } from "./Reveal";
 import css from "./Landing.module.css";
 
 /** Una celda de plan: tilde, guion, o el valor cuando no es un sí/no. */
-function Celda({ valor, lang }: { valor: boolean | Bi; lang: "es" | "en" }) {
-  if (valor === true) return <span className={css.pSi}>✓</span>;
+function Celda({ valor, lang, pro }: { valor: boolean | Bi; lang: "es" | "en"; pro?: boolean }) {
+  if (valor === true) return <span className={pro ? css.pSiPro : css.pSi}>✓</span>;
   if (valor === false) return <span className={css.pNo}>—</span>;
-  return <span className={css.pValor}>{valor[lang]}</span>;
+  return <span className={pro ? css.pValorPro : css.pValor}>{valor[lang]}</span>;
 }
 
 export function PricingSection({ contenedor }: { contenedor: HTMLElement | null }) {
@@ -21,7 +21,9 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
         <span className={css.num}>04</span> — <span>{lang === "en" ? "Pricing" : "Precio"}</span>
       </div>
       <h2 className={css.h2}>
-        {lang === "en" ? "Two plans, one table" : "Dos planes, una sola tabla"}
+        {lang === "en"
+          ? "Free forever. Pro when you outgrow it."
+          : "Gratis para siempre. Pro cuando te quede chico."}
       </h2>
       <p className={css.sectionSub}>
         {lang === "en"
@@ -33,9 +35,11 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
         <table className={css.tabla}>
           <thead>
             <tr>
-              {/* Columna de nombres: sin encabezado propio, el título de cada
-                  plan ya dice de qué se trata la fila. */}
-              <th className={css.thQue} />
+              <th className={css.thQue}>
+                <span className={css.thQueTexto}>
+                  {lang === "en" ? "What you get" : "Qué incluye"}
+                </span>
+              </th>
               <th className={css.thPlan}>
                 <div className={css.planNombre}>{lang === "en" ? "FREE" : "GRATIS"}</div>
                 <div className={css.planPrecio}>$0</div>
@@ -45,13 +49,20 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
                 </Link>
               </th>
               <th className={`${css.thPlan} ${css.thPro}`}>
-                <div className={`${css.planNombre} ${css.proNombre}`}>⭐ PRO</div>
+                {/* La cinta ancla visualmente la columna que queremos que
+                    elijan: sin ella las dos pesaban igual y la tabla se leía
+                    como información, no como una decisión. */}
+                <div className={css.cinta}>{lang === "en" ? "RECOMMENDED" : "RECOMENDADO"}</div>
+                <div className={`${css.planNombre} ${css.proNombre}`}>PRO</div>
                 <div className={css.planPrecio}>
                   $6.000<span>{lang === "en" ? "/mo" : "/mes"}</span>
                 </div>
-                <div className={css.planNota}>
-                  {lang === "en" ? "or $60.000/yr — " : "o $60.000/año — "}
-                  <strong>{lang === "en" ? "2 months free" : "2 meses gratis"}</strong>
+                <div className={css.planAncla}>
+                  {lang === "en" ? "less than $200 a day" : "menos de $200 por día"}
+                </div>
+                <div className={css.planAhorro}>
+                  {lang === "en" ? "$60.000/yr · " : "$60.000/año · "}
+                  <strong>{lang === "en" ? "save 2 months" : "ahorrás 2 meses"}</strong>
                 </div>
                 <Link to="/montor/login" className={`${css.planBtn} ${css.planBtnPro}`}>
                   {lang === "en" ? "Get Pro →" : "Elegir Pro →"}
@@ -61,13 +72,18 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
           </thead>
           <tbody>
             {COMPARACION.map((fila) => (
-              <tr key={fila.que.es}>
-                <td className={css.tdQue}>{fila.que[lang]}</td>
+              <tr key={fila.que.es} className={css.filaTabla}>
+                <td className={css.tdQue}>
+                  <span className={css.filaIcono} aria-hidden="true">
+                    {fila.icono}
+                  </span>
+                  {fila.que[lang]}
+                </td>
                 <td className={css.tdPlan}>
                   <Celda valor={fila.gratis} lang={lang} />
                 </td>
                 <td className={`${css.tdPlan} ${css.tdPro}`}>
-                  <Celda valor={fila.pro} lang={lang} />
+                  <Celda valor={fila.pro} lang={lang} pro />
                 </td>
               </tr>
             ))}
@@ -76,9 +92,14 @@ export function PricingSection({ contenedor }: { contenedor: HTMLElement | null 
       </Reveal>
 
       <p className={css.tablaPie}>
-        {lang === "en"
-          ? "Every new account gets 7 days of Pro to try it out. Payments with Mercado Pago."
-          : "Toda cuenta nueva arranca con 7 días de Pro para probarlo. Pagos con Mercado Pago."}
+        <span className={css.piePill}>
+          {lang === "en"
+            ? "✨ Every new account starts with 7 days of Pro"
+            : "✨ Toda cuenta nueva arranca con 7 días de Pro"}
+        </span>
+        <span className={css.pieNota}>
+          {lang === "en" ? "Payments with Mercado Pago" : "Pagos con Mercado Pago"}
+        </span>
       </p>
     </section>
   );

@@ -165,18 +165,20 @@ export const CHECKLIST: Bi[] = [
  *  texto cuando el plan no es un sí/no sino una cantidad ("50", "3 meses").
  *
  *  Antes eran dos listas sueltas, una por plan, que repetían los mismos cinco
- *  ítems de arriba: quedaba larga, no entraba en pantalla y obligaba a leer
- *  las dos para entender qué cambiaba. Una sola tabla deja la diferencia a la
- *  vista. */
-export type FilaPrecio = { que: Bi; gratis: boolean | Bi; pro: boolean | Bi };
+ *  ítems: quedaba larga, no entraba en pantalla y obligaba a leer las dos
+ *  para entender qué cambiaba. Una sola tabla deja la diferencia a la vista.
+ *  El ícono es para que se escanee de un vistazo y no parezca una planilla. */
+export type FilaPrecio = { icono: string; que: Bi; gratis: boolean | Bi; pro: boolean | Bi };
 
 export const COMPARACION: FilaPrecio[] = [
   {
+    icono: "🧾",
     que: { es: "Transacciones por mes", en: "Transactions per month" },
     gratis: { es: "50", en: "50" },
     pro: { es: "Ilimitadas", en: "Unlimited" },
   },
   {
+    icono: "🗓️",
     que: { es: "Historial", en: "History" },
     gratis: { es: "3 meses", en: "3 months" },
     pro: { es: "Completo", en: "Full" },
@@ -184,6 +186,7 @@ export const COMPARACION: FilaPrecio[] = [
   {
     // Juntas en una fila y no en tres: siendo idénticas en los dos planes no
     // aportan a la comparación, y ocupaban un tercio de la tabla.
+    icono: "💵",
     que: {
       es: "Multi-moneda, cotización BNA y presupuestos",
       en: "Multi-currency, BNA rate, and budgets",
@@ -192,26 +195,31 @@ export const COMPARACION: FilaPrecio[] = [
     pro: true,
   },
   {
+    icono: "✈️",
     que: { es: "Viajes con seguimiento en dólares", en: "Trips tracked in dollars" },
     gratis: false,
     pro: true,
   },
   {
+    icono: "🔄",
     que: { es: "Gastos recurrentes automáticos", en: "Automatic recurring expenses" },
     gratis: false,
     pro: true,
   },
   {
+    icono: "🤖",
     que: { es: "Gráfico y resumen mensual con IA", en: "Chart and AI-written monthly summary" },
     gratis: false,
     pro: true,
   },
   {
+    icono: "📤",
     que: { es: "Exportar a Excel, PDF o CSV", en: "Export to Excel, PDF, or CSV" },
     gratis: false,
     pro: true,
   },
   {
+    icono: "📥",
     que: { es: "Importar movimientos bancarios", en: "Import bank statements" },
     gratis: false,
     pro: true,
