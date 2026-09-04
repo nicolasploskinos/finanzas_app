@@ -161,38 +161,61 @@ export const CHECKLIST: Bi[] = [
   },
 ];
 
-export type PrecioFeature = { texto: Bi; incluido: boolean };
+/** Una fila de la tabla de precios. `true` = incluido, `false` = no, y un
+ *  texto cuando el plan no es un sí/no sino una cantidad ("50", "3 meses").
+ *
+ *  Antes eran dos listas sueltas, una por plan, que repetían los mismos cinco
+ *  ítems de arriba: quedaba larga, no entraba en pantalla y obligaba a leer
+ *  las dos para entender qué cambiaba. Una sola tabla deja la diferencia a la
+ *  vista. */
+export type FilaPrecio = { que: Bi; gratis: boolean | Bi; pro: boolean | Bi };
 
-export const PRECIO_FREE_FEATURES: PrecioFeature[] = [
+export const COMPARACION: FilaPrecio[] = [
   {
-    incluido: true,
-    texto: {
-      es: "50 transacciones por mes (la app te avisa cuando te acercás)",
-      en: "50 transactions per month (the app warns you as you get close)",
-    },
+    que: { es: "Transacciones por mes", en: "Transactions per month" },
+    gratis: { es: "50", en: "50" },
+    pro: { es: "Ilimitadas", en: "Unlimited" },
   },
-  { incluido: true, texto: { es: "Multi-moneda (ARS, USD, EUR)", en: "Multi-currency (ARS, USD, EUR)" } },
-  { incluido: true, texto: { es: "Cotización BNA automática", en: "Automatic BNA exchange rate" } },
-  { incluido: true, texto: { es: "Presupuestos por categoría", en: "Budgets by category" } },
-  { incluido: true, texto: { es: "Historial últimos 3 meses", en: "Last 3 months of history" } },
-  { incluido: false, texto: { es: "Viajes con seguimiento en dólares", en: "Trips tracked in dollars" } },
-  { incluido: false, texto: { es: "Gastos recurrentes", en: "Recurring expenses" } },
-  { incluido: false, texto: { es: "Gráfico y resumen mensual con IA", en: "Chart and AI-written monthly summary" } },
-  { incluido: false, texto: { es: "Exportar a Excel / PDF", en: "Export to Excel / PDF" } },
-  { incluido: false, texto: { es: "Importar movimientos bancarios", en: "Import bank statements" } },
-];
-
-export const PRECIO_PRO_FEATURES: PrecioFeature[] = [
-  { incluido: true, texto: { es: "Transacciones ilimitadas", en: "Unlimited transactions" } },
-  { incluido: true, texto: { es: "Multi-moneda (ARS, USD, EUR)", en: "Multi-currency (ARS, USD, EUR)" } },
-  { incluido: true, texto: { es: "Cotización BNA automática", en: "Automatic BNA exchange rate" } },
-  { incluido: true, texto: { es: "Presupuestos por categoría", en: "Budgets by category" } },
-  { incluido: true, texto: { es: "Viajes con seguimiento en dólares", en: "Trips tracked in dollars" } },
-  { incluido: true, texto: { es: "Gráfico y resumen mensual con IA", en: "Chart and AI-written monthly summary" } },
-  { incluido: true, texto: { es: "Historial completo", en: "Full history" } },
-  { incluido: true, texto: { es: "Gastos recurrentes automáticos", en: "Automatic recurring expenses" } },
-  { incluido: true, texto: { es: "Exportar a Excel, PDF o CSV", en: "Export to Excel, PDF, or CSV" } },
-  { incluido: true, texto: { es: "Importar movimientos bancarios", en: "Import bank statements" } },
+  {
+    que: { es: "Historial", en: "History" },
+    gratis: { es: "3 meses", en: "3 months" },
+    pro: { es: "Completo", en: "Full" },
+  },
+  {
+    // Juntas en una fila y no en tres: siendo idénticas en los dos planes no
+    // aportan a la comparación, y ocupaban un tercio de la tabla.
+    que: {
+      es: "Multi-moneda, cotización BNA y presupuestos",
+      en: "Multi-currency, BNA rate, and budgets",
+    },
+    gratis: true,
+    pro: true,
+  },
+  {
+    que: { es: "Viajes con seguimiento en dólares", en: "Trips tracked in dollars" },
+    gratis: false,
+    pro: true,
+  },
+  {
+    que: { es: "Gastos recurrentes automáticos", en: "Automatic recurring expenses" },
+    gratis: false,
+    pro: true,
+  },
+  {
+    que: { es: "Gráfico y resumen mensual con IA", en: "Chart and AI-written monthly summary" },
+    gratis: false,
+    pro: true,
+  },
+  {
+    que: { es: "Exportar a Excel, PDF o CSV", en: "Export to Excel, PDF, or CSV" },
+    gratis: false,
+    pro: true,
+  },
+  {
+    que: { es: "Importar movimientos bancarios", en: "Import bank statements" },
+    gratis: false,
+    pro: true,
+  },
 ];
 
 export const FAQ_ITEMS: Array<{ q: Bi; a: Bi }> = [
@@ -250,5 +273,5 @@ export const FOOTER_LEGAL: Array<{ href: string; label: Bi }> = [
 
 export const FOOTER_CUENTA: Array<{ href: string; label: Bi }> = [
   { href: "/montor", label: { es: "Acceder", en: "Sign in" } },
-  { href: "/montor/login", label: { es: "Empezar gratis", en: "Start free" } },
+  { href: "/montor/login", label: { es: "Crear cuenta", en: "Create account" } },
 ];

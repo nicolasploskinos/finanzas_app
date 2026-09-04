@@ -55,7 +55,7 @@ export function Hero() {
           </p>
           <div className={css.heroBtns}>
             <Link to="/montor/login" className={css.btnPrimary}>
-              {lang === "en" ? "I want free access →" : "Quiero acceso gratis →"}
+              {lang === "en" ? "Create my account →" : "Crear mi cuenta →"}
             </Link>
             <a href="#demo" className={css.btnSecondary}>
               {lang === "en" ? "See how it works" : "Ver cómo funciona"}

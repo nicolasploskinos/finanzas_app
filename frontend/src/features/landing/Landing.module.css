@@ -414,41 +414,104 @@
   .bigEmoji { font-size: 140px; }
 }
 
-/* ── PRECIOS ── */
-.preciosGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; max-width: 940px; margin: 0 auto; }
-@media (max-width: 680px) { .preciosGrid { grid-template-columns: 1fr; } }
-.precioCard { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 40px 32px; text-align: center; position: relative; }
-.precioCard.pro { border-color: var(--yellow); box-shadow: 0 0 40px rgba(245, 185, 92, 0.15); }
-.precioBadge { display: inline-block; background: var(--green); color: #000; border-radius: 100px; padding: 6px 18px; font-size: 16px; font-weight: 800; margin-bottom: 20px; }
-.precioBadge.pro { background: var(--yellow); }
-.precioNum { font-size: 64px; font-weight: 900; line-height: 1; color: var(--green); margin-bottom: 6px; }
-.precioSub { color: var(--muted); font-size: 16.5px; margin-bottom: 28px; line-height: 1.5; }
-.precioSub strong { color: var(--green); }
-.precioCiclos { display: flex; gap: 10px; margin: 18px 0 22px; }
-.precioCicloBox { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; padding: 15px 8px; position: relative; }
-.precioCicloBox.destacado { border-color: var(--yellow); background: rgba(245, 185, 92, 0.08); }
-.precioCicloLabel { font-size: 14.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 5px; }
-.precioCicloBox.destacado .precioCicloLabel { color: var(--yellow); }
-.precioCicloMonto { font-size: 26px; font-weight: 900; }
-.precioCicloMonto span { font-size: 14.5px; font-weight: 600; color: var(--muted); }
-.precioCicloBadge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--green);
-  color: #000;
-  font-size: 13.5px;
+/* ── PRECIOS ──────────────────────────────────────────────────────────────
+   Una tabla y no dos tarjetas. Antes cada plan tenía su propia lista y las
+   dos repetían los mismos cinco ítems de arriba: la sección no entraba en
+   pantalla y había que leer ambas columnas para entender qué cambiaba de un
+   plan al otro. Acá la diferencia se ve de un vistazo, en una fila. */
+.tablaWrap {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  /* La tabla puede desbordar a lo ancho en pantallas muy chicas: que
+     scrollee ella sola y no la página entera. */
+  overflow-x: auto;
+}
+.tabla { width: 100%; border-collapse: collapse; }
+
+.thQue { width: 46%; }
+.thPlan {
+  padding: 22px 14px 18px;
+  text-align: center;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  width: 27%;
+}
+.thPro { background: rgba(var(--yellow-rgb), 0.06); border-radius: 20px 20px 0 0; }
+
+.planNombre {
+  font-size: 13px;
   font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 100px;
+  letter-spacing: 0.6px;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+.proNombre { color: var(--yellow); }
+.planPrecio { font-size: 30px; font-weight: 900; line-height: 1.1; }
+.planPrecio span { font-size: 14px; font-weight: 600; color: var(--muted); }
+.planNota { font-size: 12.5px; color: var(--muted); margin: 4px 0 14px; line-height: 1.4; }
+.planNota strong { color: var(--green); }
+
+.planBtn {
+  display: block;
+  background: var(--blue-dark);
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
   white-space: nowrap;
 }
-.precioFeatures { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 13px; margin-bottom: 32px; }
-.precioFeatures li { display: flex; align-items: center; gap: 11px; font-size: 17px; }
-.precioFeatures li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
-.precioFeatures li.no::before { content: "✗"; color: var(--muted); }
-.precioFeatures li.no { color: var(--muted); }
+.planBtn:hover { background: var(--blue); transform: translateY(-1px); }
+.planBtnPro { background: #d97706; }
+.planBtnPro:hover { background: #ea8a0b; }
+
+.tdQue {
+  padding: 11px 20px;
+  font-size: 15.5px;
+  border-bottom: 1px solid var(--border);
+}
+.tdPlan {
+  padding: 11px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+.tdPro { background: rgba(var(--yellow-rgb), 0.06); }
+.tabla tbody tr:last-child .tdQue,
+.tabla tbody tr:last-child .tdPlan { border-bottom: none; }
+.tabla tbody tr:last-child .tdPro { border-radius: 0 0 20px 0; }
+
+.pSi { color: var(--green); font-weight: 900; font-size: 17px; }
+.pNo { color: var(--muted); opacity: 0.5; }
+.pValor { font-weight: 700; }
+
+.tablaPie {
+  max-width: 900px;
+  margin: 18px auto 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .thQue { width: 42%; }
+  .thPlan { padding: 14px 6px 12px; }
+  .planNombre { font-size: 11.5px; }
+  .planPrecio { font-size: 21px; }
+  .planPrecio span { font-size: 11px; }
+  .planNota { font-size: 10.5px; margin: 2px 0 9px; }
+  /* Sin nowrap el rótulo se partía en tres renglones y estiraba el
+     encabezado; con la etiqueta corta entra en uno solo. */
+  .planBtn { font-size: 11.5px; padding: 8px 4px; white-space: nowrap; }
+  .tdQue { padding: 9px 10px; font-size: 13px; line-height: 1.35; }
+  .tdPlan { padding: 9px 4px; font-size: 12.5px; }
+  .tablaPie { font-size: 12.5px; padding: 0 8px; }
+}
 
 /* ── CTA FINAL ── */
 .ctaFinal { text-align: center; padding: 110px 20px; background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(79, 140, 247, 0.1), transparent); }
@@ -552,3 +615,39 @@
 .reveal { transform: translateY(28px); transition: transform 0.7s cubic-bezier(0.16, 0.84, 0.32, 1); }
 .reveal.in { transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) { .reveal { transition: none; transform: none; } }
+
+/* La sección de precio tiene que poder leerse de una sola mirada: los 90px
+   de aire arriba y abajo más un título de 52px empujaban la tabla fuera de
+   vista. En pantallas bajas se comprime todo el bloque.
+
+   El corte va en 1040 y no en 900: un monitor de 1080p con el navegador
+   maximizado deja ~960px útiles, que caían justo en el hueco entre los dos
+   tamaños y no entraban. */
+@media (max-height: 1040px) and (min-width: 900px) {
+  :global(#precio).section { padding-top: 32px; padding-bottom: 32px; }
+  :global(#precio) .h2 { font-size: 31px; margin-bottom: 6px; }
+  :global(#precio) .sectionSub { font-size: 15px; margin-bottom: 22px; }
+  :global(#precio) .sectionLabel { margin-bottom: 10px; }
+  .thPlan { padding: 16px 14px 14px; }
+  .planPrecio { font-size: 26px; }
+  .planNota { margin: 3px 0 10px; }
+  .planBtn { padding: 9px 10px; font-size: 13.5px; }
+  .tdQue { padding: 6px 20px; font-size: 14.5px; }
+  .tdPlan { padding: 6px 14px; }
+  .tablaPie { margin-top: 12px; font-size: 13px; }
+}
+
+/* Portátiles de 768px físicos: con la barra del navegador quedan ~630px
+   útiles, así que necesitan un escalón más. */
+@media (max-height: 700px) and (min-width: 900px) {
+  :global(#precio).section { padding-top: 22px; padding-bottom: 22px; }
+  :global(#precio) .h2 { font-size: 27px; }
+  :global(#precio) .sectionSub { font-size: 14px; margin-bottom: 16px; }
+  .thPlan { padding: 12px 14px 11px; }
+  .planPrecio { font-size: 23px; }
+  .planNota { font-size: 11.5px; margin: 2px 0 8px; }
+  .planBtn { padding: 7px 10px; font-size: 12.5px; }
+  .tdQue { padding: 4px 20px; font-size: 14px; }
+  .tdPlan { padding: 4px 14px; font-size: 14px; }
+  .tablaPie { margin-top: 10px; font-size: 12.5px; }
+}

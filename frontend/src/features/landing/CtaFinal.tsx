@@ -17,7 +17,7 @@ export function CtaFinal() {
           : "Sin tarjeta necesaria. Cargá tu primera transacción en menos de 2 minutos."}
       </p>
       <Link to="/montor/login" className={css.btnPrimary}>
-        {lang === "en" ? "I want free access →" : "Quiero acceso gratis →"}
+        {lang === "en" ? "Create my account →" : "Crear mi cuenta →"}
       </Link>
     </section>
   );

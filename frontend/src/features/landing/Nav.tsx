@@ -39,11 +39,11 @@ export function Nav() {
         >
           {modo === "light" ? "☀️" : "🌙"}
         </button>
-        {/* Dos rótulos: en celular "Empezar gratis →" no entra junto al logo y
-            los dos botones, y el CTA terminaba cortado contra el borde. */}
+        {/* Dos rótulos: en celular el texto largo no entra junto al logo y los
+            dos botones, y el CTA terminaba cortado contra el borde. */}
         <Link to="/montor/login" className={css.navCta}>
-          <span className={css.ctaLargo}>{lang === "en" ? "Start free →" : "Empezar gratis →"}</span>
-          <span className={css.ctaCorto}>{lang === "en" ? "Start →" : "Empezar →"}</span>
+          <span className={css.ctaLargo}>{lang === "en" ? "Create account →" : "Crear cuenta →"}</span>
+          <span className={css.ctaCorto}>{lang === "en" ? "Sign up →" : "Crear cuenta →"}</span>
         </Link>
       </div>
     </nav>
