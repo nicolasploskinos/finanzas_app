@@ -1,28 +1,28 @@
 {
-  "_montor-AppHeader-8LQzlcOu.js": {
-    "file": "montor-AppHeader-8LQzlcOu.js",
+  "_montor-AppHeader-UY4s1q8m.js": {
+    "file": "montor-AppHeader-UY4s1q8m.js",
     "name": "AppHeader",
     "imports": [
       "index.html"
     ]
   },
-  "_montor-LegalPage-BqQZKnG-.js": {
-    "file": "montor-LegalPage-BqQZKnG-.js",
+  "_montor-LegalPage-DYDGCdaY.js": {
+    "file": "montor-LegalPage-DYDGCdaY.js",
     "name": "LegalPage",
     "imports": [
       "index.html",
       "_montor-nebula.module-TiSXq5ab.js"
     ]
   },
-  "_montor-LogoMontor-DmoY1Jxf.js": {
-    "file": "montor-LogoMontor-DmoY1Jxf.js",
+  "_montor-LogoMontor-Cvl1S07Y.js": {
+    "file": "montor-LogoMontor-Cvl1S07Y.js",
     "name": "LogoMontor",
     "imports": [
       "index.html"
     ]
   },
-  "_montor-Modal-BoCg6PLR.js": {
-    "file": "montor-Modal-BoCg6PLR.js",
+  "_montor-Modal-Cui21AnG.js": {
+    "file": "montor-Modal-Cui21AnG.js",
     "name": "Modal",
     "imports": [
       "index.html"
@@ -32,23 +32,23 @@
     "file": "montor-nebula.module-TiSXq5ab.js",
     "name": "nebula.module"
   },
-  "_montor-queries-UyCQBIfN.js": {
-    "file": "montor-queries-UyCQBIfN.js",
+  "_montor-queries-BNzA0X-0.js": {
+    "file": "montor-queries-BNzA0X-0.js",
     "name": "queries",
     "imports": [
       "index.html"
     ]
   },
-  "_montor-useColoresTema-CwXs2mGv.js": {
-    "file": "montor-useColoresTema-CwXs2mGv.js",
+  "_montor-useColoresTema-B3Kb8614.js": {
+    "file": "montor-useColoresTema-B3Kb8614.js",
     "name": "useColoresTema",
     "imports": [
       "index.html",
-      "_montor-LogoMontor-DmoY1Jxf.js"
+      "_montor-LogoMontor-Cvl1S07Y.js"
     ]
   },
   "index.html": {
-    "file": "montor--MqR1vFP.js",
+    "file": "montor-daYT-qM_.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -63,90 +63,90 @@
     ]
   },
   "src/features/analisis/AnalisisPage.tsx": {
-    "file": "montor-AnalisisPage-hrULR10p.js",
+    "file": "montor-AnalisisPage-qaVsdxAV.js",
     "name": "AnalisisPage",
     "src": "src/features/analisis/AnalisisPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-queries-UyCQBIfN.js",
-      "_montor-AppHeader-8LQzlcOu.js",
-      "_montor-useColoresTema-CwXs2mGv.js",
+      "_montor-queries-BNzA0X-0.js",
+      "_montor-AppHeader-UY4s1q8m.js",
+      "_montor-useColoresTema-B3Kb8614.js",
       "_montor-nebula.module-TiSXq5ab.js",
-      "_montor-LogoMontor-DmoY1Jxf.js"
+      "_montor-LogoMontor-Cvl1S07Y.js"
     ]
   },
   "src/features/auth/LoginPage.tsx": {
-    "file": "montor-LoginPage-D2dLC9Fu.js",
+    "file": "montor-LoginPage-HAk_H4pj.js",
     "name": "LoginPage",
     "src": "src/features/auth/LoginPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-queries-UyCQBIfN.js",
+      "_montor-queries-BNzA0X-0.js",
       "_montor-nebula.module-TiSXq5ab.js",
-      "_montor-LogoMontor-DmoY1Jxf.js"
+      "_montor-LogoMontor-Cvl1S07Y.js"
     ]
   },
   "src/features/dashboard/DashboardPage.tsx": {
-    "file": "montor-DashboardPage-Bvt10p8b.js",
+    "file": "montor-DashboardPage-CEpzy4PB.js",
     "name": "DashboardPage",
     "src": "src/features/dashboard/DashboardPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-queries-UyCQBIfN.js",
-      "_montor-useColoresTema-CwXs2mGv.js",
+      "_montor-queries-BNzA0X-0.js",
+      "_montor-useColoresTema-B3Kb8614.js",
       "_montor-nebula.module-TiSXq5ab.js",
-      "_montor-LogoMontor-DmoY1Jxf.js",
-      "_montor-Modal-BoCg6PLR.js"
+      "_montor-LogoMontor-Cvl1S07Y.js",
+      "_montor-Modal-Cui21AnG.js"
     ]
   },
   "src/features/landing/LandingPage.tsx": {
-    "file": "montor-LandingPage-DnzTR6tC.js",
+    "file": "montor-LandingPage-D4pWMZy4.js",
     "name": "LandingPage",
     "src": "src/features/landing/LandingPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-LogoMontor-DmoY1Jxf.js"
+      "_montor-LogoMontor-Cvl1S07Y.js"
     ]
   },
   "src/features/legal/PrivacidadPage.tsx": {
-    "file": "montor-PrivacidadPage-B6J3yRvb.js",
+    "file": "montor-PrivacidadPage-CUPWkkc9.js",
     "name": "PrivacidadPage",
     "src": "src/features/legal/PrivacidadPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-LegalPage-BqQZKnG-.js",
+      "_montor-LegalPage-DYDGCdaY.js",
       "_montor-nebula.module-TiSXq5ab.js"
     ]
   },
   "src/features/legal/TerminosPage.tsx": {
-    "file": "montor-TerminosPage-DTjG3vwF.js",
+    "file": "montor-TerminosPage-CTM53IO-.js",
     "name": "TerminosPage",
     "src": "src/features/legal/TerminosPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-LegalPage-BqQZKnG-.js",
+      "_montor-LegalPage-DYDGCdaY.js",
       "_montor-nebula.module-TiSXq5ab.js"
     ]
   },
   "src/features/viajes/ViajesPage.tsx": {
-    "file": "montor-ViajesPage-BeK-_pcb.js",
+    "file": "montor-ViajesPage-D-Q6mbGC.js",
     "name": "ViajesPage",
     "src": "src/features/viajes/ViajesPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_montor-queries-UyCQBIfN.js",
-      "_montor-AppHeader-8LQzlcOu.js",
-      "_montor-useColoresTema-CwXs2mGv.js",
+      "_montor-queries-BNzA0X-0.js",
+      "_montor-AppHeader-UY4s1q8m.js",
+      "_montor-useColoresTema-B3Kb8614.js",
       "_montor-nebula.module-TiSXq5ab.js",
-      "_montor-Modal-BoCg6PLR.js",
-      "_montor-LogoMontor-DmoY1Jxf.js"
+      "_montor-Modal-Cui21AnG.js",
+      "_montor-LogoMontor-Cvl1S07Y.js"
     ]
   },
   "style.css": {
