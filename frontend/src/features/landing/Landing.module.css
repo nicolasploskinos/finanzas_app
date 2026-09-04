@@ -416,216 +416,289 @@
 
 /* ── PRECIOS ──────────────────────────────────────────────────────────────
    Una tabla y no dos tarjetas: antes cada plan tenía su lista y las dos
-   repetían los mismos ítems, así que la sección no entraba en pantalla y
-   había que comparar de memoria. Acá la diferencia se ve en una fila.
+   repetían los mismos ítems, así que había que comparar de memoria. Acá la
+   diferencia se ve en una fila.
 
-   Lo visual no es decoración: la columna Pro va elevada, con cinta y color
-   propio, porque con las dos columnas pesando igual la tabla se leía como
-   información y no como una decisión a tomar. */
+   Sobre el aire: una primera versión se comprimió hasta hacerla entrar en
+   una pantalla de portátil y quedó apretada y plana. Los valores de acá son
+   los cómodos; el bloque de pantallas bajas del final recorta lo justo,
+   pero nunca hasta volver a pegotear los textos. */
 .tablaWrap {
-  max-width: 940px;
+  max-width: 980px;
   margin: 0 auto;
-  /* El padding deja lugar a que la columna Pro sobresalga por arriba sin que
-     la cinta se corte. */
-  padding: 16px 0 0;
-  overflow-x: auto;
+  /* Aire arriba para que la columna Pro sobresalga con su cinta, y abajo
+     para que su sombra no quede cortada. */
+  padding: 22px 0 14px;
 }
 .tabla { width: 100%; border-collapse: separate; border-spacing: 0; }
 
 /* ── Encabezado ── */
-.thQue { width: 44%; text-align: left; vertical-align: bottom; padding: 0 20px 16px; }
+.thQue { width: 44%; text-align: left; vertical-align: bottom; padding: 0 24px 20px; }
 .thQueTexto {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--muted);
 }
 .thPlan {
-  padding: 20px 16px 18px;
+  padding: 26px 20px 22px;
   text-align: center;
   vertical-align: top;
   width: 28%;
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface2), var(--surface));
   border: 1px solid var(--border);
   border-bottom: none;
-  border-radius: 18px 18px 0 0;
+  border-radius: 20px 20px 0 0;
 }
 
-/* La columna que queremos que elijan: sube, se ilumina y lleva cinta. */
+/* La columna que queremos que elijan: sube, se ilumina y lleva cinta. Sin
+   esto las dos pesaban igual y la tabla se leía como información, no como
+   una decisión. */
 .thPro {
   position: relative;
-  background: linear-gradient(180deg, rgba(var(--yellow-rgb), 0.14), rgba(var(--yellow-rgb), 0.04));
-  border-color: rgba(var(--yellow-rgb), 0.55);
-  box-shadow: 0 -6px 34px rgba(var(--yellow-rgb), 0.16);
+  background: linear-gradient(180deg, rgba(var(--yellow-rgb), 0.2), rgba(var(--yellow-rgb), 0.05));
+  border-color: rgba(var(--yellow-rgb), 0.5);
+  box-shadow: 0 -10px 46px rgba(var(--yellow-rgb), 0.15);
 }
 .cinta {
   position: absolute;
-  top: -13px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--yellow);
-  color: #1a1305;
-  font-size: 11px;
+  background: linear-gradient(135deg, #ffc95c, var(--yellow));
+  color: #241a04;
+  font-size: 11.5px;
   font-weight: 900;
-  letter-spacing: 0.9px;
-  padding: 5px 14px;
+  letter-spacing: 1px;
+  padding: 6px 16px;
   border-radius: 100px;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(var(--yellow-rgb), 0.4);
+  box-shadow: 0 5px 18px rgba(var(--yellow-rgb), 0.45);
 }
 
 .planNombre {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 900;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.6px;
   color: var(--green);
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 .proNombre { color: var(--yellow); }
-.planPrecio { font-size: 34px; font-weight: 900; line-height: 1.05; letter-spacing: -1px; }
-.planPrecio span { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
-.planNota { font-size: 14px; color: var(--muted); margin: 6px 0 16px; }
-
+.planPrecio { font-size: 38px; font-weight: 900; line-height: 1; letter-spacing: -1.4px; }
+.planPrecio span { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.planNota { font-size: 14px; color: var(--muted); margin: 10px 0 20px; }
 .planAhorro {
   display: inline-block;
   font-size: 13px;
   color: var(--muted);
-  background: rgba(var(--green-rgb), 0.1);
-  border: 1px solid rgba(var(--green-rgb), 0.28);
+  background: rgba(var(--green-rgb), 0.12);
+  border: 1px solid rgba(var(--green-rgb), 0.3);
   border-radius: 100px;
-  padding: 3px 10px;
-  margin: 8px 0 14px;
+  padding: 5px 13px;
+  margin: 10px 0 18px;
 }
 .planAhorro strong { color: var(--green); font-weight: 800; }
 
 .planBtn {
   display: block;
-  background: var(--surface2);
+  background: var(--surface3);
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 11px;
-  padding: 12px 10px;
+  border-radius: 12px;
+  padding: 13px 12px;
   font-size: 15.5px;
   font-weight: 700;
   text-decoration: none;
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   white-space: nowrap;
 }
-.planBtn:hover { background: var(--surface3); transform: translateY(-1px); }
+.planBtn:hover { background: var(--surface2); transform: translateY(-1px); }
 .planBtnPro {
-  background: linear-gradient(135deg, #f0a92e, #d97706);
+  background: linear-gradient(135deg, #ffc95c, #e08c08);
   border-color: transparent;
-  color: #1a1305;
+  color: #241a04;
   font-weight: 800;
-  box-shadow: 0 6px 20px rgba(var(--yellow-rgb), 0.32);
+  box-shadow: 0 8px 24px rgba(var(--yellow-rgb), 0.35);
 }
-.planBtnPro:hover { box-shadow: 0 9px 26px rgba(var(--yellow-rgb), 0.45); }
+.planBtnPro:hover { box-shadow: 0 12px 32px rgba(var(--yellow-rgb), 0.5); transform: translateY(-2px); }
 
-/* ── Filas ── */
+/* ── Filas ──
+   Sin líneas duras entre filas: el separador sólido de 1px era buena parte
+   del aspecto de planilla. Va un trazo apenas visible y el peso separador lo
+   lleva el espacio. */
 .tdQue {
-  padding: 11px 20px;
+  padding: 15px 24px;
   font-size: 16.5px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 14px;
 }
+:global(body.light) .tdQue { border-bottom-color: rgba(0, 0, 0, 0.06); }
 .filaIcono {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  border-radius: 9px;
+  border-radius: 11px;
   background: var(--surface2);
+  border: 1px solid var(--border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 .tdPlan {
-  padding: 11px 16px;
+  padding: 15px 18px;
   text-align: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   background: var(--surface);
   font-size: 16px;
 }
+:global(body.light) .tdPlan { border-bottom-color: rgba(0, 0, 0, 0.06); }
 .tdPro {
   background: rgba(var(--yellow-rgb), 0.05);
-  border-color: rgba(var(--yellow-rgb), 0.55);
-  box-shadow: 0 0 34px rgba(var(--yellow-rgb), 0.05);
+  border-left-color: rgba(var(--yellow-rgb), 0.5);
+  border-right-color: rgba(var(--yellow-rgb), 0.5);
 }
-.filaTabla:hover .tdQue,
+.filaTabla:hover .tdQue { background: rgba(255, 255, 255, 0.03); }
 .filaTabla:hover .tdPlan { background: var(--surface2); }
 .filaTabla:hover .tdPro { background: rgba(var(--yellow-rgb), 0.11); }
-.tabla tbody tr:last-child .tdPlan { border-radius: 0 0 18px 18px; }
+.tabla tbody tr:last-child .tdPlan {
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 20px 20px;
+}
+.tabla tbody tr:last-child .tdPro {
+  border-bottom-color: rgba(var(--yellow-rgb), 0.5);
+  box-shadow: 0 14px 40px rgba(var(--yellow-rgb), 0.12);
+}
 
-.pSi { color: var(--green); font-weight: 900; font-size: 19px; }
-/* En Pro el tilde pesa más: es la columna donde queremos que se detengan. */
+/* Los valores que no son sí/no van en píldora: se distinguen del tilde y
+   dejan claro que ahí hay un dato, no una marca. */
+.pSi { color: var(--green); font-weight: 900; font-size: 20px; }
 .pSiPro {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(var(--green-rgb), 0.16);
+  background: rgba(var(--green-rgb), 0.18);
+  border: 1px solid rgba(var(--green-rgb), 0.35);
   color: var(--green);
   font-weight: 900;
-  font-size: 14px;
+  font-size: 15px;
 }
-.pNo { color: var(--muted); opacity: 0.45; }
-.pValor { font-weight: 700; }
-.pValorPro { font-weight: 800; color: var(--yellow); }
+.pNo { color: var(--muted); opacity: 0.4; font-size: 18px; }
+.pValor {
+  display: inline-block;
+  font-weight: 700;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 4px 14px;
+  font-size: 14.5px;
+}
+.pValorPro {
+  display: inline-block;
+  font-weight: 800;
+  color: var(--yellow);
+  background: rgba(var(--yellow-rgb), 0.12);
+  border: 1px solid rgba(var(--yellow-rgb), 0.35);
+  border-radius: 100px;
+  padding: 4px 14px;
+  font-size: 14.5px;
+}
 
 /* ── Pie ── */
 .tablaPie {
-  max-width: 940px;
-  margin: 22px auto 0;
+  max-width: 980px;
+  margin: 30px auto 0;
   text-align: center;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 8px 14px;
+  gap: 10px 18px;
 }
 .piePill {
   display: inline-block;
-  background: rgba(var(--green-rgb), 0.1);
-  border: 1px solid rgba(var(--green-rgb), 0.3);
+  background: rgba(var(--green-rgb), 0.11);
+  border: 1px solid rgba(var(--green-rgb), 0.32);
   color: var(--green);
   border-radius: 100px;
-  padding: 9px 20px;
+  padding: 11px 24px;
   font-size: 15.5px;
   font-weight: 700;
 }
 .pieNota { font-size: 14px; color: var(--muted); }
 
+/* ── Pantallas anchas pero bajas ──
+   Recorta el aire lo justo para acercarse a entrar de una sola mirada, sin
+   volver a pegotear los textos: las tipografías casi no se tocan, lo que
+   cede es el espacio. */
+@media (max-height: 1200px) and (min-width: 900px) {
+  :global(#precio).section { padding-top: 34px; padding-bottom: 34px; }
+  :global(#precio) .h2 { font-size: 30px; margin-bottom: 8px; }
+  :global(#precio) .sectionSub { font-size: 15px; margin-bottom: 18px; }
+  :global(#precio) .sectionLabel { margin-bottom: 10px; }
+  .tablaWrap { padding-top: 20px; }
+  .thPlan { padding: 20px 18px 18px; }
+  .thQue { padding-bottom: 14px; }
+  .planPrecio { font-size: 33px; }
+  .planNombre { margin-bottom: 7px; }
+  .planNota { margin: 7px 0 14px; }
+  .planAhorro { margin: 7px 0 13px; }
+  .planBtn { padding: 11px 12px; }
+  .tdQue { padding: 10px 24px; }
+  .tdPlan { padding: 10px 18px; }
+  .filaIcono { width: 31px; height: 31px; }
+  .tablaPie { margin-top: 20px; }
+  .piePill { padding: 9px 20px; }
+}
+
+@media (max-height: 760px) and (min-width: 900px) {
+  :global(#precio).section { padding-top: 20px; padding-bottom: 20px; }
+  :global(#precio) .h2 { font-size: 27px; margin-bottom: 5px; }
+  :global(#precio) .sectionSub { margin-bottom: 12px; }
+  .tablaWrap { padding-top: 18px; }
+  .thPlan { padding: 16px 18px 15px; }
+  .planPrecio { font-size: 29px; }
+  .planNota { margin: 5px 0 11px; }
+  .planAhorro { margin: 5px 0 10px; }
+  .planBtn { padding: 10px 12px; font-size: 15px; }
+  .tdQue { padding: 7px 24px; font-size: 16px; }
+  .tdPlan { padding: 7px 18px; }
+  .filaIcono { width: 29px; height: 29px; }
+  .tablaPie { margin-top: 15px; }
+}
+
 @media (max-width: 700px) {
   /* La tabla necesita cada píxel de ancho: con los 20px de la sección
-     quedaba 2px corta y recortaba la columna Pro. */
-  :global(#precio).section { padding-left: 12px; padding-right: 12px; }
-  .thQue { width: 40%; padding: 0 8px 10px; }
-  .thQueTexto { font-size: 10.5px; letter-spacing: 0.8px; }
-  .thPlan { padding: 14px 4px 12px; width: 30%; }
-  /* La cinta no se achica sola (va nowrap) y era la que fijaba el ancho
-     mínimo de la columna: con la tabla desbordaba 17px y cortaba Pro. */
-  .cinta { font-size: 8.5px; padding: 3px 7px; top: -10px; letter-spacing: 0.3px; }
-  .planNombre { font-size: 11px; }
-  .planPrecio { font-size: 22px; }
+     quedaba corta y recortaba la columna Pro. */
+  :global(#precio).section { padding-left: 8px; padding-right: 8px; }
+  .thQue { width: 40%; padding: 0 8px 12px; }
+  .thQueTexto { font-size: 11px; letter-spacing: 0.8px; }
+  .thPlan { padding: 18px 4px 15px; width: 30%; }
+  /* La cinta va nowrap y era la que fijaba el ancho mínimo de la columna:
+     con eso la tabla desbordaba y cortaba Pro. */
+  .cinta { font-size: 8.5px; padding: 4px 7px; top: -11px; letter-spacing: 0.2px; }
+  .planNombre { font-size: 11px; margin-bottom: 6px; }
+  .planPrecio { font-size: 25px; }
   .planPrecio span { font-size: 11px; }
-  .planNota { font-size: 11px; margin: 3px 0 10px; }
-  .planAhorro { font-size: 10px; padding: 2px 6px; margin: 5px 0 9px; }
-  /* Sin nowrap el rótulo se partía en tres renglones y estiraba el
-     encabezado; con la etiqueta corta entra en uno solo. */
-  .planBtn { font-size: 11.5px; padding: 8px 4px; white-space: nowrap; }
-  .tdQue { padding: 9px 8px; font-size: 12.5px; line-height: 1.35; gap: 7px; }
-  .filaIcono { width: 23px; height: 23px; font-size: 12.5px; border-radius: 7px; }
-  .tdPlan { padding: 9px 3px; font-size: 12px; }
-  .piePill { font-size: 12.5px; padding: 7px 14px; }
-  .pieNota { font-size: 13px; }
+  .planNota { font-size: 12px; margin: 6px 0 12px; }
+  .planAhorro { font-size: 10px; padding: 3px 6px; margin: 6px 0 11px; }
+  .planBtn { font-size: 12px; padding: 10px 4px; white-space: nowrap; }
+  .tdQue { padding: 11px 6px; font-size: 13.5px; line-height: 1.4; gap: 8px; }
+  .filaIcono { width: 27px; height: 27px; font-size: 13px; border-radius: 8px; }
+  .tdPlan { padding: 11px 2px; font-size: 13px; }
+  .pValor, .pValorPro { font-size: 11px; padding: 3px 6px; }
+  .pSiPro { width: 24px; height: 24px; font-size: 13px; }
+  .piePill { font-size: 13px; padding: 9px 16px; }
+  .pieNota { font-size: 12.5px; }
 }
 
 /* ── CTA FINAL ── */
