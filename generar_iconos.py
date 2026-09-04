@@ -23,8 +23,8 @@ from playwright.sync_api import sync_playwright
 BASE = os.path.dirname(os.path.abspath(__file__))
 SALIDA = os.path.join(BASE, "static", "icons")
 
-# La billetera: dos tarjetas asomando (las monedas) y la M de la marca al
-# frente. Mismo trazo que components/LogoMontor.tsx.
+# La M de la marca sobre la placa violeta. Mismo trazo que
+# components/LogoMontor.tsx, variante "placa".
 def dibujo(escala=1.0, sangre=False):
     """`escala` < 1 encoge el dibujo para la versión maskable."""
     fondo = (
@@ -40,26 +40,14 @@ def dibujo(escala=1.0, sangre=False):
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#8f74ff"/><stop offset="1" stop-color="#5a3ce0"/>
     </linearGradient>
-    <linearGradient id="cuerpo" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity=".06"/>
-    </linearGradient>
   </defs>
   {fondo}
   <g transform="translate({d},{d}) scale({escala})">
-    <!-- Tarjetas asomando por arriba: son las otras dos monedas. Quedan
-         detrás del cuerpo, apenas sobresaliendo, como en una billetera real. -->
-    <rect x="31" y="19" width="40" height="22" rx="5" fill="#2fe6c7" transform="rotate(-7 51 30)"/>
-    <rect x="33" y="24" width="40" height="22" rx="5" fill="#ffb93d" transform="rotate(-2 53 35)"/>
-    <!-- Cuerpo: violeta MÁS OSCURO que la placa, no translúcido. Con blanco
-         al 20% las tarjetas se transparentaban y el ícono quedaba sucio. -->
-    <rect x="19" y="38" width="62" height="41" rx="11" fill="#4526b8"/>
-    <rect x="19" y="38" width="62" height="12" rx="11" fill="#ffffff" fill-opacity=".12"/>
-    <!-- La M. Sin el punto verde que sí lleva la marca suelta: acá la M es
-         más angosta y el punto sobre la pata derecha la hacía leer "Mi". La
-         pata más alta ya transmite sola la idea de que sube. -->
-    <path d="M38 69 L38 55 L50 65 L62 50 L62 69" fill="none" stroke="#fff"
-          stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- El mismo trazo que components/LogoMontor.tsx (variante placa): patas
+         de distinta altura, puntas redondeadas y el punto en el máximo. -->
+    <path d="M31 72 L31 42 L50 60 L69 31 L69 72" fill="none" stroke="#fff"
+          stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="69" cy="31" r="7" fill="#00e0a4" stroke="#5a3ce0" stroke-width="2.5"/>
   </g>
 </svg>"""
 
