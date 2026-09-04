@@ -139,6 +139,30 @@ export const MSG = {
   },
   continuar_con_google: { es: "Continuar con Google", en: "Continue with Google" },
   o: { es: "o", en: "or" },
+  // Panel de marca del login (solo se ve en pantallas anchas).
+  login_titular: {
+    es: "Tus pesos y tus dólares, en un solo número",
+    en: "Your pesos and your dollars, in a single number",
+  },
+  login_bajada: {
+    es: "La app de finanzas personales que entiende que en Argentina la moneda es complicada.",
+    en: "The personal finance app that gets how complicated currency is in Argentina.",
+  },
+  login_punto_monedas: { es: "Multi-moneda real", en: "Real multi-currency" },
+  login_punto_monedas_d: {
+    es: "ARS, USD y EUR a cotización oficial BNA",
+    en: "ARS, USD, and EUR at the official BNA rate",
+  },
+  login_punto_viajes: { es: "Viajes en dólares", en: "Trips in dollars" },
+  login_punto_viajes_d: {
+    es: "El total del viaje, sin importar en qué moneda gastaste",
+    en: "The trip total, no matter what currency you spent in",
+  },
+  login_punto_ia: { es: "Resumen mensual con IA", en: "AI monthly summary" },
+  login_punto_ia_d: {
+    es: "Un análisis escrito de cero cada mes, no una plantilla",
+    en: "An analysis written fresh every month, not a template",
+  },
   // Errores que llegan como ?error= al volver de Google.
   google: {
     es: "No pudimos completar el ingreso con Google. Probá de nuevo",

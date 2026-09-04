@@ -111,6 +111,48 @@ export function LoginPage() {
         </button>
       </div>
 
+      <div className={css.split}>
+        {/* Panel de marca: solo aparece en pantallas anchas. En un monitor
+            grande la tarjeta sola quedaba perdida en el vacío, y este espacio
+            es además el último lugar donde se puede explicar qué es Montor
+            antes de que la persona decida entrar. */}
+        <div className={css.marca}>
+          <div className={css.marcaLogo}>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
+              <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
+              <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
+              <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
+            </svg>
+            <span>{t("montor")}</span>
+          </div>
+          <h2 className={css.marcaTitulo}>{t("login_titular")}</h2>
+          <p className={css.marcaBajada}>{t("login_bajada")}</p>
+          <ul className={css.marcaPuntos}>
+            <li>
+              <span aria-hidden="true">💵</span>
+              <div>
+                <strong>{t("login_punto_monedas")}</strong>
+                <em>{t("login_punto_monedas_d")}</em>
+              </div>
+            </li>
+            <li>
+              <span aria-hidden="true">✈️</span>
+              <div>
+                <strong>{t("login_punto_viajes")}</strong>
+                <em>{t("login_punto_viajes_d")}</em>
+              </div>
+            </li>
+            <li>
+              <span aria-hidden="true">🤖</span>
+              <div>
+                <strong>{t("login_punto_ia")}</strong>
+                <em>{t("login_punto_ia_d")}</em>
+              </div>
+            </li>
+          </ul>
+        </div>
+
       <div className={css.card}>
         <div className={css.logo}>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -224,6 +266,7 @@ export function LoginPage() {
             </p>
           </form>
         )}
+      </div>
       </div>
     </div>
     </div>

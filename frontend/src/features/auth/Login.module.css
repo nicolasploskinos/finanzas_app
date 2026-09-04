@@ -45,6 +45,23 @@
 }
 .modoBtn { border: none; font-size: 20px; line-height: 1; padding: 4px; }
 
+/* En mobile solo existe la tarjeta; en pantallas anchas este contenedor la
+   pone al lado del panel de marca. */
+.split {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ── Panel de marca (solo pantallas anchas) ────────────────────────────────
+   En un monitor grande la tarjeta sola quedaba flotando en el vacío: se veía
+   pobre y, sobre todo, no decía en ningún lado qué es Montor. Este panel usa
+   ese espacio para explicarlo, que es lo último que ve alguien antes de
+   decidir si se registra. */
+.marca { display: none; }
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -219,12 +236,107 @@
 
 @media (min-width: 900px) {
   .card { max-width: 460px; padding: 44px 40px; }
-  .logo svg { width: 48px; height: 48px; }
-  .h1 { font-size: 24px; }
-  .subtitle { font-size: 14px; }
-  .tab { font-size: 15px; padding: 11px; }
-  .campo label { font-size: 13px; }
+  /* La caja del logo también crece: antes quedaba fija en 64px mientras el
+     dibujo subía a 48, y el ícono terminaba rozando los bordes. */
+  .logo { width: 76px; height: 76px; border-radius: 22px; margin-bottom: 20px; }
+  .logo svg { width: 44px; height: 44px; }
+  .h1 { font-size: 26px; }
+  .subtitle { font-size: 15px; margin-bottom: 28px; }
+  .google { font-size: 15px; padding: 14px; border-radius: 13px; }
+  .google svg { width: 20px; height: 20px; }
+  .separador { font-size: 13px; margin: 22px 0; }
+  .tab { font-size: 15px; padding: 12px; }
+  .campo { margin-bottom: 16px; }
+  .campo label { font-size: 12px; }
   .campo input { font-size: 17px; padding: 14px 16px; }
   .btn { font-size: 18px; padding: 17px; }
   .error { font-size: 14px; }
+  .legal { font-size: 12px; margin-top: 16px; }
+}
+
+/* A partir de acá entra el panel de marca al costado. El corte es 1100px y no
+   900 porque abajo de eso las dos columnas se aprietan y se lee peor que la
+   tarjeta sola. */
+@media (min-width: 1100px) {
+  .split {
+    max-width: 1080px;
+    gap: 72px;
+    align-items: center;
+  }
+  /* max-width: none es necesario: el bloque de 900px lo deja en 460 y, sin
+     soltarlo, le pone techo a los anchos de acá abajo. */
+  .card { flex-shrink: 0; width: 460px; max-width: none; }
+
+  .marca {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .marcaLogo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    color: var(--blue);
+  }
+  .marcaLogo svg { width: 40px; height: 40px; flex-shrink: 0; }
+  .marcaLogo span {
+    font-family: "Space Grotesk", inherit;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    color: var(--text);
+  }
+
+  .marcaTitulo {
+    font-family: "Space Grotesk", inherit;
+    font-size: 40px;
+    line-height: 1.13;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    margin-bottom: 16px;
+    /* El degradado va sobre el texto, no sobre un fondo: le da peso al
+       titular sin agregar otra caja que compita con la tarjeta. */
+    background: linear-gradient(120deg, var(--text) 30%, var(--blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .marcaBajada {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin-bottom: 34px;
+    max-width: 30ch;
+  }
+
+  .marcaPuntos { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+  .marcaPuntos li { display: flex; gap: 14px; align-items: flex-start; }
+  .marcaPuntos li > span {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .marcaPuntos strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .marcaPuntos em { display: block; font-style: normal; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+}
+
+/* En monitores grandes se estira un poco más: a 1920px, 1080 de contenido
+   seguía dejando la pantalla medio vacía. */
+@media (min-width: 1600px) {
+  .split { max-width: 1200px; gap: 96px; }
+  .card { width: 500px; padding: 48px 44px; }
+  .marcaTitulo { font-size: 46px; }
+  .marcaBajada { font-size: 17px; }
+  .h1 { font-size: 28px; }
 }
