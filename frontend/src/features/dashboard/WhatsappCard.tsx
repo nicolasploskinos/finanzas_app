@@ -6,9 +6,11 @@ import { useToast } from "@/hooks/useToast";
 import { AccBody } from "./AccBody";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 export function WhatsappCard({ abierto, onToggle }: { abierto: boolean; onToggle: () => void }) {
   const { lang } = usePreferencias();
+  const confirmar = useConfirmar();
   const toast = useToast();
   const estado = useWhatsappEstado(abierto);
   const codigo = useWhatsappCodigo();
@@ -29,7 +31,13 @@ export function WhatsappCard({ abierto, onToggle }: { abierto: boolean; onToggle
   }
 
   async function alDesvincular() {
-    if (!confirm(trd("confirm_desvincular_wa", lang))) return;
+    const ok = await confirmar({
+      titulo: trd("dlg_desvincular_t", lang),
+      confirmar: trd("dlg_desvincular_b", lang),
+      cancelar: trd("dlg_cancelar", lang),
+      peligro: true,
+    });
+    if (!ok) return;
     await desvincular.mutateAsync();
     setCodigoInfo(null);
     toast(trd("wa_desvinculado", lang));

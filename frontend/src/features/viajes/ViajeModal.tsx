@@ -70,6 +70,10 @@ export function ViajeModal({ abierto, viaje, onCerrar, onGuardado }: Props) {
       titulo={viaje ? t("editar_viaje") : t("nuevo_viaje")}
       onCerrar={onCerrar}
     >
+      {/* En <form> para que Enter (o la tecla "Ir" del teclado del celular)
+          guarde, sin tener que ir hasta el botón. Los demás botones llevan
+          type="button" a propósito: sin eso enviarían el formulario. */}
+      <form onSubmit={(e) => { e.preventDefault(); alGuardar(); }}>
       <div className={css.campo}>
         <label htmlFor="viaje-nombre">{t("nombre")}</label>
         <input id="viaje-nombre" type="text" placeholder={t("ejemplo_viaje")} {...campo("nombre")} />
@@ -84,9 +88,10 @@ export function ViajeModal({ abierto, viaje, onCerrar, onGuardado }: Props) {
           <input id="viaje-hasta" type="date" {...campo("fecha_fin")} />
         </div>
       </div>
-      <button className={css.btnGuardar} onClick={alGuardar} disabled={guardar.isPending}>
+        <button type="submit" className={css.btnGuardar} disabled={guardar.isPending}>
         {guardar.isPending ? t("guardando") : t("guardar_viaje")}
       </button>
+      </form>
     </Modal>
   );
 }

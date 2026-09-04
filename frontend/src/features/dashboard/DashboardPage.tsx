@@ -30,6 +30,7 @@ import { TransactionList } from "./TransactionList";
 import { TransactionModal } from "./TransactionModal";
 import { TrialBanner } from "./TrialBanner";
 import { WhatsappCard } from "./WhatsappCard";
+import { useConfirmar } from "@/components/Confirmacion";
 
 function fechaHoyTexto(lang: "es" | "en"): string {
   const hoy = new Date();
@@ -46,6 +47,7 @@ export function DashboardPage() {
 
   const { lang } = usePreferencias();
   const toast = useToast();
+  const confirmar = useConfirmar();
   const [params, setParams] = useSearchParams();
 
   const [filtros, setFiltros] = useState(FILTROS_INICIALES);
@@ -138,10 +140,13 @@ export function DashboardPage() {
     }
   }
 
-  function cerrarSesion() {
-    if (confirm(trd("confirm_cerrar_sesion", lang))) {
-      window.location.href = "/montor/logout";
-    }
+  async function cerrarSesion() {
+    const ok = await confirmar({
+      titulo: trd("dlg_cerrar_sesion_t", lang),
+      confirmar: trd("dlg_cerrar_sesion_b", lang),
+      cancelar: trd("dlg_cancelar", lang),
+    });
+    if (ok) window.location.href = "/montor/logout";
   }
 
   // El progreso de los presupuestos siempre mide el mes calendario en curso,

@@ -75,6 +75,7 @@ export const MSG = {
   guardando: { es: "Guardando…", en: "Saving…" },
   editar: { es: "Editar", en: "Edit" },
   eliminar: { es: "Eliminar", en: "Delete" },
+  cancelar: { es: "Cancelar", en: "Cancel" },
   gastado: { es: "Gastado", en: "Spent" },
   total_gastado: { es: "Total gastado", en: "Total spent" },
   gasto_por_categoria_usd: { es: "Gasto por categoría (USD)", en: "Spend by category (USD)" },

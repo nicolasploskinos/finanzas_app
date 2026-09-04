@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import { tr } from "@/i18n/messages";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 type Props = {
   abierto: boolean;
@@ -24,6 +25,7 @@ function formatFechaHora(iso: string, lang: "es" | "en"): string {
 export function ProfileModal({ abierto, onCerrar, onVerPlanes }: Props) {
   const { lang } = usePreferencias();
   const toast = useToast();
+  const confirmar = useConfirmar();
   const cuenta = useCuenta(abierto);
   const cambiarNombre = useCambiarNombre();
   const cambiarPassword = useCambiarPassword();
@@ -83,7 +85,14 @@ export function ProfileModal({ abierto, onCerrar, onVerPlanes }: Props) {
   }
 
   async function alCancelarSuscripcion() {
-    if (!confirm(trd("confirm_cancelar_suscripcion", lang))) return;
+    const ok = await confirmar({
+      titulo: trd("dlg_cancelar_sus_t", lang),
+      mensaje: trd("confirm_cancelar_suscripcion", lang),
+      confirmar: trd("dlg_cancelar_sus_b", lang),
+      cancelar: trd("dlg_volver", lang),
+      peligro: true,
+    });
+    if (!ok) return;
     try {
       await cancelarSuscripcion.mutateAsync();
       toast(trd("suscripcion_cancelada", lang));

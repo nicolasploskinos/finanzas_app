@@ -5,16 +5,25 @@ import { fmtMon, formatFecha } from "@/lib/formato";
 import { AccBody } from "./AccBody";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 export function RecurrentesCard({ abierto, onToggle }: { abierto: boolean; onToggle: () => void }) {
   const { lang } = usePreferencias();
+  const confirmar = useConfirmar();
   const toast = useToast();
   const recurrentes = useRecurrentes(abierto);
   const borrar = useBorrarRecurrente();
   const lista = recurrentes.data ?? [];
 
   async function alBorrar(id: number) {
-    if (!confirm(trd("confirm_borrar_recurrente", lang))) return;
+    const ok = await confirmar({
+      titulo: trd("dlg_borrar_recu_t", lang),
+      mensaje: trd("dlg_borrar_recu_m", lang),
+      confirmar: trd("dlg_eliminar", lang),
+      cancelar: trd("dlg_cancelar", lang),
+      peligro: true,
+    });
+    if (!ok) return;
     try {
       await borrar.mutateAsync(id);
       toast(trd("recurrente_eliminado", lang));

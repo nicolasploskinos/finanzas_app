@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/useToast";
 import { fmtMon, formatFecha } from "@/lib/formato";
 import { CategoriaDonut } from "./CategoriaDonut";
 import css from "./Viajes.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 type Props = {
   id: number;
@@ -24,6 +25,7 @@ function normalizarRango(desde: string, hasta: string): { desde: string; hasta: 
 
 export function ViajeDetalle({ id, onVolver, onEditar }: Props) {
   const { t, lang } = usePreferencias();
+  const confirmar = useConfirmar();
   const toast = useToast();
   const detalle = useViaje(id);
   const borrar = useBorrarViaje();
@@ -66,7 +68,13 @@ export function ViajeDetalle({ id, onVolver, onEditar }: Props) {
   const catsUSD = por_categoria.USD ?? [];
 
   async function alBorrar() {
-    if (!confirm(t("confirm_borrar_viaje"))) return;
+    const ok = await confirmar({
+      titulo: t("confirm_borrar_viaje"),
+      confirmar: t("eliminar"),
+      cancelar: t("cancelar"),
+      peligro: true,
+    });
+    if (!ok) return;
     try {
       await borrar.mutateAsync(id);
       onVolver();

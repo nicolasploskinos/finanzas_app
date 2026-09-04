@@ -8,6 +8,7 @@ import { usePreferencias } from "@/hooks/usePreferencias";
 import { useToast } from "@/hooks/useToast";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 const MONEDAS: Moneda[] = ["ARS", "USD", "EUR"];
 const MONEDA_LABEL: Record<Moneda, string> = { ARS: "$ ARS", USD: "USD", EUR: "€ EUR" };
@@ -62,6 +63,7 @@ type Props = {
 export function TransactionModal({ abierto, editando, isPro, categoriasSugeridas, onCerrar, onNecesitaPro }: Props) {
   const { lang } = usePreferencias();
   const toast = useToast();
+  const confirmar = useConfirmar();
   const crear = useCrearTx();
   const editar = useEditarTx();
   const borrar = useBorrarTx();
@@ -139,7 +141,14 @@ export function TransactionModal({ abierto, editando, isPro, categoriasSugeridas
 
   async function alEliminar() {
     if (!editando) return;
-    if (!confirm(trd("confirm_borrar_tx", lang))) return;
+    const ok = await confirmar({
+      titulo: trd("dlg_borrar_tx_t", lang),
+      mensaje: trd("dlg_borrar_tx_m", lang),
+      confirmar: trd("dlg_eliminar", lang),
+      cancelar: trd("dlg_cancelar", lang),
+      peligro: true,
+    });
+    if (!ok) return;
     try {
       await borrar.mutateAsync(editando.id);
       toast(trd("tx_eliminada", lang));
@@ -156,14 +165,19 @@ export function TransactionModal({ abierto, editando, isPro, categoriasSugeridas
       onCerrar={onCerrar}
       grande
     >
+      {/* En <form> para que Enter (o la tecla "Ir" del teclado del celular)
+          guarde, sin tener que ir hasta el botón. Todos los demás botones de
+          adentro llevan type="button" a propósito: sin eso, tocar una moneda
+          o un tipo enviaría el formulario. */}
+      <form onSubmit={(e) => { e.preventDefault(); alGuardar(); }}>
       <div className={css.tipoToggle}>
-        <button
+        <button type="button"
           className={`${css.tipoBtn} ${f.tipo === "Gasto" ? css.gastoActive : css.inactive}`}
           onClick={() => set({ tipo: "Gasto" })}
         >
           {trd("gasto", lang)}
         </button>
-        <button
+        <button type="button"
           className={`${css.tipoBtn} ${f.tipo === "Ingreso" ? css.ingresoActive : css.inactive}`}
           onClick={() => set({ tipo: "Ingreso", viajeId: "" })}
         >
@@ -173,7 +187,7 @@ export function TransactionModal({ abierto, editando, isPro, categoriasSugeridas
 
       <div className={css.monedaToggle}>
         {MONEDAS.map((m) => (
-          <button key={m} className={`${css.monedaBtn} ${f.moneda === m ? css.active : ""}`} onClick={() => set({ moneda: m })}>
+          <button type="button" key={m} className={`${css.monedaBtn} ${f.moneda === m ? css.active : ""}`} onClick={() => set({ moneda: m })}>
             {MONEDA_LABEL[m]}
           </button>
         ))}
@@ -244,27 +258,28 @@ export function TransactionModal({ abierto, editando, isPro, categoriasSugeridas
         <div className={css.campo}>
           <label>Repetición</label>
           <div className={css.monedaToggle} style={{ marginTop: 4 }}>
-            <button className={`${css.monedaBtn} ${f.recurrencia === "no" ? css.active : ""}`} onClick={() => set({ recurrencia: "no" })}>
+            <button type="button" className={`${css.monedaBtn} ${f.recurrencia === "no" ? css.active : ""}`} onClick={() => set({ recurrencia: "no" })}>
               Sin repetir
             </button>
-            <button className={`${css.monedaBtn} ${f.recurrencia === "semanal" ? css.active : ""}`} onClick={() => set({ recurrencia: "semanal" })}>
+            <button type="button" className={`${css.monedaBtn} ${f.recurrencia === "semanal" ? css.active : ""}`} onClick={() => set({ recurrencia: "semanal" })}>
               Semanal
             </button>
-            <button className={`${css.monedaBtn} ${f.recurrencia === "mensual" ? css.active : ""}`} onClick={() => set({ recurrencia: "mensual" })}>
+            <button type="button" className={`${css.monedaBtn} ${f.recurrencia === "mensual" ? css.active : ""}`} onClick={() => set({ recurrencia: "mensual" })}>
               Mensual
             </button>
           </div>
         </div>
       )}
 
-      <button className={css.btnGuardar} onClick={alGuardar} disabled={enviando}>
+        <button type="submit" className={css.btnGuardar} disabled={enviando}>
         Guardar
       </button>
       {editando && (
-        <button className={`${css.btnGuardar} ${css.btnEliminarTx}`} onClick={alEliminar}>
+        <button type="button" className={`${css.btnGuardar} ${css.btnEliminarTx}`} onClick={alEliminar}>
           Eliminar
         </button>
       )}
+      </form>
     </Modal>
   );
 }

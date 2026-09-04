@@ -5,6 +5,7 @@ import { usePreferencias } from "@/hooks/usePreferencias";
 import { fmtMon, formatFecha } from "@/lib/formato";
 import { trd } from "./messages";
 import css from "./Dashboard.module.css";
+import { useConfirmar } from "@/components/Confirmacion";
 
 const SWIPE_DELETE_PX = 80;
 
@@ -23,6 +24,7 @@ type Props = {
  */
 export function TxRow({ t, index, onEditar, onBorrar }: Props) {
   const { lang } = usePreferencias();
+  const confirmar = useConfirmar();
   const elRef = useRef<HTMLDivElement | null>(null);
   const estado = useRef({ startX: 0, startY: 0, dx: 0, scrolling: false, activo: false });
 
@@ -62,7 +64,14 @@ export function TxRow({ t, index, onEditar, onBorrar }: Props) {
       el.style.transform = "translateX(0)";
       return;
     }
-    if (!confirm(trd("confirm_borrar_tx", lang))) {
+    const ok = await confirmar({
+      titulo: trd("dlg_borrar_tx_t", lang),
+      mensaje: trd("dlg_borrar_tx_m", lang),
+      confirmar: trd("dlg_eliminar", lang),
+      cancelar: trd("dlg_cancelar", lang),
+      peligro: true,
+    });
+    if (!ok) {
       el.style.transition = "transform .2s";
       el.style.transform = "translateX(0)";
       return;

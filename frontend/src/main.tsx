@@ -6,6 +6,7 @@ import { App } from "@/App";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PreferenciasProvider } from "@/hooks/usePreferencias";
 import { ToastProvider } from "@/hooks/useToast";
+import { ProveedorConfirmacion } from "@/components/Confirmacion";
 import { escucharErroresGlobales } from "@/lib/reportarError";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
@@ -33,7 +34,9 @@ createRoot(contenedor).render(
       <QueryClientProvider client={queryClient}>
         <PreferenciasProvider>
           <ToastProvider>
-            <App />
+            <ProveedorConfirmacion>
+              <App />
+            </ProveedorConfirmacion>
           </ToastProvider>
         </PreferenciasProvider>
       </QueryClientProvider>

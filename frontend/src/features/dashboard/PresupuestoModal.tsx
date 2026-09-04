@@ -63,6 +63,11 @@ export function PresupuestoModal({ abierto, presupuestos, categorias, onCerrar }
 
   return (
     <Modal abierto={abierto} titulo={trd("presupuestos_del_mes", lang)} onCerrar={onCerrar} grande>
+      {/* En <form> para que Enter (o la tecla "Ir" del teclado del celular)
+          guarde, sin tener que ir hasta el botón. Todos los demás botones de
+          adentro llevan type="button" a propósito: sin eso, tocar una moneda
+          o un tipo enviaría el formulario. */}
+      <form onSubmit={(e) => { e.preventDefault(); alGuardar(); }}>
       {presupuestos.length > 0 && (
         <div className={css.presupModalLista}>
           {presupuestos.map((p) => (
@@ -75,7 +80,7 @@ export function PresupuestoModal({ abierto, presupuestos, categorias, onCerrar }
                   {p.moneda && p.moneda !== "ARS" ? ` · ${p.moneda}` : ""}
                 </span>
               </div>
-              <button onClick={() => alBorrar(p.id)} aria-label="Eliminar presupuesto" className={css.presupModalBorrar}>
+              <button type="button" onClick={() => alBorrar(p.id)} aria-label="Eliminar presupuesto" className={css.presupModalBorrar}>
                 ×
               </button>
             </div>
@@ -104,7 +109,7 @@ export function PresupuestoModal({ abierto, presupuestos, categorias, onCerrar }
         <label>Moneda</label>
         <div className={css.monedaToggle} style={{ marginTop: 4 }}>
           {MONEDAS.map((m) => (
-            <button
+            <button type="button"
               key={m}
               className={`${css.monedaBtn} ${moneda === m ? css.active : ""}`}
               onClick={() => setMoneda(m)}
@@ -118,9 +123,10 @@ export function PresupuestoModal({ abierto, presupuestos, categorias, onCerrar }
         <label>Límite mensual</label>
         <input type="number" min={1} placeholder="0" value={monto} onChange={(e) => setMonto(e.target.value)} />
       </div>
-      <button className={css.btnGuardar} onClick={alGuardar} disabled={guardar.isPending}>
+        <button type="submit" className={css.btnGuardar} disabled={guardar.isPending}>
         Guardar presupuesto
       </button>
+      </form>
     </Modal>
   );
 }
