@@ -240,18 +240,18 @@
      dibujo subía a 48, y el ícono terminaba rozando los bordes. */
   .logo { width: 76px; height: 76px; border-radius: 22px; margin-bottom: 20px; }
   .logo svg { width: 44px; height: 44px; }
-  .h1 { font-size: 26px; }
-  .subtitle { font-size: 15px; margin-bottom: 28px; }
-  .google { font-size: 15px; padding: 14px; border-radius: 13px; }
+  .h1 { font-size: 29px; }
+  .subtitle { font-size: 16px; margin-bottom: 30px; }
+  .google { font-size: 16px; padding: 15px; border-radius: 13px; }
   .google svg { width: 20px; height: 20px; }
   .separador { font-size: 13px; margin: 22px 0; }
-  .tab { font-size: 15px; padding: 12px; }
+  .tab { font-size: 16px; padding: 13px; }
   .campo { margin-bottom: 16px; }
-  .campo label { font-size: 12px; }
-  .campo input { font-size: 17px; padding: 14px 16px; }
-  .btn { font-size: 18px; padding: 17px; }
+  .campo label { font-size: 13px; }
+  .campo input { font-size: 18px; padding: 15px 17px; }
+  .btn { font-size: 19px; padding: 18px; }
   .error { font-size: 14px; }
-  .legal { font-size: 12px; margin-top: 16px; }
+  .legal { font-size: 13px; margin-top: 18px; }
 }
 
 /* A partir de acá entra el panel de marca al costado. El corte es 1100px y no
@@ -259,13 +259,13 @@
    tarjeta sola. */
 @media (min-width: 1100px) {
   .split {
-    max-width: 1080px;
-    gap: 72px;
+    max-width: 1180px;
+    gap: 84px;
     align-items: center;
   }
   /* max-width: none es necesario: el bloque de 900px lo deja en 460 y, sin
      soltarlo, le pone techo a los anchos de acá abajo. */
-  .card { flex-shrink: 0; width: 460px; max-width: none; }
+  .card { flex-shrink: 0; width: 500px; max-width: none; padding: 48px 44px; }
 
   .marca {
     display: block;
@@ -280,10 +280,10 @@
     margin-bottom: 28px;
     color: var(--blue);
   }
-  .marcaLogo svg { width: 40px; height: 40px; flex-shrink: 0; }
+  .marcaLogo svg { width: 44px; height: 44px; flex-shrink: 0; }
   .marcaLogo span {
     font-family: "Space Grotesk", inherit;
-    font-size: 27px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: -0.6px;
     color: var(--text);
@@ -291,8 +291,8 @@
 
   .marcaTitulo {
     font-family: "Space Grotesk", inherit;
-    font-size: 40px;
-    line-height: 1.13;
+    font-size: 47px;
+    line-height: 1.12;
     font-weight: 800;
     letter-spacing: -1.2px;
     margin-bottom: 16px;
@@ -305,21 +305,21 @@
   }
 
   .marcaBajada {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
     color: var(--muted);
-    margin-bottom: 34px;
+    margin-bottom: 38px;
     max-width: 30ch;
   }
 
-  .marcaPuntos { list-style: none; display: flex; flex-direction: column; gap: 20px; }
-  .marcaPuntos li { display: flex; gap: 14px; align-items: flex-start; }
+  .marcaPuntos { list-style: none; display: flex; flex-direction: column; gap: 22px; }
+  .marcaPuntos li { display: flex; gap: 16px; align-items: flex-start; }
   .marcaPuntos li > span {
-    font-size: 20px;
+    font-size: 23px;
     line-height: 1;
     flex-shrink: 0;
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -327,16 +327,34 @@
     background: var(--surface2);
     border: 1px solid var(--border);
   }
-  .marcaPuntos strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
-  .marcaPuntos em { display: block; font-style: normal; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+  .marcaPuntos strong { display: block; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .marcaPuntos em { display: block; font-style: normal; font-size: 15px; line-height: 1.5; color: var(--muted); }
 }
 
 /* En monitores grandes se estira un poco más: a 1920px, 1080 de contenido
    seguía dejando la pantalla medio vacía. */
 @media (min-width: 1600px) {
-  .split { max-width: 1200px; gap: 96px; }
-  .card { width: 500px; padding: 48px 44px; }
-  .marcaTitulo { font-size: 46px; }
-  .marcaBajada { font-size: 17px; }
-  .h1 { font-size: 28px; }
+  .split { max-width: 1320px; gap: 104px; }
+  .card { width: 540px; padding: 52px 48px; }
+  .marcaTitulo { font-size: 55px; }
+  .marcaBajada { font-size: 19px; }
+  .marcaPuntos strong { font-size: 18px; }
+  .marcaPuntos em { font-size: 16px; }
+  .h1 { font-size: 33px; }
+}
+
+/* Pantallas anchas pero bajas (el 1366x768 de cualquier portátil, y peor con
+   la barra de marcadores): con los tamaños de arriba la tarjeta de registro
+   medía 786px y no entraba, obligando a scrollear en un login. Se recortan
+   SOLO los espacios verticales — las tipografías quedan iguales, que es lo
+   que hace falta para que se lea. */
+@media (min-width: 1100px) and (max-height: 900px) {
+  .card { padding: 30px 44px 32px; }
+  .logo { width: 60px; height: 60px; border-radius: 18px; margin-bottom: 12px; }
+  .logo svg { width: 34px; height: 34px; }
+  .subtitle { margin-bottom: 18px; }
+  .separador { margin: 14px 0; }
+  .tabs { margin-bottom: 16px; }
+  .campo { margin-bottom: 12px; }
+  .legal { margin-top: 12px; }
 }

@@ -151,12 +151,7 @@ export function LoginPage() {
 
       <div className={css.card}>
         <div className={css.logo}>
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
-            <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
-            <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
-            <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
-          </svg>
+          <LogoMontor />
         </div>
         <h1 className={css.h1}>{t("montor")}</h1>
         <p className={css.subtitle}>{t("administra_ingresos_gastos")}</p>
