@@ -54,7 +54,7 @@
 :global(body.light) .nav { background: rgba(251, 247, 240, 0.85); box-shadow: 0 8px 30px rgba(28, 32, 51, 0.08); }
 .navLogo { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
 .navLogo svg { width: 30px; height: 30px; }
-.navLogo span { color: var(--blue); }
+.navLogo span { color: var(--marca); }
 .navLinks { display: none; align-items: center; justify-content: center; gap: 8px; }
 .navLinks a {
   color: var(--muted);
@@ -522,7 +522,7 @@
 @media (max-width: 780px) { .footerInner { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 480px) { .footerInner { grid-template-columns: 1fr; gap: 32px; } }
 .footerBrand { display: flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 800; margin-bottom: 12px; }
-.footerBrand span { color: var(--blue); }
+.footerBrand span { color: var(--marca); }
 .footerTagline { color: var(--muted); font-size: 15px; max-width: 260px; line-height: 1.6; }
 .footerColTitle { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
 .footerCol { display: flex; flex-direction: column; gap: 12px; }
