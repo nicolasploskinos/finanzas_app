@@ -8,6 +8,7 @@ import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
 import nebula from "@/styles/nebula.module.css";
 import css from "./Login.module.css";
+import { LogoMontor } from "@/components/LogoMontor";
 
 type Tab = "login" | "register";
 
@@ -118,12 +119,7 @@ export function LoginPage() {
             antes de que la persona decida entrar. */}
         <div className={css.marca}>
           <div className={css.marcaLogo}>
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
-              <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
-              <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
-              <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
-            </svg>
+            <LogoMontor />
             <span>{t("montor")}</span>
           </div>
           <h2 className={css.marcaTitulo}>{t("login_titular")}</h2>

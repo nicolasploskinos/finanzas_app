@@ -1,6 +1,7 @@
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { Reveal } from "./Reveal";
 import css from "./Landing.module.css";
+import { LogoMontor } from "@/components/LogoMontor";
 
 export function DemoSection({ contenedor }: { contenedor: HTMLElement | null }) {
   const { lang } = usePreferencias();
@@ -23,16 +24,7 @@ export function DemoSection({ contenedor }: { contenedor: HTMLElement | null }) 
         <div className={css.demoChrome}>
           <div className={css.demoChromeTitlebar}>
             <div className={css.demoChromeTab}>
-              <svg
-                className={css.demoChromeTabIcon}
-                viewBox="0 0 100 100"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
-                <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
-                <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
-                <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
-              </svg>
+              <LogoMontor className={css.demoChromeTabIcon} />
               <span>Montor</span>
               <span className={css.demoChromeTabX}>✕</span>
             </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
 import css from "./Sidenav.module.css";
+import { LogoMontor } from "@/components/LogoMontor";
 
 /** Secciones de la app. `href` null = la sección en la que ya estás. */
 type Seccion = { id: string; icono: string; label: MsgKey; href: string | null };
@@ -68,12 +69,7 @@ export function Sidenav({
   return (
     <aside className={`${css.rail} ${className}`}>
       <div className={css.brand}>
-        <svg className={css.logo} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
-          <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
-          <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
-          <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
-        </svg>
+        <LogoMontor className={css.logo} />
         <span className={css.brandName}>Montor</span>
       </div>
 

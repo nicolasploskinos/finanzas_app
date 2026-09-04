@@ -1,6 +1,7 @@
 import { usePreferencias } from "@/hooks/usePreferencias";
 import { FOOTER_CUENTA, FOOTER_LEGAL, FOOTER_PRODUCT } from "./content";
 import css from "./Landing.module.css";
+import { LogoMontor } from "@/components/LogoMontor";
 
 export function Footer() {
   const { lang } = usePreferencias();
@@ -10,18 +11,7 @@ export function Footer() {
       <div className={css.footerInner}>
         <div>
           <div className={css.footerBrand}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 100 100"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ color: "var(--blue)", flexShrink: 0 }}
-            >
-              <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
-              <rect x="28" y="48" width="9" height="22" rx="3" fill="currentColor" />
-              <rect x="45" y="38" width="9" height="32" rx="3" fill="currentColor" />
-              <rect x="62" y="28" width="9" height="42" rx="3" fill="currentColor" />
-            </svg>
+            <LogoMontor size={24} />
             <span>Montor</span>
           </div>
           <p className={css.footerTagline}>
