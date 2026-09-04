@@ -137,6 +137,25 @@ export const MSG = {
     es: "Demasiados intentos. Probá de nuevo en unos minutos",
     en: "Too many attempts. Try again in a few minutes",
   },
+  continuar_con_google: { es: "Continuar con Google", en: "Continue with Google" },
+  o: { es: "o", en: "or" },
+  // Errores que llegan como ?error= al volver de Google.
+  google: {
+    es: "No pudimos completar el ingreso con Google. Probá de nuevo",
+    en: "We couldn't complete the Google sign-in. Please try again",
+  },
+  google_email: {
+    es: "Google no nos dio un email verificado para esa cuenta",
+    en: "Google didn't give us a verified email for that account",
+  },
+  google_state: {
+    es: "El ingreso con Google venció. Probá de nuevo",
+    en: "The Google sign-in expired. Please try again",
+  },
+  google_no_configurado: {
+    es: "El ingreso con Google no está disponible por ahora",
+    en: "Google sign-in isn't available right now",
+  },
 } as const;
 
 export type MsgKey = keyof typeof MSG;

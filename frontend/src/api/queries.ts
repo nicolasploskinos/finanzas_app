@@ -24,6 +24,7 @@ export const claves = {
   transaccionesRango: (r: { desde: string | null; hasta: string | null }) =>
     ["transacciones", r.desde ?? "inicio", r.hasta ?? "hoy"] as const,
   categorias: ["categorias"] as const,
+  authConfig: ["auth-config"] as const,
   viajes: ["viajes"] as const,
   viaje: (id: number) => ["viajes", id] as const,
   cotizaciones: ["cotizaciones"] as const,
@@ -219,6 +220,16 @@ export function useBorrarTx() {
   return useMutation({
     mutationFn: (id: number) => api.del<{ ok: boolean }>(`/api/montor/${id}`),
     onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
+/** Qué formas de ingreso están habilitadas (hoy: si hay Google configurado).
+ *  Se consulta para no mostrar un botón que llevaría a un error. */
+export function useAuthConfig() {
+  return useQuery({
+    queryKey: claves.authConfig,
+    queryFn: () => api.get<{ google: boolean }>("/api/montor/auth/config"),
+    staleTime: Infinity, // depende de la config del server, no cambia en la sesión
   });
 }
 

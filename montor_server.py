@@ -857,6 +857,7 @@ import routes_whatsapp  # noqa: E402
 import routes_pagos  # noqa: E402
 import routes_cuenta  # noqa: E402
 import routes_errores  # noqa: E402
+import routes_google  # noqa: E402
 
 app.register_blueprint(routes_paginas.bp)
 app.register_blueprint(routes_auth.bp)
@@ -866,6 +867,7 @@ app.register_blueprint(routes_whatsapp.bp)
 app.register_blueprint(routes_pagos.bp)
 app.register_blueprint(routes_cuenta.bp)
 app.register_blueprint(routes_errores.bp)
+app.register_blueprint(routes_google.bp)
 
 if __name__ == "__main__":
     import socket

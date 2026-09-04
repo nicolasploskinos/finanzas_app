@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 
 import { ApiError } from "@/api/client";
-import { useLogin, useRegistro } from "@/api/queries";
+import { useAuthConfig, useLogin, useRegistro } from "@/api/queries";
 import { usePreferencias } from "@/hooks/usePreferencias";
 import type { MsgKey } from "@/i18n/messages";
 import nebula from "@/styles/nebula.module.css";
@@ -17,6 +17,10 @@ const CODIGOS_CONOCIDOS: MsgKey[] = [
   "username_taken",
   "weak_password",
   "too_many_attempts",
+  "google",
+  "google_email",
+  "google_state",
+  "google_no_configurado",
 ];
 
 function esCodigoConocido(codigo: string): codigo is MsgKey {
@@ -27,6 +31,7 @@ export function LoginPage() {
   const { modo, lang, toggleModo, toggleLang, t } = usePreferencias();
   const login = useLogin();
   const registro = useRegistro();
+  const authConfig = useAuthConfig();
 
   const [tab, setTab] = useState<Tab>("login");
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
@@ -34,7 +39,11 @@ export function LoginPage() {
   // Se guarda el código, no el texto ya traducido, para que si cambiás el
   // idioma mientras el error está en pantalla se retraduzca solo en vez de
   // quedar congelado en el idioma de cuando ocurrió.
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    // La vuelta de Google no pasa por fetch: informa por la query string.
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("error");
+  });
   // Se incrementa en cada error nuevo y se usa como `key` del cartel: eso
   // fuerza a React a remontar el nodo, así el shake se repite en intentos
   // fallidos consecutivos en vez de quedarse quieto la segunda vez.
@@ -113,6 +122,23 @@ export function LoginPage() {
         </div>
         <h1 className={css.h1}>{t("montor")}</h1>
         <p className={css.subtitle}>{t("administra_ingresos_gastos")}</p>
+
+        {authConfig.data?.google && (
+          <>
+            {/* Link y no fetch: el OAuth necesita una navegación de verdad
+                del navegador hacia Google, no una llamada en segundo plano. */}
+            <a className={css.google} href="/api/montor/auth/google">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-2.7-.4-4H24v7.3h12.1c-.2 1.9-1.6 4.9-4.5 6.8l-.1.3 6.6 5.1.5.1c4.2-3.9 6.5-9.6 6.5-15.6z"/>
+                <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.4c-1.9 1.3-4.4 2.2-7.6 2.2-5.8 0-10.7-3.8-12.5-9.1l-.3.1-6.8 5.3-.1.3C7.9 41 15.4 46 24 46z"/>
+                <path fill="#FBBC05" d="M11.5 28.4c-.5-1.4-.7-2.9-.7-4.4s.3-3 .7-4.4v-.3l-6.9-5.4-.2.1C2.8 17 2 20.4 2 24s.8 7 2.4 10l7.1-5.6z"/>
+                <path fill="#EB4335" d="M24 9.5c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 3.4 29.9 1 24 1 15.4 1 7.9 6 4.4 14l7.1 5.6c1.8-5.3 6.7-9.1 12.5-9.1z"/>
+              </svg>
+              {t("continuar_con_google")}
+            </a>
+            <div className={css.separador}><span>{t("o")}</span></div>
+          </>
+        )}
 
         <div className={css.tabs}>
           <button

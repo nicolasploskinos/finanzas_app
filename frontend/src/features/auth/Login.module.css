@@ -72,6 +72,49 @@
 .h1 { text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 4px; font-family: "Space Grotesk", inherit; }
 .subtitle { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
 
+/* Ingreso con Google. Va arriba de las pestañas a propósito: es el camino
+   más corto (un toque, sin inventar contraseña) y el único que además deja
+   un email con el que se puede recuperar la cuenta. */
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.google:hover {
+  background: var(--surface3);
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+.google svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.separador::before,
+.separador::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 .tabs {
   display: flex;
   background: var(--surface2);
