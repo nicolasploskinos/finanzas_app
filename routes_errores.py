@@ -46,6 +46,63 @@ def _recortar(valor, tope):
     return texto[:tope]
 
 
+# ── Aviso por WhatsApp ────────────────────────────────────────────────────
+# Una tabla que nadie abre no sirve de nada: el punto de todo esto es
+# enterarse sin que el usuario tenga que avisar. Se reusa el WhatsApp que ya
+# está integrado para el bot.
+#
+# Dos topes, porque una pantalla en loop puede generar cientos de errores y
+# no queremos que el teléfono explote:
+#   - el mismo mensaje no se avisa dos veces en varias horas,
+#   - y hay un máximo de avisos por hora, sea cual sea el error.
+_AVISO_MISMO_ERROR_SEG = 6 * 60 * 60
+_AVISO_MAX_POR_HORA = 4
+_avisados = {}       # mensaje -> timestamp del último aviso
+_avisos_recientes = []  # timestamps, para el tope por hora
+
+
+def _corresponde_avisar(mensaje):
+    ahora = time.time()
+    if ahora - _avisados.get(mensaje, 0) < _AVISO_MISMO_ERROR_SEG:
+        return False
+    del _avisos_recientes[: len(_avisos_recientes) - _AVISO_MAX_POR_HORA * 4]
+    recientes = [t for t in _avisos_recientes if ahora - t < 3600]
+    _avisos_recientes[:] = recientes
+    if len(recientes) >= _AVISO_MAX_POR_HORA:
+        return False
+    _avisados[mensaje] = ahora
+    _avisos_recientes.append(ahora)
+    return True
+
+
+def _avisar(origen, mensaje, ruta):
+    """Manda el error por WhatsApp. Nunca propaga: avisar de una falla no
+    puede ser, a su vez, una falla.
+
+    Ojo con una limitación de la API de Meta: fuera de las 24 h desde el
+    último mensaje del usuario al bot, sólo se pueden mandar plantillas
+    aprobadas, no texto libre. Si pasa eso el envío falla y queda registrado
+    en el log — el error igual quedó guardado en la tabla.
+    """
+    try:
+        if not _corresponde_avisar(mensaje):
+            return
+        res = (
+            core.db.table("whatsapp_users")
+            .select("telefono")
+            .eq("user_id", core._WHATSAPP_USER_ID)
+            .execute()
+        )
+        if not res.data:
+            return
+        partes = [f"⚠️ Montor: error en el {origen}", "", mensaje[:300]]
+        if ruta:
+            partes += ["", f"En: {ruta}"]
+        core._wa_enviar_mensaje(res.data[0]["telefono"], "\n".join(partes))
+    except Exception as e:
+        core.app.logger.error("no se pudo avisar del error por WhatsApp: %s", e)
+
+
 def registrar(origen, mensaje, stack=None, ruta=None, user_id=None, user_agent=None):
     """Guarda un error. Devuelve True si quedó anotado en la base.
 
@@ -66,6 +123,7 @@ def registrar(origen, mensaje, stack=None, ruta=None, user_id=None, user_agent=N
     }
     try:
         core.db.table("errores").insert(fila).execute()
+        _avisar(origen, mensaje, fila["ruta"])
         return True
     except Exception as e:
         # Último recurso: al log del server, que en PythonAnywhere sí se puede
