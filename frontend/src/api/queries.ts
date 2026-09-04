@@ -222,6 +222,15 @@ export function useBorrarTx() {
   });
 }
 
+/** Borra de una los movimientos de ejemplo de la cuenta nueva. */
+export function useBorrarEjemplos() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.del<{ ok: boolean }>("/api/montor/ejemplos"),
+    onSuccess: () => invalidarTrasEscribirTx(qc),
+  });
+}
+
 export function usePresupuestos() {
   return useQuery({
     queryKey: claves.presupuestos,

@@ -8,6 +8,46 @@ import montor_server as core
 bp = Blueprint("auth", __name__)
 
 
+def sembrar_ejemplos(user_id):
+    """Le deja a la cuenta nueva tres movimientos de ejemplo.
+
+    Sin esto, lo primero que ve alguien que se acaba de registrar es una
+    pantalla vacía que dice "Sin movimientos" — justo en el momento en que
+    decide si la app le sirve o no. Con datos adentro se entiende de un
+    vistazo qué hace: el consolidado, una categoría, y sobre todo el gasto en
+    dólares, que es el diferencial del producto.
+
+    Van marcados con es_ejemplo para poder ofrecerle borrarlos todos juntos
+    (ver DELETE /api/montor/ejemplos) y para que no le consuman el cupo del
+    plan gratis. Falla en silencio a propósito: que no se pueda sembrar el
+    ejemplo no es motivo para tirarle abajo el registro a un usuario nuevo.
+    """
+    hoy = core._hoy_ar()
+    cotiz = core._obtener_cotizaciones()
+    ejemplos = [
+        {"tipo": "Ingreso", "monto": 950000.0, "categoria": "Sueldo",
+         "moneda": "ARS", "fecha": hoy.replace(day=1).isoformat()},
+        {"tipo": "Gasto", "monto": 45800.0, "categoria": "Supermercado",
+         "moneda": "ARS", "fecha": hoy.isoformat()},
+        {"tipo": "Gasto", "monto": 12.0, "categoria": "Suscripciones",
+         "moneda": "USD", "fecha": hoy.isoformat()},
+    ]
+    filas = [{
+        **e,
+        "descripcion": "Ejemplo — borralo cuando quieras",
+        "user_id": user_id,
+        "viaje_id": None,
+        "es_ejemplo": True,
+        "cotizacion_usd": cotiz.get("USD"),
+        "cotizacion_eur": cotiz.get("EUR"),
+    } for e in ejemplos]
+
+    try:
+        core.db.table("transacciones").insert(filas).execute()
+    except Exception as e:
+        core.app.logger.warning("no se pudieron sembrar los ejemplos de %s: %s", user_id, e)
+
+
 @bp.route("/api/montor/login", methods=["POST"])
 def login():
     data     = request.get_json()
@@ -54,6 +94,7 @@ def register():
     }).execute()
 
     user = res.data[0]
+    sembrar_ejemplos(user["id"])
 
     session.permanent = True
     session["user_id"]  = user["id"]

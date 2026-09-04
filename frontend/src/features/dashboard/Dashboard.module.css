@@ -420,6 +420,38 @@
 }
 .avisoTresMeses button { background: none; border: none; color: var(--yellow); font-weight: 700; cursor: pointer; padding: 0; font: inherit; font-size: inherit; }
 
+/* Aviso de los movimientos de ejemplo de la cuenta recién creada. En el color
+   de marca y no en el amarillo de advertencia: no es un problema, es una
+   bienvenida. */
+.avisoEjemplos {
+  margin: 0 12px 8px;
+  background: rgba(var(--blue-rgb), 0.1);
+  border: 1px solid rgba(var(--blue-rgb), 0.3);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+.avisoEjemplos button {
+  background: var(--blue);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.avisoEjemplos button:disabled { opacity: 0.6; cursor: default; }
+
 .busquedaWrap { padding: 8px 12px 12px; position: relative; }
 .busqueda {
   width: 100%;
@@ -587,6 +619,17 @@
 .txCat { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txDesc { font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txFecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Los movimientos de ejemplo, distinguidos sin gastar ancho: en escritorio
+   angosto la columna de texto de la fila queda en menos de 100px, así que una
+   etiqueta de texto ahí adentro se comería la categoría. El tinte y la barra
+   lateral se leen igual de rápido y no ocupan lugar; qué significan lo explica
+   el aviso de arriba (EjemplosBanner). */
+.txEjemplo {
+  background: color-mix(in srgb, var(--blue) 7%, var(--surface));
+  border-color: rgba(var(--blue-rgb), 0.35);
+  box-shadow: inset 3px 0 0 var(--blue);
+}
 .txRight { text-align: right; flex-shrink: 0; }
 .txMonto { font-size: 15px; font-weight: 700; font-family: "Space Grotesk", inherit; }
 .txMonto.gasto { color: var(--red); }

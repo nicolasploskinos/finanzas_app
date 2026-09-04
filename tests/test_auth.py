@@ -137,6 +137,20 @@ def test_register_exitoso_no_guarda_email(client, fake_db):
     assert "email" not in payload
 
     # Regresión: el registro no debe reclamar transacciones huérfanas
-    # (user_id nulo) para la cuenta recién creada - ver fix de esta sesión.
-    assert not any(tabla == "transacciones" for (tabla, _q) in fake_db.queries)
+    # (user_id nulo) para la cuenta recién creada. Antes esto se verificaba
+    # pidiendo que no se tocara la tabla en absoluto; desde que la cuenta
+    # nueva arranca con movimientos de ejemplo (sembrar_ejemplos) eso ya no
+    # alcanza como proxy, así que se chequea la invariante de verdad: lo
+    # único permitido es INSERTAR filas propias, nunca adoptar las que ya
+    # estaban con un update.
+    for tabla, q in fake_db.queries:
+        if tabla != "transacciones":
+            continue
+        assert not any(call[0] == "update" for call in q.calls)
+        for (nombre, args, _kw) in q.calls:
+            if nombre == "insert":
+                for fila in args[0]:
+                    assert fila["es_ejemplo"] is True
+                    assert fila["user_id"] == payload.get("id", fila["user_id"])
+
     assert payload["username"] == "nico_nuevo"

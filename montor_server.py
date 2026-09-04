@@ -77,6 +77,24 @@ def _error_404(e):
 @app.errorhandler(500)
 def _error_500(e):
     print(f"[error 500] {request.method} {request.path}: {e}")
+    # La página de abajo le promete al usuario "ya estamos al tanto": esto es
+    # lo que lo hace cierto. Import acá adentro y no arriba porque
+    # routes_errores importa este módulo (ciclo si fuera al tope del archivo).
+    try:
+        import traceback
+
+        import routes_errores
+
+        routes_errores.registrar(
+            origen="backend",
+            mensaje=f"{type(e).__name__}: {e}",
+            stack=traceback.format_exc(),
+            ruta=f"{request.method} {request.path}",
+            user_id=session.get("user_id"),
+            user_agent=request.headers.get("User-Agent"),
+        )
+    except Exception:
+        pass  # registrar el error jamás puede ser la causa de otro
     if request.path.startswith("/api/"):
         return jsonify({"ok": False, "error": "server_error"}), 500
     return _pagina_error("Algo salió mal", "Tuvimos un error inesperado. Ya estamos al tanto, probá de nuevo en un rato."), 500
@@ -265,7 +283,9 @@ def _procesar_recurrentes(user_id):
 def _insertar_transaccion(user_id, tipo, monto, fecha, categoria="", descripcion="", moneda="ARS", viaje_id=None):
     if not _es_pro(user_id):
         inicio_mes = _hoy_ar().replace(day=1).isoformat()
-        count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).execute().data)
+        # Los movimientos de ejemplo los pusimos nosotros al registrarse: no
+        # tienen por qué comerle el cupo del plan gratis al usuario.
+        count = len(db.table("transacciones").select("id").eq("user_id", user_id).gte("fecha", inicio_mes).eq("es_ejemplo", False).execute().data)
         if count >= 50:
             return False, "limite_pro"
     # Se guarda la cotización del día de la transacción (la de hoy si es de
@@ -836,6 +856,7 @@ import routes_viajes  # noqa: E402
 import routes_whatsapp  # noqa: E402
 import routes_pagos  # noqa: E402
 import routes_cuenta  # noqa: E402
+import routes_errores  # noqa: E402
 
 app.register_blueprint(routes_paginas.bp)
 app.register_blueprint(routes_auth.bp)
@@ -844,6 +865,7 @@ app.register_blueprint(routes_viajes.bp)
 app.register_blueprint(routes_whatsapp.bp)
 app.register_blueprint(routes_pagos.bp)
 app.register_blueprint(routes_cuenta.bp)
+app.register_blueprint(routes_errores.bp)
 
 if __name__ == "__main__":
     import socket

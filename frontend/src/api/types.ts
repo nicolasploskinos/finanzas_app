@@ -12,6 +12,9 @@ export type Transaccion = {
   cotizacion_usd: number | null;
   cotizacion_eur: number | null;
   viaje_id: number | null;
+  /** Movimiento sembrado al registrarse, para que la cuenta nueva no arranque
+   *  vacía. El usuario los borra de una desde el aviso del panel. */
+  es_ejemplo?: boolean;
 };
 
 export type Sesion = {

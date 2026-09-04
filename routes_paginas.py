@@ -1,7 +1,7 @@
 """Páginas HTML (no-API): landing, dashboard, login, PWA."""
 import json
 import os
-from flask import Blueprint, render_template, session, redirect, send_from_directory
+from flask import Blueprint, render_template, request, session, redirect, send_from_directory
 
 import montor_server as core
 
@@ -10,6 +10,31 @@ bp = Blueprint("paginas", __name__)
 _APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "app")
 _MANIFEST = os.path.join(_APP_DIR, ".vite", "manifest.json")
 _assets_cache = {"mtime": None, "valor": None}
+
+_OG_IMAGEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "og-montor.png")
+
+
+def _og_image_url():
+    """URL absoluta de la imagen de preview al compartir el link.
+
+    Tiene que ser absoluta y https: los crawlers (WhatsApp, Twitter) no
+    resuelven rutas relativas, y detrás del proxy de PythonAnywhere
+    `request.host_url` llega como http:// aunque el sitio se sirva por
+    https — sin forzarlo, la imagen quedaría detrás de un redirect que
+    varios crawlers no siguen.
+
+    El `?v=` con el mtime es para poder refrescarla: WhatsApp y Facebook
+    cachean el preview de una URL casi indefinidamente, así que cambiar el
+    archivo sin cambiar la URL no se vería nunca.
+    """
+    base = (os.environ.get("BASE_URL") or request.host_url).rstrip("/")
+    if base.startswith("http://") and not ("localhost" in base or "127.0.0.1" in base):
+        base = "https://" + base[len("http://"):]
+    try:
+        version = int(os.path.getmtime(_OG_IMAGEN))
+    except OSError:
+        return None
+    return f"{base}/static/og-montor.png?v={version}"
 
 
 def _spa_assets():
@@ -51,6 +76,7 @@ def landing():
         meta_description="Controlá tus gastos e ingresos en pesos, dólares y euros. Cotización oficial BNA automática. Gratis.",
         og_title="Montor — Control de gastos en ARS, USD y EUR",
         og_description="La app que entiende la economía argentina. Manejá pesos y dólares en un solo lugar, con cotización oficial actualizada.",
+        og_image=_og_image_url(),
         assets=_spa_assets(),
     )
 

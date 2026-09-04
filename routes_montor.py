@@ -513,6 +513,17 @@ def eliminar(tid):
     return jsonify({"ok": True})
 
 
+@bp.route("/api/montor/ejemplos", methods=["DELETE"])
+@core.login_required
+def eliminar_ejemplos():
+    """Borra de una los movimientos de ejemplo que se siembran al registrarse
+    (ver sembrar_ejemplos en routes_auth). El filtro por es_ejemplo es lo que
+    garantiza que esto no pueda tocar nada que haya cargado el usuario."""
+    core.db.table("transacciones").delete() \
+        .eq("user_id", session["user_id"]).eq("es_ejemplo", True).execute()
+    return jsonify({"ok": True})
+
+
 @bp.route("/api/montor/presupuestos", methods=["GET"])
 @core.login_required
 def get_presupuestos():

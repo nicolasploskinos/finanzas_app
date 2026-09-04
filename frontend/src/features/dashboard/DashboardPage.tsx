@@ -12,6 +12,7 @@ import { ConsolidadoCard } from "./ConsolidadoCard";
 import css from "./Dashboard.module.css";
 import { DashboardHeader } from "./DashboardHeader";
 import { DiaResultado } from "./DiaResultado";
+import { EjemplosBanner } from "./EjemplosBanner";
 import { ExportMenu } from "./ExportMenu";
 import { Filtros } from "./Filtros";
 import { ImportFlow } from "./ImportFlow";
@@ -86,6 +87,9 @@ export function DashboardPage() {
   );
   const categoriasFrecuentes = useMemo(() => catCompletas.map((c) => c.nombre), [catCompletas]);
   const filtrados = useMemo(() => filtrarTransacciones(datos, filtros, hoy), [datos, filtros]);
+  // Sobre `datos` y no sobre `filtrados`: el aviso tiene que seguir estando
+  // aunque el filtro activo deje los ejemplos fuera de la vista.
+  const hayEjemplos = useMemo(() => datos.some((t) => t.es_ejemplo), [datos]);
 
   const isPro = sesion.data?.is_pro ?? false;
 
@@ -197,6 +201,7 @@ export function DashboardPage() {
         </div>
 
         <div className={css.der}>
+          {hayEjemplos && <EjemplosBanner />}
           {!isPro && <LimiteBanner count={contarMesActual()} onUpgrade={() => setProModalAbierto(true)} />}
           {!isPro && (
             <div className={css.avisoTresMeses}>

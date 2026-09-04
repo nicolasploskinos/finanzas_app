@@ -89,7 +89,10 @@ export function TxRow({ t, index, onEditar, onBorrar }: Props) {
       <div className={css.txSwipeBg}>🗑</div>
       <div
         ref={elRef}
-        className={`${css.tx} ${tipoClase}`}
+        // El ejemplo se distingue por un tinte y no por una etiqueta de texto:
+        // a .txInfo le quedan menos de 100px en escritorio angosto, y cualquier
+        // texto extra ahí se come la categoría (la dejaba en "S…").
+        className={`${css.tx} ${tipoClase} ${t.es_ejemplo ? css.txEjemplo : ""}`}
         onTouchStart={alTocar}
         onTouchMove={alMover}
         onTouchEnd={alSoltar}

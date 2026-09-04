@@ -123,6 +123,13 @@ const MSG = {
   exportar: { es: "⬇️ Exportar", en: "⬇️ Export" },
   mostrando_ultimos_3_meses: { es: "📅 Mostrando últimos 3 meses", en: "📅 Showing last 3 months" },
   ver_todo: { es: "Ver todo →", en: "See all →" },
+  ejemplos_aviso: {
+    es: "👋 Estos movimientos son de ejemplo, para que veas cómo se ve la app con datos. Borralos cuando cargues los tuyos.",
+    en: "👋 These are sample entries, so you can see how the app looks with data. Delete them once you add your own.",
+  },
+  ejemplos_borrar: { es: "Borrar los ejemplos", en: "Delete the samples" },
+  ejemplos_borrados: { es: "Listo, borramos los ejemplos", en: "Done, samples deleted" },
+  ejemplo_etiqueta: { es: "ejemplo", en: "sample" },
   total_consolidado_en: { es: "🔄 Total consolidado en:", en: "🔄 Total consolidated in:" },
   ingresos: { es: "Ingresos", en: "Income" },
   gastos: { es: "Gastos", en: "Expenses" },
