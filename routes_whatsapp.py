@@ -16,7 +16,7 @@ bp = Blueprint("whatsapp", __name__)
 @bp.route("/api/montor/whatsapp/codigo", methods=["POST"])
 @core.login_required
 def whatsapp_codigo():
-    if session["user_id"] != core._WHATSAPP_USER_ID:
+    if not core._whatsapp_disponible_para(session["user_id"]):
         return jsonify({"ok": False, "error": "whatsapp_no_disponible"}), 403
     codigo = f"{random.randint(0, 999999):06d}"
     core._wa_codigos[codigo] = (session["user_id"], time.time() + 900)

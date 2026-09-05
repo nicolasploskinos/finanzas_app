@@ -21,7 +21,7 @@ def me():
     plan = core._estado_plan(session["user_id"])
     return jsonify({
         "username": session["username"],
-        "whatsapp_habilitado": session["user_id"] == core._WHATSAPP_USER_ID,
+        "whatsapp_habilitado": core._whatsapp_disponible_para(session["user_id"]),
         **plan,
     })
 

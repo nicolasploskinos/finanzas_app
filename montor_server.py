@@ -31,11 +31,29 @@ _evolucion_usd_cache = {"data": None, "ts": 0}
 _wa_codigos = {}       # codigo de vinculación -> (user_id, expira_ts)
 _wa_procesados = set() # wamids ya procesados, para ignorar reintentos de Meta
 
-# La app de Meta está en modo desarrollo (sin Business Verification), así que
-# el bot de WhatsApp solo le puede responder a números que agreguemos a mano
-# a la lista de destinatarios permitidos. Hasta que se verifique el negocio,
-# el bot queda restringido a esta única cuenta.
+# Cuenta administradora: la que recibe los avisos de error (ver
+# routes_errores.py) y la única que puede usar el bot mientras esté cerrado.
 _WHATSAPP_USER_ID = "39d80812-6467-4e6e-b557-34e64a135608"  # Nicolas
+
+
+def _whatsapp_abierto_a_todos():
+    """¿El bot está disponible para cualquier usuario, o solo para el admin?
+
+    Mientras la app de Meta no tenga Business Verification, solo le puede
+    responder a números cargados a mano en la lista de destinatarios de
+    prueba (tope: 5). Abrirlo antes de eso sería peor que tenerlo cerrado:
+    el usuario haría todo el flujo de vinculación y después el bot no le
+    podría contestar, pareciendo que está roto.
+
+    El día que la verificación esté aprobada esto se activa poniendo
+    WHATSAPP_ABIERTO=1 en el entorno del server y recargando la app — sin
+    tocar código ni desplegar.
+    """
+    return os.environ.get("WHATSAPP_ABIERTO", "").strip().lower() in ("1", "true", "si", "sí")
+
+
+def _whatsapp_disponible_para(user_id):
+    return _whatsapp_abierto_a_todos() or user_id == _WHATSAPP_USER_ID
 
 def _hoy_ar():
     # El servidor corre en UTC; Buenos Aires es UTC-3 todo el año (sin horario de verano).
@@ -734,7 +752,7 @@ def _procesar_mensaje_whatsapp(msg):
         _wa_enviar_mensaje(telefono, _wa_texto("no_vinculado", "es"))
         return
     user_id = vinculo.data[0]["user_id"]
-    if user_id != _WHATSAPP_USER_ID:
+    if not _whatsapp_disponible_para(user_id):
         return
 
     ia_disponible, accion, idioma, datos = _wa_interpretar_mensaje_ia(texto)
